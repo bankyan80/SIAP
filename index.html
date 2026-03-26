@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIAP - Sistem Informasi Administrasi Pendidikan</title>
+    <title>SIAP - Sistem Informasi Administrasi Pendidikan (PAUD/TK - SMP)</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
@@ -36,14 +36,14 @@
             left: 0;
             width: 200px;
             height: 200px;
-            background: url('mega-mendung.png') top left / contain no-repeat;
+            background: url('https://github.com/user-attachments/assets/0175b8bc-48eb-433f-b40c-774b9f192abf') top left / contain no-repeat;
         }
         .batik-corner-br {
             bottom: 0;
             right: 0;
             width: 200px;
             height: 200px;
-            background: url('mega-mendung.png') bottom right / contain no-repeat;
+            background: url('https://github.com/user-attachments/assets/0175b8bc-48eb-433f-b40c-774b9f192abf') bottom right / contain no-repeat;
             transform: rotate(180deg);
         }
         
@@ -231,10 +231,10 @@
                     <select id="loginSekolah" class="w-full bg-white/10 border border-white/20 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
                 </div>
                 <div>
-                    <label class="text-sm text-blue-200 mb-1.5 block">Username</label>
+                    <label class="text-sm text-blue-200 mb-1.5 block">Username (NIP)</label>
                     <div class="relative">
                         <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-blue-300"></i>
-                        <input id="loginUser" type="text" placeholder="Masukkan username" class="w-full bg-white/10 border border-white/20 text-white rounded-xl pl-11 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-300/50">
+                        <input id="loginUser" type="text" placeholder="Masukkan NIP (tanpa spasi)" class="w-full bg-white/10 border border-white/20 text-white rounded-xl pl-11 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-300/50">
                     </div>
                 </div>
                 <div>
@@ -247,6 +247,16 @@
                 <button onclick="doLogin()" class="w-full bg-gradient-to-r from-[#b91c1c] to-[#dc2626] hover:from-[#dc2626] hover:to-[#b91c1c] text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-red-600/30">
                     <i class="fas fa-sign-in-alt mr-2"></i>Masuk
                 </button>
+                
+                <!-- Info Login Default -->
+                <div class="mt-4 p-3 bg-white/5 rounded-xl border border-white/10">
+                    <p class="text-xs text-blue-200 font-medium mb-2"><i class="fas fa-info-circle mr-1"></i>Informasi Login Default:</p>
+                    <div class="text-xs text-blue-100/70 space-y-1">
+                        <p><span class="text-blue-200">Admin Wilayah:</span> Username: <code class="bg-white/10 px-1.5 py-0.5 rounded">NIP</code> (tanpa spasi) | Password: <code class="bg-white/10 px-1.5 py-0.5 rounded">123456</code></p>
+                        <p class="text-blue-300/50 pl-1">Contoh NIP: <code class="bg-white/5 px-1 py-0.5 rounded">198001292025211035</code></p>
+                        <p><span class="text-blue-200">Admin Sekolah:</span> Username = NPSN sekolah | Password: <code class="bg-white/10 px-1.5 py-0.5 rounded">123456</code></p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -552,15 +562,48 @@ const DB = {
         { id: 14, nama: "Rina Marliana, A.Md.", jabatan: "Staf Keuangan", nip: "198303032012012014", bidang: "Staf" },
     ],
 
+    // Daftar Jenjang yang tersedia
+    jenjangList: [
+        { kode: 'PAUD', label: 'PAUD', kelas: ['Kelompok Bermain', 'TK A', 'TK B'] },
+        { kode: 'TK', label: 'TK', kelas: ['TK A', 'TK B'] },
+        { kode: 'RA', label: 'RA', kelas: ['RA A', 'RA B'] },
+        { kode: 'SD', label: 'SD', kelas: ['I', 'II', 'III', 'IV', 'V', 'VI'] },
+        { kode: 'MI', label: 'MI', kelas: ['I', 'II', 'III', 'IV', 'V', 'VI'] },
+        { kode: 'SMP', label: 'SMP', kelas: ['VII', 'VIII', 'IX'] },
+        { kode: 'MTs', label: 'MTs', kelas: ['VII', 'VIII', 'IX'] },
+        { kode: 'SDLB', label: 'SDLB', kelas: ['I', 'II', 'III', 'IV', 'V', 'VI'] },
+        { kode: 'SMPLB', label: 'SMPLB', kelas: ['VII', 'VIII', 'IX'] },
+        { kode: 'PKBM', label: 'PKBM', kelas: ['Paket A', 'Paket B'] },
+        { kode: 'SKB', label: 'SKB', kelas: ['Paket A', 'Paket B', 'Paket C'] },
+    ],
+
     sekolahList: [
-        { id: 1, npsn: "20512345", nama: "SDN 1 Nusantara", jenjang: "SD", alamat: "Jl. Merdeka No. 10", kepsek: "Hj. Siti Aminah, S.Pd.", akreditasi: "A", status: "Negeri", siswa: 342, guru: 18, rombel: 12, online: true, lastSync: "2025-01-15 08:30" },
-        { id: 2, npsn: "20512346", nama: "SDN 2 Nusantara", jenjang: "SD", alamat: "Jl. Pahlawan No. 5", kepsek: "Ahmad Rizki, M.Pd.", akreditasi: "A", status: "Negeri", siswa: 298, guru: 16, rombel: 12, online: true, lastSync: "2025-01-15 08:25" },
-        { id: 3, npsn: "20512347", nama: "SDN 3 Nusantara", jenjang: "SD", alamat: "Jl. Pemuda No. 15", kepsek: "Dewi Lestari, S.Pd.", akreditasi: "B", status: "Negeri", siswa: 256, guru: 14, rombel: 10, online: false, lastSync: "2025-01-14 16:45" },
-        { id: 4, npsn: "20512348", nama: "SMPN 1 Nusantara", jenjang: "SMP", alamat: "Jl. Diponegoro No. 20", kepsek: "Dr. Bambang S., M.Pd.", akreditasi: "A", status: "Negeri", siswa: 576, guru: 32, rombel: 18, online: true, lastSync: "2025-01-15 08:15" },
-        { id: 5, npsn: "20512349", nama: "SMPN 2 Nusantara", jenjang: "SMP", alamat: "Jl. Kartini No. 8", kepsek: "Ratna Dewi, M.Pd.", akreditasi: "A", status: "Negeri", siswa: 512, guru: 28, rombel: 16, online: true, lastSync: "2025-01-15 07:50" },
-        { id: 6, npsn: "20512350", nama: "SMPN 3 Nusantara", jenjang: "SMP", alamat: "Jl. Sudirman No. 30", kepsek: "Agus Purnomo, M.Pd.", akreditasi: "B", status: "Negeri", siswa: 423, guru: 24, rombel: 14, online: true, lastSync: "2025-01-15 08:00" },
-        { id: 7, npsn: "20512351", nama: "SDS Al-Hidayah", jenjang: "SD", alamat: "Jl. Masjid No. 3", kepsek: "Ustadz Faisal, S.Pd.I", akreditasi: "B", status: "Swasta", siswa: 185, guru: 12, rombel: 6, online: false, lastSync: "2025-01-13 14:20" },
-        { id: 8, npsn: "20512352", nama: "SMPS Bina Bangsa", jenjang: "SMP", alamat: "Jl. Kenanga No. 12", kepsek: "Maria Tanujaya, M.Pd.", akreditasi: "A", status: "Swasta", siswa: 310, guru: 20, rombel: 10, online: true, lastSync: "2025-01-15 08:10" },
+        // PAUD
+        { id: 1, npsn: "10512345", nama: "PAUD Tunas Mekar", jenjang: "PAUD", alamat: "Jl. Melati No. 5", kepsek: "Sri Wahyuni, S.Pd.", akreditasi: "A", status: "Negeri", siswa: 45, guru: 4, rombel: 3, online: true, lastSync: "2025-01-15 08:30" },
+        { id: 2, npsn: "10512346", nama: "PAUD Ceria Bangsa", jenjang: "PAUD", alamat: "Jl. Mawar No. 12", kepsek: "Dewi Kartika, A.Ma.Paud", akreditasi: "B", status: "Swasta", siswa: 38, guru: 3, rombel: 2, online: true, lastSync: "2025-01-15 08:25" },
+        // TK
+        { id: 3, npsn: "10512347", nama: "TK Negeri 1 Nusantara", jenjang: "TK", alamat: "Jl. Anggrek No. 8", kepsek: "Hj. Siti Aminah, S.Pd.", akreditasi: "A", status: "Negeri", siswa: 86, guru: 6, rombel: 4, online: true, lastSync: "2025-01-15 08:20" },
+        { id: 4, npsn: "10512348", nama: "TK Islam Nurul Huda", jenjang: "TK", alamat: "Jl. Masjid No. 15", kepsek: "Ustadzah Fatimah, S.Pd.I", akreditasi: "A", status: "Swasta", siswa: 62, guru: 5, rombel: 3, online: false, lastSync: "2025-01-14 16:45" },
+        // RA
+        { id: 5, npsn: "10512349", nama: "RA Al-Ikhlas", jenjang: "RA", alamat: "Jl. Pesantren No. 7", kepsek: "Ustadzah Aminah, S.Ag", akreditasi: "A", status: "Swasta", siswa: 54, guru: 4, rombel: 2, online: true, lastSync: "2025-01-15 08:15" },
+        // SD
+        { id: 6, npsn: "20512345", nama: "SDN 1 Nusantara", jenjang: "SD", alamat: "Jl. Merdeka No. 10", kepsek: "Drs. Bambang Suryanto", akreditasi: "A", status: "Negeri", siswa: 342, guru: 18, rombel: 12, online: true, lastSync: "2025-01-15 08:30" },
+        { id: 7, npsn: "20512346", nama: "SDN 2 Nusantara", jenjang: "SD", alamat: "Jl. Pahlawan No. 5", kepsek: "Ahmad Rizki, M.Pd.", akreditasi: "A", status: "Negeri", siswa: 298, guru: 16, rombel: 12, online: true, lastSync: "2025-01-15 08:25" },
+        { id: 8, npsn: "20512347", nama: "SDN 3 Nusantara", jenjang: "SD", alamat: "Jl. Pemuda No. 15", kepsek: "Dewi Lestari, S.Pd.", akreditasi: "B", status: "Negeri", siswa: 256, guru: 14, rombel: 10, online: false, lastSync: "2025-01-14 16:45" },
+        // MI
+        { id: 9, npsn: "20512348", nama: "MI Nurul Hidayah", jenjang: "MI", alamat: "Jl. Pondok No. 20", kepsek: "Ustadz Ahmad Faisal, S.Pd.I", akreditasi: "A", status: "Swasta", siswa: 185, guru: 12, rombel: 6, online: true, lastSync: "2025-01-15 08:10" },
+        // SMP
+        { id: 10, npsn: "30512345", nama: "SMPN 1 Nusantara", jenjang: "SMP", alamat: "Jl. Diponegoro No. 20", kepsek: "Dr. Bambang S., M.Pd.", akreditasi: "A", status: "Negeri", siswa: 576, guru: 32, rombel: 18, online: true, lastSync: "2025-01-15 08:15" },
+        { id: 11, npsn: "30512346", nama: "SMPN 2 Nusantara", jenjang: "SMP", alamat: "Jl. Kartini No. 8", kepsek: "Ratna Dewi, M.Pd.", akreditasi: "A", status: "Negeri", siswa: 512, guru: 28, rombel: 16, online: true, lastSync: "2025-01-15 07:50" },
+        { id: 12, npsn: "30512347", nama: "SMPS Bina Bangsa", jenjang: "SMP", alamat: "Jl. Kenanga No. 12", kepsek: "Maria Tanujaya, M.Pd.", akreditasi: "A", status: "Swasta", siswa: 310, guru: 20, rombel: 10, online: true, lastSync: "2025-01-15 08:10" },
+        // MTs
+        { id: 13, npsn: "30512348", nama: "MTs Al-Hidayah", jenjang: "MTs", alamat: "Jl. Pondok No. 22", kepsek: "Ustadz Faisal Rahman, S.Pd.I", akreditasi: "A", status: "Swasta", siswa: 245, guru: 18, rombel: 9, online: true, lastSync: "2025-01-15 08:05" },
+        // SDLB
+        { id: 14, npsn: "20512349", nama: "SDLB Negeri 1 Nusantara", jenjang: "SDLB", alamat: "Jl. Cendrawasih No. 3", kepsek: "Drs. Agus Santoso", akreditasi: "A", status: "Negeri", siswa: 48, guru: 12, rombel: 6, online: true, lastSync: "2025-01-15 08:00" },
+        // SMPLB
+        { id: 15, npsn: "30512349", nama: "SMPLB Negeri 1 Nusantara", jenjang: "SMPLB", alamat: "Jl. Cendrawasih No. 5", kepsek: "Dra. Hj. Siti Rahayu", akreditasi: "A", status: "Negeri", siswa: 36, guru: 10, rombel: 3, online: true, lastSync: "2025-01-15 07:55" },
+        // PKBM
+        { id: 16, npsn: "40512345", nama: "PKBM Harapan Bangsa", jenjang: "PKBM", alamat: "Jl. Pendidikan No. 15", kepsek: "Ir. Bambang Wijaya", akreditasi: "B", status: "Swasta", siswa: 125, guru: 8, rombel: 4, online: false, lastSync: "2025-01-13 14:20" },
     ],
 
     // Data Sarpras per Sekolah
@@ -578,44 +621,41 @@ const DB = {
     // Data Siswa per Sekolah (dengan kemampuan CRUD)
     siswaList: {
         1: [
-            { id: 1, nis: '101001', nisn: '001000001', nama: 'Andi Pratama', kelas: 'I', jk: 'L', tempatLahir: 'Jakarta', tglLahir: '2018-05-10', alamat: 'Jl. Merdeka No. 1', namaOrtu: 'Budi Pratama', telpOrtu: '081234567890', status: 'Aktif' },
-            { id: 2, nis: '101002', nisn: '001000002', nama: 'Budi Santoso', kelas: 'I', jk: 'L', tempatLahir: 'Bandung', tglLahir: '2018-06-15', alamat: 'Jl. Pahlawan No. 5', namaOrtu: 'Ahmad Santoso', telpOrtu: '081234567891', status: 'Aktif' },
-            { id: 3, nis: '101003', nisn: '001000003', nama: 'Citra Dewi', kelas: 'II', jk: 'P', tempatLahir: 'Surabaya', tglLahir: '2017-03-20', alamat: 'Jl. Pemuda No. 10', namaOrtu: 'Dewa Dewi', telpOrtu: '081234567892', status: 'Aktif' },
-            { id: 4, nis: '101004', nisn: '001000004', nama: 'Dian Sari', kelas: 'II', jk: 'P', tempatLahir: 'Jakarta', tglLahir: '2017-08-25', alamat: 'Jl. Kenanga No. 3', namaOrtu: 'Eko Sari', telpOrtu: '081234567893', status: 'Aktif' },
-            { id: 5, nis: '101005', nisn: '001000005', nama: 'Eko Prasetyo', kelas: 'III', jk: 'L', tempatLahir: 'Yogyakarta', tglLahir: '2016-12-01', alamat: 'Jl. Mawar No. 7', namaOrtu: 'Fajar Prasetyo', telpOrtu: '081234567894', status: 'Aktif' },
+            { id: 1, nis: '101001', nisn: '001000001', nama: 'Aisyah Putri', kelas: 'TK A', jk: 'P', tempatLahir: 'Jakarta', tglLahir: '2020-05-10', alamat: 'Jl. Melati No. 1', namaOrtu: 'Budi Putra', telpOrtu: '081234567890', status: 'Aktif' },
+            { id: 2, nis: '101002', nisn: '001000002', nama: 'Ahmad Fauzi', kelas: 'TK B', jk: 'L', tempatLahir: 'Bandung', tglLahir: '2019-06-15', alamat: 'Jl. Mawar No. 5', namaOrtu: 'Ahmad Fauzi Sr', telpOrtu: '081234567891', status: 'Aktif' },
         ],
-        2: [
-            { id: 1, nis: '201001', nisn: '002000001', nama: 'Fitri Handayani', kelas: 'I', jk: 'P', tempatLahir: 'Jakarta', tglLahir: '2018-04-12', alamat: 'Jl. Anggrek No. 2', namaOrtu: 'Gunawan Handayani', telpOrtu: '081234567895', status: 'Aktif' },
-            { id: 2, nis: '201002', nisn: '002000002', nama: 'Gunawan', kelas: 'II', jk: 'L', tempatLahir: 'Bandung', tglLahir: '2017-07-18', alamat: 'Jl. Melati No. 4', namaOrtu: 'Hadi Gunawan', telpOrtu: '081234567896', status: 'Aktif' },
+        6: [
+            { id: 1, nis: '601001', nisn: '006000001', nama: 'Andi Pratama', kelas: 'I', jk: 'L', tempatLahir: 'Jakarta', tglLahir: '2018-05-10', alamat: 'Jl. Merdeka No. 1', namaOrtu: 'Budi Pratama', telpOrtu: '081234567890', status: 'Aktif' },
+            { id: 2, nis: '601002', nisn: '006000002', nama: 'Budi Santoso', kelas: 'I', jk: 'L', tempatLahir: 'Bandung', tglLahir: '2018-06-15', alamat: 'Jl. Pahlawan No. 5', namaOrtu: 'Ahmad Santoso', telpOrtu: '081234567891', status: 'Aktif' },
+            { id: 3, nis: '601003', nisn: '006000003', nama: 'Citra Dewi', kelas: 'II', jk: 'P', tempatLahir: 'Surabaya', tglLahir: '2017-03-20', alamat: 'Jl. Pemuda No. 10', namaOrtu: 'Dewa Dewi', telpOrtu: '081234567892', status: 'Aktif' },
         ],
-        4: [
-            { id: 1, nis: '401001', nisn: '004000001', nama: 'Hesti Putri', kelas: 'VII', jk: 'P', tempatLahir: 'Jakarta', tglLahir: '2012-02-14', alamat: 'Jl. Diponegoro No. 5', namaOrtu: 'Irfan Putri', telpOrtu: '081234567897', status: 'Aktif' },
-            { id: 2, nis: '401002', nisn: '004000002', nama: 'Irfan Hakim', kelas: 'VII', jk: 'L', tempatLahir: 'Surabaya', tglLahir: '2012-05-20', alamat: 'Jl. Kartini No. 8', namaOrtu: 'Joko Hakim', telpOrtu: '081234567898', status: 'Aktif' },
-            { id: 3, nis: '401003', nisn: '004000003', nama: 'Joko Widodo', kelas: 'VIII', jk: 'L', tempatLahir: 'Solo', tglLahir: '2011-08-30', alamat: 'Jl. Sudirman No. 15', namaOrtu: 'Kardi Widodo', telpOrtu: '081234567899', status: 'Aktif' },
+        10: [
+            { id: 1, nis: '1001001', nisn: '010000001', nama: 'Hesti Putri', kelas: 'VII', jk: 'P', tempatLahir: 'Jakarta', tglLahir: '2012-02-14', alamat: 'Jl. Diponegoro No. 5', namaOrtu: 'Irfan Putri', telpOrtu: '081234567897', status: 'Aktif' },
+            { id: 2, nis: '1001002', nisn: '010000002', nama: 'Irfan Hakim', kelas: 'VII', jk: 'L', tempatLahir: 'Surabaya', tglLahir: '2012-05-20', alamat: 'Jl. Kartini No. 8', namaOrtu: 'Joko Hakim', telpOrtu: '081234567898', status: 'Aktif' },
+            { id: 3, nis: '1001003', nisn: '010000003', nama: 'Joko Widodo', kelas: 'VIII', jk: 'L', tempatLahir: 'Solo', tglLahir: '2011-08-30', alamat: 'Jl. Sudirman No. 15', namaOrtu: 'Kardi Widodo', telpOrtu: '081234567899', status: 'Aktif' },
         ],
     },
 
     // Data GTK per Sekolah (dengan kemampuan CRUD)
     gtkList: {
         1: [
+            { id: 1, nip: '198501012010011001', nama: 'Sri Wahyuni, S.Pd.', jabatan: 'Guru', mapel: 'PAUD', pendidikan: 'S1', statusKepeg: 'PNS', tempatLahir: 'Jakarta', tglLahir: '1985-01-01', alamat: 'Jl. Melati No. 1', telp: '081234500001', email: 'sri@paud.sch.id' },
+            { id: 2, nip: '198703152011012002', nama: 'Dewi Kartika, A.Ma.Paud', jabatan: 'Guru', mapel: 'PAUD', pendidikan: 'D3', statusKepeg: 'Honorer', tempatLahir: 'Bandung', tglLahir: '1987-03-15', alamat: 'Jl. Mawar No. 2', telp: '081234500002', email: 'dewi@paud.sch.id' },
+        ],
+        6: [
             { id: 1, nip: '198501012010011001', nama: 'Drs. Supriyadi', jabatan: 'Guru', mapel: 'Matematika', pendidikan: 'S1', statusKepeg: 'PNS', tempatLahir: 'Jakarta', tglLahir: '1985-01-01', alamat: 'Jl. Pendidikan No. 1', telp: '081234500001', email: 'supriyadi@sd1.sch.id' },
             { id: 2, nip: '198703152011012002', nama: 'Rina Marliana, S.Pd.', jabatan: 'Guru', mapel: 'B. Indonesia', pendidikan: 'S1', statusKepeg: 'PNS', tempatLahir: 'Bandung', tglLahir: '1987-03-15', alamat: 'Jl. Pendidikan No. 2', telp: '081234500002', email: 'rina@sd1.sch.id' },
-            { id: 3, nip: '199001202012011003', nama: 'Budi Hartono, S.Pd.', jabatan: 'Guru', mapel: 'IPA', pendidikan: 'S1', statusKepeg: 'PNS', tempatLahir: 'Surabaya', tglLahir: '1990-01-20', alamat: 'Jl. Pendidikan No. 3', telp: '081234500003', email: 'budi@sd1.sch.id' },
         ],
-        2: [
-            { id: 1, nip: '199205102013012004', nama: 'Ani Suryani, S.Pd.', jabatan: 'Guru', mapel: 'IPS', pendidikan: 'S1', statusKepeg: 'PPPK', tempatLahir: 'Jakarta', tglLahir: '1992-05-10', alamat: 'Jl. Pahlawan No. 1', telp: '081234500004', email: 'ani@sd2.sch.id' },
-            { id: 2, nip: '199308252014011005', nama: 'Rizky Firmansyah, S.Pd.', jabatan: 'Guru', mapel: 'PJOK', pendidikan: 'S1', statusKepeg: 'Honorer', tempatLahir: 'Bandung', tglLahir: '1993-08-25', alamat: 'Jl. Pahlawan No. 2', telp: '081234500005', email: 'rizky@sd2.sch.id' },
-        ],
-        4: [
+        10: [
             { id: 1, nip: '198812302015012006', nama: 'Dewi Anggraini, M.Pd.', jabatan: 'Wakasek', mapel: 'B. Inggris', pendidikan: 'S2', statusKepeg: 'PNS', tempatLahir: 'Jakarta', tglLahir: '1988-12-30', alamat: 'Jl. Diponegoro No. 10', telp: '081234500006', email: 'dewi@smp1.sch.id' },
             { id: 2, nip: '198901152016011007', nama: 'Agus Setiawan, S.Pd.', jabatan: 'Guru', mapel: 'Matematika', pendidikan: 'S1', statusKepeg: 'PNS', tempatLahir: 'Yogyakarta', tglLahir: '1989-01-15', alamat: 'Jl. Diponegoro No. 11', telp: '081234500007', email: 'agus@smp1.sch.id' },
         ],
     },
 
     pengajuanList: [
-        { id: 1, jenis: 'kenaikan_pangkat', nama: 'Drs. Supriyadi', nip: '198501012010011001', tanggal: '2025-01-10', status: 'diproses', sekolahId: 1, dokumen: ['sk_cpns.pdf', 'ijazah.pdf'] },
-        { id: 2, jenis: 'kgb', nama: 'Rina Marliana, S.Pd.', nip: '198703152011012002', tanggal: '2025-01-12', status: 'diajukan', sekolahId: 1, dokumen: ['sk_pangkat.pdf'] },
-        { id: 3, jenis: 'mutasi_siswa', nama: 'Andi Pratama', nisn: '0012345678', tanggal: '2025-01-14', status: 'disetujui', sekolahId: 1, dokumen: ['rapor.pdf'] },
+        { id: 1, jenis: 'kenaikan_pangkat', nama: 'Drs. Supriyadi', nip: '198501012010011001', tanggal: '2025-01-10', status: 'diproses', sekolahId: 6, dokumen: ['sk_cpns.pdf', 'ijazah.pdf'] },
+        { id: 2, jenis: 'kgb', nama: 'Rina Marliana, S.Pd.', nip: '198703152011012002', tanggal: '2025-01-12', status: 'diajukan', sekolahId: 6, dokumen: ['sk_pangkat.pdf'] },
+        { id: 3, jenis: 'mutasi_siswa', nama: 'Andi Pratama', nisn: '006000001', tanggal: '2025-01-14', status: 'disetujui', sekolahId: 6, dokumen: ['rapor.pdf'] },
     ],
 
     dokumenRequired: {
@@ -641,45 +681,188 @@ const DB = {
         { id: 2, judul: 'Sosialisasi Kurikulum Merdeka', isi: 'Akan dilaksanakan sosialisasi kurikulum merdeka pada tanggal 20 Januari 2025. Seluruh kepala sekolah diwajibkan hadir.', tanggal: '2025-01-12', status: 'aktif' },
     ],
 
+    // ==================== ARSIP SURAT ====================
+    // Surat Keluar: Surat yang dikirim dari Sekolah ke Dinas (hasil pengajuan yang disetujui)
+    suratKeluar: [
+        { 
+            id: 1, 
+            nomorSurat: '001/SDN1/I/2025', 
+            tanggal: '2025-01-15', 
+            jenis: 'kenaikan_pangkat', 
+            perihal: 'Usulan Kenaikan Pangkat - Drs. Supriyadi',
+            sekolahId: 6, 
+            sekolahNama: 'SDN 1 Nusantara',
+            tujuan: 'Dinas Pendidikan Kab. Nusantara',
+            pengajuId: 1, // referensi ke pengajuanList
+            dokumen: ['sk_cpns.pdf', 'ijazah.pdf', 'sk_pangkat_terakhir.pdf'],
+            status: 'terkirim',
+            keterangan: 'Berkas lengkap, menunggu verifikasi',
+            createdAt: '2025-01-15 10:30:00'
+        },
+        { 
+            id: 2, 
+            nomorSurat: '002/SDN1/I/2025', 
+            tanggal: '2025-01-18', 
+            jenis: 'mutasi_siswa', 
+            perihal: 'Permohonan Mutasi Siswa - Andi Pratama',
+            sekolahId: 6, 
+            sekolahNama: 'SDN 1 Nusantara',
+            tujuan: 'Dinas Pendidikan Kab. Nusantara',
+            pengajuId: 3,
+            dokumen: ['rapor.pdf', 'kk.pdf', 'akta.pdf'],
+            status: 'disetujui',
+            keterangan: 'Mutasi disetujui',
+            createdAt: '2025-01-18 14:20:00'
+        },
+    ],
+
+    // Surat Masuk: Surat yang diterima Sekolah dari Dinas (balasan/respon)
+    suratMasuk: [
+        { 
+            id: 1, 
+            nomorSurat: '015/DISDIK/I/2025', 
+            tanggal: '2025-01-20', 
+            jenis: 'kenaikan_pangkat', 
+            perihal: 'Surat Keputusan Kenaikan Pangkat - Drs. Supriyadi',
+            sekolahId: 6, 
+            sekolahNama: 'SDN 1 Nusantara',
+            pengirim: 'Dinas Pendidikan Kab. Nusantara',
+            suratKeluarId: 1, // referensi ke surat keluar
+            dokumen: ['sk_kenaikan_pangkat.pdf', 'sk_tmt.pdf'],
+            status: 'diterima',
+            keterangan: 'SK Kenaikan Pangkat efektif 1 April 2025',
+            createdAt: '2025-01-20 09:00:00'
+        },
+        { 
+            id: 2, 
+            nomorSurat: '022/DISDIK/I/2025', 
+            tanggal: '2025-01-22', 
+            jenis: 'mutasi_siswa', 
+            perihal: 'Surat Persetujuan Mutasi Siswa - Andi Pratama',
+            sekolahId: 6, 
+            sekolahNama: 'SDN 1 Nusantara',
+            pengirim: 'Dinas Pendidikan Kab. Nusantara',
+            suratKeluarId: 2,
+            dokumen: ['surat_persetujuan_mutasi.pdf'],
+            status: 'diterima',
+            keterangan: 'Siswa dapat melanjutkan pindah ke sekolah tujuan',
+            createdAt: '2025-01-22 11:30:00'
+        },
+        { 
+            id: 3, 
+            nomorSurat: '030/DISDIK/I/2025', 
+            tanggal: '2025-01-25', 
+            jenis: 'pengumuman', 
+            perihal: 'Jadwal Pelaksanaan UNBK SMP 2025',
+            sekolahId: null, // null = broadcast ke semua sekolah
+            sekolahNama: 'Semua Sekolah',
+            pengirim: 'Dinas Pendidikan Kab. Nusantara',
+            suratKeluarId: null,
+            dokumen: ['jadwal_unbk_2025.pdf', 'jtk_unbk.pdf'],
+            status: 'diterima',
+            keterangan: 'Mohon perhatian jadwal yang terlampir',
+            createdAt: '2025-01-25 08:00:00'
+        },
+    ],
+
+    // Jenis surat untuk kategori
+    jenisSurat: [
+        { kode: 'kenaikan_pangkat', label: 'Kenaikan Pangkat' },
+        { kode: 'kgb', label: 'KGB' },
+        { kode: 'pensiun', label: 'Pensiun' },
+        { kode: 'dkp', label: 'DKP' },
+        { kode: 'mutasi_siswa', label: 'Mutasi Siswa' },
+        { kode: 'surat_pengantar', label: 'Surat Pengantar' },
+        { kode: 'cuti_haji', label: 'Cuti Haji' },
+        { kode: 'cuti_melahirkan', label: 'Cuti Melahirkan' },
+        { kode: 'pengumuman', label: 'Pengumuman' },
+        { kode: 'undangan', label: 'Undangan' },
+        { kode: 'lainnya', label: 'Lainnya' },
+    ],
+
     // Data profil sekolah dengan foto
     profilSekolah: {},
 
     // Password storage (dalam aplikasi nyata harus di-hash)
     passwords: {
-        'k_017': '123456', // Admin Wilayah
+        // Admin Wilayah - Login menggunakan NIP
+        '198001292025211035': '123456', // Admin Utama (NIP tanpa spasi)
+        // Admin Sekolah - Login menggunakan NPSN
+        '10512345': '123456', // PAUD Tunas Mekar
+        '10512346': '123456', // PAUD Ceria Bangsa
+        '10512347': '123456', // TK Negeri 1
+        '10512348': '123456', // TK Islam Nurul Huda
+        '10512349': '123456', // RA Al-Ikhlas
         '20512345': '123456', // SDN 1
         '20512346': '123456', // SDN 2
         '20512347': '123456', // SDN 3
-        '20512348': '123456', // SMPN 1
-        '20512349': '123456', // SMPN 2
-        '20512350': '123456', // SMPN 3
-        '20512351': '123456', // SDS Al-Hidayah
-        '20512352': '123456', // SMPS Bina Bangsa
+        '20512348': '123456', // MI Nurul Hidayah
+        '20512349': '123456', // SDLB Negeri 1
+        '30512345': '123456', // SMPN 1
+        '30512346': '123456', // SMPN 2
+        '30512347': '123456', // SMPS Bina Bangsa
+        '30512348': '123456', // MTs Al-Hidayah
+        '30512349': '123456', // SMPLB Negeri 1
+        '40512345': '123456', // PKBM Harapan Bangsa
     },
+
+    // Track apakah password sudah pernah diganti (untuk popup first-time)
+    passwordChanged: {
+        '198001292025211035': false, // Admin Utama
+        '10512345': false, // PAUD Tunas Mekar
+        '10512346': false, // PAUD Ceria Bangsa
+        '10512347': false, // TK Negeri 1
+        '10512348': false, // TK Islam Nurul Huda
+        '10512349': false, // RA Al-Ikhlas
+        '20512345': false, // SDN 1
+        '20512346': false, // SDN 2
+        '20512347': false, // SDN 3
+        '20512348': false, // MI Nurul Hidayah
+        '20512349': false, // SDLB Negeri 1
+        '30512345': false, // SMPN 1
+        '30512346': false, // SMPN 2
+        '30512347': false, // SMPS Bina Bangsa
+        '30512348': false, // MTs Al-Hidayah
+        '30512349': false, // SMPLB Negeri 1
+        '40512345': false, // PKBM Harapan Bangsa
+    },
+
+    // Data Admin Wilayah dengan NIP
+    adminWilayahList: [
+        { nip: '198001292025211035', nama: 'Admin Utama Dinas Pendidikan', jabatan: 'Kepala Dinas', email: 'admin@dinas.go.id', isMain: true },
+    ],
 
     // ==================== PIP DATA ====================
     // Kuota PIP per sekolah (ditentukan Admin Wilayah)
     pipKuota: {
-        1: 15, // SDN 1
-        2: 12, // SDN 2
-        3: 10, // SDN 3
-        4: 25, // SMPN 1
-        5: 20, // SMPN 2
-        6: 18, // SMPN 3
-        7: 8,  // SDS Al-Hidayah
-        8: 12, // SMPS Bina Bangsa
+        1: 5,  // PAUD Tunas Mekar
+        2: 4,  // PAUD Ceria Bangsa
+        3: 8,  // TK Negeri 1
+        4: 6,  // TK Islam Nurul Huda
+        5: 5,  // RA Al-Ikhlas
+        6: 15, // SDN 1
+        7: 12, // SDN 2
+        8: 10, // SDN 3
+        9: 10, // MI Nurul Hidayah
+        10: 25, // SMPN 1
+        11: 20, // SMPN 2
+        12: 15, // SMPS Bina Bangsa
+        13: 12, // MTs Al-Hidayah
+        14: 8,  // SDLB Negeri 1
+        15: 6,  // SMPLB Negeri 1
+        16: 10, // PKBM Harapan Bangsa
     },
 
     // Calon penerima PIP (data dari import/template)
     pipCalon: {
-        1: [
+        6: [
             { id: 1, nisn: '001000001', nama: 'Andi Pratama', kelas: 'I', jk: 'L', namaOrtu: 'Budi Pratama', pekerjaanOrtu: 'Petani', penghasilanOrtu: 800000, alamat: 'Jl. Merdeka No. 1', status: 'calon', selected: false },
             { id: 2, nisn: '001000002', nama: 'Budi Santoso', kelas: 'I', jk: 'L', namaOrtu: 'Ahmad Santoso', pekerjaanOrtu: 'Buruh', penghasilanOrtu: 600000, alamat: 'Jl. Pahlawan No. 5', status: 'calon', selected: false },
             { id: 3, nisn: '001000003', nama: 'Citra Dewi', kelas: 'II', jk: 'P', namaOrtu: 'Dewa Dewi', pekerjaanOrtu: 'Pedagang', penghasilanOrtu: 1000000, alamat: 'Jl. Pemuda No. 10', status: 'calon', selected: false },
             { id: 4, nisn: '001000004', nama: 'Dian Sari', kelas: 'II', jk: 'P', namaOrtu: 'Eko Sari', pekerjaanOrtu: 'Petani', penghasilanOrtu: 700000, alamat: 'Jl. Kenanga No. 3', status: 'calon', selected: false },
             { id: 5, nisn: '001000005', nama: 'Eko Prasetyo', kelas: 'III', jk: 'L', namaOrtu: 'Fajar Prasetyo', pekerjaanOrtu: 'Nelayan', penghasilanOrtu: 500000, alamat: 'Jl. Mawar No. 7', status: 'calon', selected: false },
         ],
-        4: [
+        10: [
             { id: 1, nisn: '004000001', nama: 'Hesti Putri', kelas: 'VII', jk: 'P', namaOrtu: 'Irfan Putri', pekerjaanOrtu: 'Buruh', penghasilanOrtu: 550000, alamat: 'Jl. Diponegoro No. 5', status: 'calon', selected: false },
             { id: 2, nisn: '004000002', nama: 'Irfan Hakim', kelas: 'VII', jk: 'L', namaOrtu: 'Joko Hakim', pekerjaanOrtu: 'Petani', penghasilanOrtu: 750000, alamat: 'Jl. Kartini No. 8', status: 'calon', selected: false },
             { id: 3, nisn: '004000003', nama: 'Joko Widodo', kelas: 'VIII', jk: 'L', namaOrtu: 'Kardi Widodo', pekerjaanOrtu: 'Pedagang', penghasilanOrtu: 900000, alamat: 'Jl. Sudirman No. 15', status: 'calon', selected: false },
@@ -711,6 +894,53 @@ const DB = {
 
     // Nominal PIP per siswa
     pipNominal: 450000,
+
+    // ==================== PENGATURAN NOTIFIKASI SUARA ====================
+    soundSettings: {
+        enabled: true,
+        suratMasuk: true,
+        pengumuman: true,
+        volume: 0.7
+    },
+
+    // Track unread notifications for sound trigger
+    lastNotifCount: 0,
+    lastSuratMasukCount: 0,
+    lastPengumumanCount: 0,
+
+    // ==================== LEGER GAJI DATA ====================
+    // Leger Gaji yang diupload oleh Admin Wilayah
+    legerGajiList: [
+        { id: 1, bulan: '2025-01', namaFile: 'leger_gaji_januari_2025.pdf', ukuran: '2.5 MB', tanggalUpload: '2025-01-25', uploadBy: 'Admin Wilayah', status: 'aktif', downloadCount: 5 },
+        { id: 2, bulan: '2024-12', namaFile: 'leger_gaji_desember_2024.pdf', ukuran: '2.3 MB', tanggalUpload: '2024-12-23', uploadBy: 'Admin Wilayah', status: 'aktif', downloadCount: 16 },
+    ],
+
+    // Riwayat download leger gaji oleh sekolah
+    legerGajiDownloadLog: [
+        { id: 1, legerId: 1, sekolahId: 6, sekolahNama: 'SDN 1 Nusantara', tanggalDownload: '2025-01-26 10:30', downloadBy: 'Admin SDN 1' },
+        { id: 2, legerId: 1, sekolahId: 10, sekolahNama: 'SMPN 1 Nusantara', tanggalDownload: '2025-01-26 11:45', downloadBy: 'Admin SMPN 1' },
+    ],
+
+    // ==================== HAK AKSES STAFF ====================
+    // Daftar staff dengan hak akses khusus
+    staffAccessList: [
+        { id: 1, nama: 'Budi Santoso', nip: '198501012010011001', jabatan: 'Koordinator', email: 'budi@dinas.go.id', hakAkses: ['pengajuan', 'laporan', 'arsip'], status: 'aktif', createdAt: '2025-01-10' },
+        { id: 2, nama: 'Siti Rahayu', nip: '198703152011012002', jabatan: 'Staf', email: 'siti@dinas.go.id', hakAkses: ['laporan'], status: 'aktif', createdAt: '2025-01-12' },
+    ],
+
+    // Daftar menu yang bisa diberikan akses
+    menuAccessList: [
+        { kode: 'dashboard', label: 'Dashboard', icon: 'fa-th-large' },
+        { kode: 'pengajuan', label: 'Pengajuan Surat', icon: 'fa-file-alt' },
+        { kode: 'arsip', label: 'Arsip Surat', icon: 'fa-archive' },
+        { kode: 'sekolah', label: 'Manajemen Sekolah', icon: 'fa-school' },
+        { kode: 'siswa', label: 'Data Siswa', icon: 'fa-users' },
+        { kode: 'gtk', label: 'Data GTK', icon: 'fa-user-tie' },
+        { kode: 'laporan', label: 'Cetak Laporan', icon: 'fa-print' },
+        { kode: 'pip', label: 'PIP', icon: 'fa-hand-holding-usd' },
+        { kode: 'leger', label: 'Leger Gaji', icon: 'fa-money-check-alt' },
+        { kode: 'pengaturan', label: 'Pengaturan', icon: 'fa-cogs' },
+    ],
 
     getCalonPIPBySekolah(sekolahId) {
         return this.pipCalon[sekolahId] || [];
@@ -781,6 +1011,55 @@ const DB = {
 function formatRupiah(n) { return 'Rp ' + Number(n).toLocaleString('id-ID'); }
 function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
 
+// Helper function untuk warna jenjang
+function getJenjangColor(jenjang) {
+    const colors = {
+        'PAUD': 'bg-pink-100 text-pink-700',
+        'TK': 'bg-purple-100 text-purple-700',
+        'RA': 'bg-indigo-100 text-indigo-700',
+        'SD': 'bg-blue-100 text-blue-700',
+        'MI': 'bg-cyan-100 text-cyan-700',
+        'SMP': 'bg-emerald-100 text-emerald-700',
+        'MTs': 'bg-teal-100 text-teal-700',
+        'SDLB': 'bg-orange-100 text-orange-700',
+        'SMPLB': 'bg-amber-100 text-amber-700',
+        'PKBM': 'bg-rose-100 text-rose-700',
+    };
+    return colors[jenjang] || 'bg-gray-100 text-gray-700';
+}
+
+function getJenjangIcon(jenjang) {
+    const icons = {
+        'PAUD': 'fa-baby',
+        'TK': 'fa-child',
+        'RA': 'fa-mosque',
+        'SD': 'fa-school',
+        'MI': 'fa-mosque',
+        'SMP': 'fa-graduation-cap',
+        'MTs': 'fa-mosque',
+        'SDLB': 'fa-universal-access',
+        'SMPLB': 'fa-universal-access',
+        'PKBM': 'fa-users',
+    };
+    return icons[jenjang] || 'fa-school';
+}
+
+function getJenjangIconColor(jenjang) {
+    const colors = {
+        'PAUD': 'text-pink-600 bg-pink-100',
+        'TK': 'text-purple-600 bg-purple-100',
+        'RA': 'text-indigo-600 bg-indigo-100',
+        'SD': 'text-blue-600 bg-blue-100',
+        'MI': 'text-cyan-600 bg-cyan-100',
+        'SMP': 'text-emerald-600 bg-emerald-100',
+        'MTs': 'text-teal-600 bg-teal-100',
+        'SDLB': 'text-orange-600 bg-orange-100',
+        'SMPLB': 'text-amber-600 bg-amber-100',
+        'PKBM': 'text-rose-600 bg-rose-100',
+    };
+    return colors[jenjang] || 'text-gray-600 bg-gray-100';
+}
+
 function showToast(msg, type='success') {
     const c = document.getElementById('toastContainer');
     const colors = { success:'bg-green-500', error:'bg-red-500', warning:'bg-yellow-500', info:'bg-blue-500' };
@@ -790,6 +1069,104 @@ function showToast(msg, type='success') {
     t.innerHTML = `<i class="fas ${icons[type]}"></i><span>${escapeHtml(msg)}</span>`;
     c.appendChild(t);
     setTimeout(() => t.remove(), 3000);
+}
+
+// ==================== NOTIFICATION SOUND FUNCTIONS ====================
+// Audio context for generating alarm sounds
+let audioContext = null;
+
+function initAudioContext() {
+    if (!audioContext) {
+        try {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {
+            console.warn('Web Audio API tidak didukung:', e);
+        }
+    }
+    return audioContext;
+}
+
+// Play notification sound using Web Audio API
+function playNotificationSound(type = 'default') {
+    if (!DB.soundSettings.enabled) return;
+    
+    // Check specific sound settings
+    if (type === 'suratMasuk' && !DB.soundSettings.suratMasuk) return;
+    if (type === 'pengumuman' && !DB.soundSettings.pengumuman) return;
+    
+    const ctx = initAudioContext();
+    if (!ctx) return;
+    
+    try {
+        // Resume audio context if suspended (required by browsers)
+        if (ctx.state === 'suspended') {
+            ctx.resume();
+        }
+        
+        const volume = DB.soundSettings.volume || 0.7;
+        const now = ctx.currentTime;
+        
+        // Create a more audible alarm-like sound
+        const frequencies = type === 'suratMasuk' 
+            ? [880, 988, 880, 988, 880] // Surat masuk: alternating tones
+            : type === 'pengumuman' 
+            ? [660, 784, 880, 784, 660] // Pengumuman: descending then ascending
+            : [523, 659, 784, 659, 523]; // Default: pleasant chime
+        
+        frequencies.forEach((freq, index) => {
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(freq, now + index * 0.15);
+            
+            // Envelope for each tone
+            gainNode.gain.setValueAtTime(0, now + index * 0.15);
+            gainNode.gain.linearRampToValueAtTime(volume * 0.5, now + index * 0.15 + 0.05);
+            gainNode.gain.linearRampToValueAtTime(0, now + index * 0.15 + 0.12);
+            
+            oscillator.start(now + index * 0.15);
+            oscillator.stop(now + index * 0.15 + 0.15);
+        });
+        
+        console.log(`🔊 Sound notification played: ${type}`);
+        
+    } catch (e) {
+        console.warn('Gagal memutar suara notifikasi:', e);
+    }
+}
+
+// Play alarm sound with visual alert
+function playAlarmWithAlert(type = 'suratMasuk', title = 'Notifikasi Baru', message = '') {
+    playNotificationSound(type);
+    
+    // Show visual alert if window is not focused
+    if (!document.hasFocus() && Notification.permission === 'granted') {
+        new Notification(title, {
+            body: message,
+            icon: 'https://i.pinimg.com/1200x/76/39/2d/76392d91c9c22d8ec5563b1126cd55b8.jpg'
+        });
+    }
+}
+
+// Request notification permission
+function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                showToast('Notifikasi browser diaktifkan!');
+            }
+        });
+    }
+}
+
+// Test sound
+function testSound() {
+    playNotificationSound('default');
+    showToast('Suara notifikasi sedang diputar...', 'info');
 }
 
 function showModal(html) { document.getElementById('modalContent').innerHTML = html; document.getElementById('modalOverlay').classList.remove('hidden'); }
@@ -869,44 +1246,221 @@ function closeLoginModal() { document.getElementById('loginModal').classList.add
 
 document.getElementById('loginRole').addEventListener('change', function() {
     const sel = document.getElementById('sekolahSelect');
+    const userField = document.getElementById('loginUser');
+    const userLabel = userField.previousElementSibling?.querySelector('label') || document.querySelector('label[for="loginUser"]');
+    const userPlaceholder = userField;
+
     if (this.value === 'sekolah') {
         sel.classList.remove('hidden');
-        document.getElementById('loginSekolah').innerHTML = DB.sekolahList.map(s => `<option value="${s.id}" class="text-gray-800">${escapeHtml(s.nama)}</option>`).join('');
-    } else { sel.classList.add('hidden'); }
+        document.getElementById('loginSekolah').innerHTML = DB.sekolahList.map(s => `<option value="${s.id}" class="text-gray-800">${escapeHtml(s.nama)} (${s.npsn})</option>`).join('');
+        // Auto-fill NPSN dari sekolah pertama
+        if (DB.sekolahList.length > 0) {
+            userField.value = DB.sekolahList[0].npsn;
+        }
+        userPlaceholder.placeholder = 'Masukkan NPSN';
+    } else {
+        sel.classList.add('hidden');
+        // Reset username untuk Admin Wilayah
+        userField.value = '';
+        userPlaceholder.placeholder = 'Masukkan NIP (tanpa spasi)';
+    }
+});
+
+// Auto-fill NPSN ketika sekolah dipilih
+document.getElementById('loginSekolah').addEventListener('change', function() {
+    const sekolahId = parseInt(this.value);
+    const sekolah = DB.sekolahList.find(s => s.id === sekolahId);
+    if (sekolah) {
+        document.getElementById('loginUser').value = sekolah.npsn;
+    }
 });
 
 function doLogin() {
     const role = document.getElementById('loginRole').value;
-    const user = document.getElementById('loginUser').value;
+    const user = document.getElementById('loginUser').value.trim().replace(/\s/g, ''); // Hapus spasi
     const pass = document.getElementById('loginPass').value;
+
+    // Validasi input tidak kosong
+    if (!user || !pass) {
+        showToast('Username dan password harus diisi!', 'error');
+        return;
+    }
 
     // Validasi kredensial
     if (role === 'wilayah') {
-        // Admin Wilayah: username = k_017, password = 123456
-        if (user !== 'k_017' || pass !== '123456') {
-            showToast('Username atau password salah!', 'error');
+        // Admin Wilayah: username = NIP (tanpa spasi)
+        const adminData = DB.adminWilayahList.find(a => a.nip === user);
+
+        if (!adminData) {
+            showToast('NIP tidak terdaftar sebagai Admin Wilayah!', 'error');
             return;
         }
+
+        const storedPass = DB.passwords[user] || '123456';
+
+        if (pass !== storedPass) {
+            showToast('Password salah!', 'error');
+            return;
+        }
+
         DB.currentRole = 'wilayah';
         DB.currentUser = user;
+        DB.currentAdminData = adminData;
         DB.isLoggedIn = true;
+
+        closeLoginModal();
+        initApp();
+        showToast(`Berhasil masuk sebagai ${adminData.nama}!`);
+
+        // Cek apakah password sudah pernah diganti
+        if (!DB.passwordChanged[user]) {
+            setTimeout(() => showFirstTimePasswordChange(user, adminData.nama), 500);
+        }
+
     } else {
-        // Admin Sekolah: username = NPSN sekolah, password = 123456
+        // Admin Sekolah: username = NPSN sekolah
         const sekolahId = parseInt(document.getElementById('loginSekolah').value);
         const sekolah = DB.sekolahList.find(s => s.id === sekolahId);
-        if (!sekolah || user !== sekolah.npsn || pass !== '123456') {
+
+        if (!sekolah) {
+            showToast('Pilih sekolah terlebih dahulu!', 'error');
+            return;
+        }
+
+        const storedPass = DB.passwords[sekolah.npsn] || '123456'; // default 123456
+
+        if (user !== sekolah.npsn || pass !== storedPass) {
             showToast('Username atau password salah! Gunakan NPSN sebagai username.', 'error');
             return;
         }
+
         DB.currentRole = 'sekolah';
         DB.currentUser = user;
         DB.currentSekolahId = sekolahId;
         DB.isLoggedIn = true;
+
+        closeLoginModal();
+        initApp();
+        showToast(`Berhasil masuk sebagai Admin ${sekolah.nama}!`);
+
+        // Cek apakah password sudah pernah diganti
+        if (!DB.passwordChanged[sekolah.npsn]) {
+            setTimeout(() => showFirstTimePasswordChange(sekolah.npsn, sekolah.nama), 500);
+        }
+    }
+}
+
+// Popup untuk ganti password pertama kali
+function showFirstTimePasswordChange(username, nama) {
+    showModal(`
+        <div class="p-6">
+            <div class="text-center mb-4">
+                <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-key text-amber-600 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-800">Pengguna Baru Terdeteksi!</h3>
+                <p class="text-sm text-gray-500 mt-1">Anda login dengan password default</p>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-exclamation-triangle text-amber-600 mt-0.5"></i>
+                    <div>
+                        <p class="font-medium text-amber-800">Keamanan Akun</p>
+                        <p class="text-sm text-amber-700 mt-1">
+                            Untuk keamanan, silakan ganti password default Anda dengan password baru yang lebih aman.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="bg-gray-50 rounded-xl p-3">
+                    <p class="text-xs text-gray-500">Akun</p>
+                    <p class="font-medium">${escapeHtml(nama)}</p>
+                    <p class="text-xs text-gray-400">${username}</p>
+                </div>
+
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Password Baru</label>
+                    <input type="password" id="firstTimeNewPass" class="w-full border rounded-xl px-4 py-2.5 text-sm" placeholder="Min. 6 karakter">
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Konfirmasi Password</label>
+                    <input type="password" id="firstTimeConfirmPass" class="w-full border rounded-xl px-4 py-2.5 text-sm" placeholder="Ulangi password baru">
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+                <button onclick="saveFirstTimePassword('${username}')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-medium">
+                    <i class="fas fa-save mr-2"></i>Simpan Password
+                </button>
+                <button onclick="closeModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-medium">
+                    Nanti Saja
+                </button>
+            </div>
+        </div>
+    `);
+}
+
+// Simpan password pertama kali
+function saveFirstTimePassword(username) {
+    const newPass = document.getElementById('firstTimeNewPass').value;
+    const confirmPass = document.getElementById('firstTimeConfirmPass').value;
+
+    if (!newPass || newPass.length < 6) {
+        showToast('Password minimal 6 karakter!', 'error');
+        return;
     }
 
-    closeLoginModal();
-    initApp();
-    showToast('Berhasil masuk ke sistem!');
+    if (newPass !== confirmPass) {
+        showToast('Konfirmasi password tidak sesuai!', 'error');
+        return;
+    }
+
+    // Simpan password baru
+    DB.passwords[username] = newPass;
+    DB.passwordChanged[username] = true;
+
+    closeModal();
+    showToast('Password berhasil diubah! Akun Anda sekarang lebih aman.', 'success');
+
+    // Sync ke Firebase
+    if (firebaseInitialized) {
+        firebaseSaveDocument('passwords', username, { password: newPass, changedAt: new Date().toISOString() });
+        firebaseSaveDocument('passwordChanged', username, { changed: true });
+    }
+}
+
+// ==================== FIREBASE LOGIN (Optional) ====================
+async function doFirebaseLogin(email, password, role, sekolahId = null) {
+    if (!firebaseInitialized) {
+        return { success: false, error: 'Firebase tidak siap' };
+    }
+    
+    try {
+        const result = await firebaseLogin(email, password);
+        
+        if (result.success) {
+            DB.currentRole = role;
+            DB.currentUser = email;
+            DB.currentSekolahId = sekolahId;
+            DB.isLoggedIn = true;
+            
+            // Ambil data user dari Firestore
+            const userData = await firebaseGetDocument('users', result.user.uid);
+            if (userData.success) {
+                DB.currentUserData = userData.data;
+            }
+            
+            return { success: true };
+        }
+        
+        return result;
+    } catch (error) {
+        console.error('Firebase login error:', error);
+        return { success: false, error: error.message };
+    }
 }
 
 function doLogout() {
@@ -1005,10 +1559,10 @@ function renderPublicSekolah() {
                 ${DB.sekolahList.map(s => `
                     <div class="bg-white rounded-2xl p-5 border shadow-sm">
                         <div class="flex items-start justify-between mb-3">
-                            <div class="w-12 h-12 ${s.jenjang==='SD'?'bg-blue-100':'bg-emerald-100'} rounded-xl flex items-center justify-center">
-                                <i class="fas fa-school ${s.jenjang==='SD'?'text-blue-600':'text-emerald-600'} text-lg"></i>
+                            <div class="w-12 h-12 ${getJenjangIconColor(s.jenjang)} rounded-xl flex items-center justify-center">
+                                <i class="fas ${getJenjangIcon(s.jenjang)} text-lg"></i>
                             </div>
-                            <span class="px-2 py-1 ${s.jenjang==='SD'?'bg-blue-100 text-blue-700':'bg-emerald-100 text-emerald-700'} rounded-lg text-xs">${s.jenjang}</span>
+                            <span class="px-2 py-1 ${getJenjangColor(s.jenjang)} rounded-lg text-xs">${s.jenjang}</span>
                         </div>
                         <h4 class="font-semibold">${escapeHtml(s.nama)}</h4>
                         <p class="text-xs text-gray-500">${escapeHtml(s.alamat)}</p>
@@ -1048,7 +1602,11 @@ function buildSidebar() {
     if (DB.currentRole === 'wilayah') {
         items = [
             { id:'w-dashboard', icon:'fa-th-large', label:'Dashboard' },
-            { id:'w-sekolah', icon:'fa-school', label:'Manajemen Sekolah' },
+            { id:'w-sekolah', icon:'fa-school', label:'Manajemen Sekolah', hasSubmenu: true, submenu: [
+                { id:'w-sekolah-data', label:'Data Sekolah' },
+                { id:'w-sekolah-template', label:'Unduh Template' },
+                { id:'w-sekolah-upload', label:'Upload Template' },
+            ]},
             { id:'w-monitoring', icon:'fa-desktop', label:'Monitoring' },
             { id:'w-siswa', icon:'fa-users', label:'Data Siswa Wilayah' },
             { id:'w-gtk', icon:'fa-chalkboard-teacher', label:'Data GTK Wilayah' },
@@ -1064,11 +1622,16 @@ function buildSidebar() {
                 { id:'w-pengajuan-haji', label:'Cuti Haji' },
                 { id:'w-pengajuan-melahirkan', label:'Cuti Melahirkan' },
             ]},
+            { id:'w-arsip', icon:'fa-archive', label:'Arsip Surat', hasSubmenu: true, submenu: [
+                { id:'w-arsip-masuk', label:'Surat Masuk' },
+                { id:'w-arsip-keluar', label:'Surat Keluar' },
+            ]},
             { id:'w-laporan', icon:'fa-print', label:'Cetak Laporan', hasSubmenu: true, submenu: [
                 { id:'w-laporan-siswa', label:'Laporan Siswa Bulanan' },
                 { id:'w-laporan-gtk', label:'Laporan GTK Bulanan' },
                 { id:'w-laporan-sarpras', label:'Laporan Sarpras (BMD)' },
                 { id:'w-laporan-rekap', label:'Rekap Bulanan (Daftar 1)' },
+                { id:'w-laporan-leger', label:'Cetak Leger Gaji' },
             ]},
             { id:'w-pip', icon:'fa-hand-holding-heart', label:'PIP', hasSubmenu: true, submenu: [
                 { id:'w-pip-usulan', label:'Usulan Penerima' },
@@ -1078,7 +1641,10 @@ function buildSidebar() {
             { id:'w-pengaturan', icon:'fa-cogs', label:'Pengaturan', hasSubmenu: true, submenu: [
                 { id:'w-pengaturan-profil', label:'Profil Wilayah' },
                 { id:'w-pengaturan-staf', label:'Data Staf Dinas' },
+                { id:'w-pengaturan-password', label:'Kelola Password' },
                 { id:'w-pengaturan-pengumuman', label:'Entry Pengumuman' },
+                { id:'w-pengaturan-notifikasi', label:'Pengaturan Notifikasi' },
+                { id:'w-pengaturan-hakakses', label:'Hak Akses Staff' },
             ]},
         ];
     } else {
@@ -1099,10 +1665,15 @@ function buildSidebar() {
                 { id:'s-pengajuan-haji', label:'Cuti Haji' },
                 { id:'s-pengajuan-melahirkan', label:'Cuti Melahirkan' },
             ]},
+            { id:'s-arsip', icon:'fa-archive', label:'Arsip Surat', hasSubmenu: true, submenu: [
+                { id:'s-arsip-masuk', label:'Surat Masuk' },
+                { id:'s-arsip-keluar', label:'Surat Keluar' },
+            ]},
             { id:'s-laporan', icon:'fa-print', label:'Cetak Laporan', hasSubmenu: true, submenu: [
                 { id:'s-laporan-siswa', label:'Laporan Siswa' },
                 { id:'s-laporan-gtk', label:'Laporan GTK' },
                 { id:'s-laporan-sarpras', label:'Laporan Sarpras' },
+                { id:'s-laporan-leger', label:'Cetak Leger Gaji' },
             ]},
             { id:'s-template', icon:'fa-file-download', label:'Template', hasSubmenu: true, submenu: [
                 { id:'s-template-download', label:'Unduh Template' },
@@ -1151,12 +1722,15 @@ function navigateTo(page) {
     
     // Open parent submenu
     const pageMapping = {
+        'w-sekolah-data':'w-sekolah','w-sekolah-template':'w-sekolah','w-sekolah-upload':'w-sekolah',
         'w-pengajuan-kenaikan':'w-pengajuan','w-pengajuan-kgb':'w-pengajuan','w-pengajuan-pensiun':'w-pengajuan','w-pengajuan-dkp':'w-pengajuan','w-pengajuan-mutasi':'w-pengajuan','w-pengajuan-pengantar':'w-pengajuan','w-pengajuan-haji':'w-pengajuan','w-pengajuan-melahirkan':'w-pengajuan',
-        'w-laporan-siswa':'w-laporan','w-laporan-gtk':'w-laporan','w-laporan-sarpras':'w-laporan','w-laporan-rekap':'w-laporan',
+        'w-arsip-masuk':'w-arsip','w-arsip-keluar':'w-arsip',
+        's-arsip-masuk':'s-arsip','s-arsip-keluar':'s-arsip',
+        'w-laporan-siswa':'w-laporan','w-laporan-gtk':'w-laporan','w-laporan-sarpras':'w-laporan','w-laporan-rekap':'w-laporan','w-laporan-leger':'w-laporan',
         'w-pip-usulan':'w-pip','w-pip-verval':'w-pip','w-pip-pemberkasan':'w-pip',
-        'w-pengaturan-profil':'w-pengaturan','w-pengaturan-staf':'w-pengaturan','w-pengaturan-pengumuman':'w-pengaturan',
+        'w-pengaturan-profil':'w-pengaturan','w-pengaturan-staf':'w-pengaturan','w-pengaturan-password':'w-pengaturan','w-pengaturan-pengumuman':'w-pengaturan','w-pengaturan-notifikasi':'w-pengaturan','w-pengaturan-hakakses':'w-pengaturan',
         's-pengajuan-kenaikan':'s-pengajuan','s-pengajuan-kgb':'s-pengajuan','s-pengajuan-pensiun':'s-pengajuan','s-pengajuan-dkp':'s-pengajuan','s-pengajuan-mutasi':'s-pengajuan','s-pengajuan-pengantar':'s-pengajuan','s-pengajuan-haji':'s-pengajuan','s-pengajuan-melahirkan':'s-pengajuan',
-        's-laporan-siswa':'s-laporan','s-laporan-gtk':'s-laporan','s-laporan-sarpras':'s-laporan',
+        's-laporan-siswa':'s-laporan','s-laporan-gtk':'s-laporan','s-laporan-sarpras':'s-laporan','s-laporan-leger':'s-laporan',
         's-template-download':'s-template','s-template-upload':'s-template',
         's-pip-verval':'s-pip','s-pip-pemberkasan':'s-pip',
         's-pengaturan-profil':'s-pengaturan','s-pengaturan-foto':'s-pengaturan','s-pengaturan-password':'s-pengaturan'
@@ -1169,7 +1743,9 @@ function navigateTo(page) {
     const pages = {
         // Wilayah pages
         'w-dashboard': { title:'Dashboard Wilayah', subtitle:'Ringkasan data', render: renderWDashboard },
-        'w-sekolah': { title:'Manajemen Sekolah', subtitle:'Kelola data sekolah', render: renderWSekolah },
+        'w-sekolah-data': { title:'Data Sekolah', subtitle:'Kelola data sekolah', render: renderWSekolah },
+        'w-sekolah-template': { title:'Unduh Template', subtitle:'Template import data sekolah', render: renderWSekolahTemplate },
+        'w-sekolah-upload': { title:'Upload Template', subtitle:'Import data dari template', render: renderWSekolahUpload },
         'w-monitoring': { title:'Monitoring', subtitle:'Status sinkronisasi', render: renderWMonitoring },
         'w-siswa': { title:'Data Siswa Wilayah', subtitle:'Rekap siswa semua sekolah', render: renderWSiswa },
         'w-gtk': { title:'Data GTK Wilayah', subtitle:'Rekap GTK semua sekolah', render: renderWGtk },
@@ -1183,17 +1759,23 @@ function navigateTo(page) {
         'w-pengajuan-pengantar': { title:'Pengajuan Surat Pengantar', subtitle:'', render: () => renderPengajuanList('surat_pengantar', 'wilayah') },
         'w-pengajuan-haji': { title:'Pengajuan Cuti Haji', subtitle:'', render: () => renderPengajuanList('cuti_haji', 'wilayah') },
         'w-pengajuan-melahirkan': { title:'Pengajuan Cuti Melahirkan', subtitle:'', render: () => renderPengajuanList('cuti_melahirkan', 'wilayah') },
+        'w-arsip-masuk': { title:'Surat Masuk', subtitle:'Arsip surat masuk dari sekolah', render: () => renderArsipSurat('masuk', 'wilayah') },
+        'w-arsip-keluar': { title:'Surat Keluar', subtitle:'Arsip surat keluar ke sekolah', render: () => renderArsipSurat('keluar', 'wilayah') },
         'w-laporan-siswa': { title:'Cetak Laporan Siswa Bulanan', subtitle:'', render: renderLaporanSiswa },
         'w-laporan-gtk': { title:'Cetak Laporan GTK Bulanan', subtitle:'', render: renderLaporanGtk },
         'w-laporan-sarpras': { title:'Cetak Laporan Sarpras (BMD)', subtitle:'', render: renderLaporanSarpras },
         'w-laporan-rekap': { title:'Cetak Rekap Bulanan (Daftar 1)', subtitle:'', render: renderLaporanRekap },
+        'w-laporan-leger': { title:'Cetak Leger Gaji', subtitle:'Upload dan kelola leger gaji', render: renderWLaporanLeger },
         'w-pip-usulan': { title:'Usulan Penerima PIP', subtitle:'', render: renderWPipUsulan },
         'w-pip-verval': { title:'Hasil Verval PIP', subtitle:'', render: renderWPipVerval },
         'w-pip-pemberkasan': { title:'Pemberkasan PIP', subtitle:'', render: renderWPipPemberkasan },
         'w-pengaturan-profil': { title:'Profil Wilayah', subtitle:'', render: renderPengaturanProfil },
         'w-pengaturan-staf': { title:'Data Staf Dinas', subtitle:'', render: renderPengaturanStaf },
+        'w-pengaturan-password': { title:'Kelola Password Sekolah', subtitle:'Lihat dan reset password admin sekolah', render: renderWPengaturanPassword },
         'w-pengaturan-pengumuman': { title:'Entry Pengumuman', subtitle:'', render: renderPengaturanPengumuman },
-        
+        'w-pengaturan-notifikasi': { title:'Pengaturan Notifikasi', subtitle:'Atur suara alarm', render: renderPengaturanNotifikasi },
+        'w-pengaturan-hakakses': { title:'Hak Akses Staff', subtitle:'Kelola hak akses staf dinas', render: renderHakAksesStaff },
+
         // Sekolah pages
         's-dashboard': { title:'Dashboard Sekolah', subtitle:'', render: renderSDashboard },
         's-siswa': { title:'Data Siswa', subtitle:'Kelola data siswa', render: renderSSiswa },
@@ -1208,9 +1790,12 @@ function navigateTo(page) {
         's-pengajuan-pengantar': { title:'Pengajuan Surat Pengantar', subtitle:'', render: () => renderPengajuanList('surat_pengantar', 'sekolah') },
         's-pengajuan-haji': { title:'Pengajuan Cuti Haji', subtitle:'', render: () => renderPengajuanList('cuti_haji', 'sekolah') },
         's-pengajuan-melahirkan': { title:'Pengajuan Cuti Melahirkan', subtitle:'', render: () => renderPengajuanList('cuti_melahirkan', 'sekolah') },
+        's-arsip-masuk': { title:'Surat Masuk', subtitle:'Arsip surat masuk dari dinas', render: () => renderArsipSurat('masuk', 'sekolah') },
+        's-arsip-keluar': { title:'Surat Keluar', subtitle:'Arsip surat keluar ke dinas', render: () => renderArsipSurat('keluar', 'sekolah') },
         's-laporan-siswa': { title:'Cetak Laporan Siswa', subtitle:'', render: renderSLaporanSiswa },
         's-laporan-gtk': { title:'Cetak Laporan GTK', subtitle:'', render: renderSLaporanGtk },
         's-laporan-sarpras': { title:'Cetak Laporan Sarpras', subtitle:'', render: renderSLaporanSarpras },
+        's-laporan-leger': { title:'Cetak Leger Gaji', subtitle:'Unduh leger gaji bulanan', render: renderSLaporanLeger },
         's-template-download': { title:'Unduh Template', subtitle:'Download template import data', render: renderTemplateDownload },
         's-template-upload': { title:'Upload Template', subtitle:'Import data dari file', render: renderTemplateUpload },
         's-pip-verval': { title:'Verval Usulan PIP', subtitle:'', render: renderSPipVerval },
@@ -1258,7 +1843,7 @@ function renderWSekolah() {
             <div class="flex justify-between items-center">
                 <div class="flex gap-3">
                     <input type="text" id="searchSekolah" placeholder="Cari sekolah..." class="border rounded-xl px-4 py-2 text-sm w-64" oninput="filterSekolahTable()">
-                    <select id="filterJenjang" class="border rounded-xl px-4 py-2 text-sm" onchange="filterSekolahTable()"><option value="">Semua Jenjang</option><option value="SD">SD</option><option value="SMP">SMP</option></select>
+                    <select id="filterJenjang" class="border rounded-xl px-4 py-2 text-sm" onchange="filterSekolahTable()"><option value="">Semua Jenjang</option><option value="PAUD">PAUD</option><option value="TK">TK</option><option value="RA">RA</option><option value="SD">SD</option><option value="MI">MI</option><option value="SMP">SMP</option><option value="MTs">MTs</option><option value="SDLB">SDLB</option><option value="SMPLB">SMPLB</option><option value="PKBM">PKBM</option></select>
                 </div>
                 <button onclick="showTambahSekolahModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-plus mr-2"></i>Tambah Sekolah</button>
             </div>
@@ -1280,7 +1865,7 @@ function renderSekolahRows(list) {
             <td class="p-4">${i+1}</td>
             <td class="p-4 font-mono">${s.npsn}</td>
             <td class="p-4 font-medium">${escapeHtml(s.nama)}</td>
-            <td class="p-4 text-center"><span class="px-2 py-1 ${s.jenjang==='SD'?'bg-blue-100 text-blue-700':'bg-emerald-100 text-emerald-700'} rounded-lg text-xs">${s.jenjang}</span></td>
+            <td class="p-4 text-center"><span class="px-2 py-1 ${getJenjangColor(s.jenjang)} rounded-lg text-xs">${s.jenjang}</span></td>
             <td class="p-4 text-center"><span class="text-xs ${s.status==='Negeri'?'text-blue-600':'text-orange-600'}">${s.status}</span></td>
             <td class="p-4 text-center">${s.siswa}</td>
             <td class="p-4 text-center">${s.guru}</td>
@@ -1306,7 +1891,7 @@ function showTambahSekolahModal() {
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="text-sm text-gray-600 mb-1 block">NPSN</label><input type="text" id="addNpsn" class="w-full border rounded-xl px-4 py-2.5 text-sm" placeholder="NPSN"></div>
-                    <div><label class="text-sm text-gray-600 mb-1 block">Jenjang</label><select id="addJenjang" class="w-full border rounded-xl px-4 py-2.5 text-sm"><option>SD</option><option>SMP</option></select></div>
+                    <div><label class="text-sm text-gray-600 mb-1 block">Jenjang</label><select id="addJenjang" class="w-full border rounded-xl px-4 py-2.5 text-sm"><option>PAUD</option><option>TK</option><option>RA</option><option>SD</option><option>MI</option><option>SMP</option><option>MTs</option><option>SDLB</option><option>SMPLB</option><option>PKBM</option></select></div>
                 </div>
                 <div><label class="text-sm text-gray-600 mb-1 block">Nama Sekolah</label><input type="text" id="addNama" class="w-full border rounded-xl px-4 py-2.5 text-sm" placeholder="Nama sekolah"></div>
                 <div><label class="text-sm text-gray-600 mb-1 block">Alamat</label><input type="text" id="addAlamat" class="w-full border rounded-xl px-4 py-2.5 text-sm" placeholder="Alamat"></div>
@@ -1325,11 +1910,29 @@ function showTambahSekolahModal() {
 }
 
 function doTambahSekolah() {
+    const npsn = document.getElementById('addNpsn').value.trim();
+    const nama = document.getElementById('addNama').value.trim();
+    
+    // Validasi
+    if (!npsn || !nama) {
+        showToast('NPSN dan Nama Sekolah harus diisi!', 'error');
+        return;
+    }
+    
+    // Cek NPSN duplikat
+    if (DB.sekolahList.find(s => s.npsn === npsn)) {
+        showToast('NPSN sudah terdaftar!', 'error');
+        return;
+    }
+    
     const newId = Math.max(...DB.sekolahList.map(s => s.id)) + 1;
+    const defaultPassword = '123456'; // Password default untuk sekolah baru
+    
+    // Tambah sekolah baru
     DB.sekolahList.push({
         id: newId,
-        npsn: document.getElementById('addNpsn').value,
-        nama: document.getElementById('addNama').value,
+        npsn: npsn,
+        nama: nama,
         jenjang: document.getElementById('addJenjang').value,
         alamat: document.getElementById('addAlamat').value,
         kepsek: document.getElementById('addKepsek').value,
@@ -1337,9 +1940,25 @@ function doTambahSekolah() {
         akreditasi: document.getElementById('addAkr').value,
         siswa: 0, guru: 0, rombel: 0, online: false, lastSync: '-'
     });
+    
+    // Auto-generate password default untuk sekolah baru
+    DB.passwords[npsn] = defaultPassword;
+    
+    // Inisialisasi data kosong untuk sekolah baru
+    DB.siswaList[newId] = [];
+    DB.gtkList[newId] = [];
+    DB.pipCalon[newId] = [];
+    DB.pipUsulan[newId] = [];
+    
     closeModal();
-    showToast('Sekolah berhasil ditambahkan!');
+    showToast(`Sekolah berhasil ditambahkan! Login: ${npsn} / ${defaultPassword}`);
     renderWSekolah();
+    
+    // Sync ke Firebase jika tersedia
+    if (firebaseInitialized) {
+        firebaseSaveDocument('sekolah', newId.toString(), DB.sekolahList[DB.sekolahList.length - 1]);
+        firebaseSaveDocument('passwords', npsn, { password: defaultPassword, createdAt: new Date().toISOString() });
+    }
 }
 
 function showEditSekolahModal(id) {
@@ -1351,7 +1970,7 @@ function showEditSekolahModal(id) {
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="text-sm text-gray-600 mb-1 block">NPSN</label><input type="text" id="editNpsn" value="${s.npsn}" class="w-full border rounded-xl px-4 py-2.5 text-sm"></div>
-                    <div><label class="text-sm text-gray-600 mb-1 block">Jenjang</label><select id="editJenjang" class="w-full border rounded-xl px-4 py-2.5 text-sm"><option ${s.jenjang==='SD'?'selected':''}>SD</option><option ${s.jenjang==='SMP'?'selected':''}>SMP</option></select></div>
+                    <div><label class="text-sm text-gray-600 mb-1 block">Jenjang</label><select id="editJenjang" class="w-full border rounded-xl px-4 py-2.5 text-sm"><option ${s.jenjang==='PAUD'?'selected':''}>PAUD</option><option ${s.jenjang==='TK'?'selected':''}>TK</option><option ${s.jenjang==='RA'?'selected':''}>RA</option><option ${s.jenjang==='SD'?'selected':''}>SD</option><option ${s.jenjang==='MI'?'selected':''}>MI</option><option ${s.jenjang==='SMP'?'selected':''}>SMP</option><option ${s.jenjang==='MTs'?'selected':''}>MTs</option><option ${s.jenjang==='SDLB'?'selected':''}>SDLB</option><option ${s.jenjang==='SMPLB'?'selected':''}>SMPLB</option><option ${s.jenjang==='PKBM'?'selected':''}>PKBM</option></select></div>
                 </div>
                 <div><label class="text-sm text-gray-600 mb-1 block">Nama Sekolah</label><input type="text" id="editNama" value="${s.nama}" class="w-full border rounded-xl px-4 py-2.5 text-sm"></div>
                 <div><label class="text-sm text-gray-600 mb-1 block">Alamat</label><input type="text" id="editAlamat" value="${s.alamat}" class="w-full border rounded-xl px-4 py-2.5 text-sm"></div>
@@ -1407,8 +2026,1018 @@ function showHapusSekolahModal(id) {
 }
 
 function doHapusSekolah(id) {
+    const sekolah = DB.sekolahList.find(s => s.id === id);
+    if (!sekolah) {
+        showToast('Sekolah tidak ditemukan!', 'error');
+        closeModal();
+        return;
+    }
+    
+    const npsn = sekolah.npsn;
     const idx = DB.sekolahList.findIndex(x => x.id === id);
-    if (idx > -1) { DB.sekolahList.splice(idx, 1); closeModal(); showToast('Sekolah berhasil dihapus!'); renderWSekolah(); }
+    
+    if (idx > -1) {
+        // Hapus data sekolah
+        DB.sekolahList.splice(idx, 1);
+        
+        // Hapus password
+        delete DB.passwords[npsn];
+        
+        // Hapus data terkait
+        delete DB.siswaList[id];
+        delete DB.gtkList[id];
+        delete DB.pipCalon[id];
+        delete DB.pipUsulan[id];
+        delete DB.pipKuota[id];
+        
+        // Hapus dari sarprasList
+        const sarprasIdx = DB.sarprasList.findIndex(s => s.sekolahId === id);
+        if (sarprasIdx > -1) {
+            DB.sarprasList.splice(sarprasIdx, 1);
+        }
+        
+        closeModal();
+        showToast(`Sekolah ${sekolah.nama} berhasil dihapus!`);
+        renderWSekolah();
+        
+        // Sync ke Firebase jika tersedia
+        if (firebaseInitialized) {
+            firebaseDeleteDocument('sekolah', id.toString());
+            firebaseDeleteDocument('passwords', npsn);
+        }
+    }
+}
+
+// ==================== TEMPLATE SEKOLAH (Admin Wilayah) ====================
+function renderWSekolahTemplate() {
+    const contentArea = document.getElementById('contentArea');
+    if (!contentArea) return;
+    contentArea.innerHTML = `
+        <div class="fade-in space-y-6">
+            <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-info-circle text-blue-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-blue-800">Petunjuk Import Data Sekolah</h4>
+                        <p class="text-sm text-blue-700 mt-1">
+                            1. Unduh template sesuai format yang disediakan<br>
+                            2. Isi data sekolah sesuai kolom yang tersedia<br>
+                            3. Upload file yang sudah diisi melalui menu Upload Template<br>
+                            4. Sistem akan memvalidasi dan mengimpor data secara otomatis
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Template Sekolah -->
+                <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-school text-blue-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Template Data Sekolah</h3>
+                            <p class="text-sm text-gray-500">Format Excel (.xlsx)</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Template untuk import data sekolah baru secara massal. Berisi kolom NPSN, Nama, Jenjang, Alamat, Kepala Sekolah, Status, dan Akreditasi.</p>
+                    <button onclick="downloadTemplateSekolah()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-medium">
+                        <i class="fas fa-download mr-2"></i>Unduh Template Sekolah
+                    </button>
+                </div>
+                
+                <!-- Template GTK -->
+                <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-chalkboard-teacher text-emerald-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Template Data GTK</h3>
+                            <p class="text-sm text-gray-500">Format Excel (.xlsx)</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Template untuk import data Guru dan Tenaga Kependidikan. Berisi kolom NIP, Nama, Jabatan, Mata Pelajaran, Pendidikan, Status Kepegawaian.</p>
+                    <button onclick="downloadTemplateGTK()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-sm font-medium">
+                        <i class="fas fa-download mr-2"></i>Unduh Template GTK
+                    </button>
+                </div>
+                
+                <!-- Template Siswa -->
+                <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-user-graduate text-purple-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Template Data Siswa</h3>
+                            <p class="text-sm text-gray-500">Format Excel (.xlsx)</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Template untuk import data siswa. Berisi kolom NIS, NISN, Nama, Kelas, Jenis Kelamin, Tempat/Tanggal Lahir, Alamat, Data Orang Tua.</p>
+                    <button onclick="downloadTemplateSiswa()" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2.5 rounded-xl text-sm font-medium">
+                        <i class="fas fa-download mr-2"></i>Unduh Template Siswa
+                    </button>
+                </div>
+                
+                <!-- Template Sarpras -->
+                <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-hand-holding-heart text-rose-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Template Data PIP</h3>
+                            <p class="text-sm text-gray-500">Format Excel (.xlsx)</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">Template untuk import calon penerima PIP. Berisi kolom NISN, Nama, Kelas, Data Orang Tua, Pekerjaan Ortu, Penghasilan Ortu.</p>
+                    <button onclick="downloadTemplatePIP()" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-xl text-sm font-medium">
+                        <i class="fas fa-download mr-2"></i>Unduh Template PIP
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderWSekolahUpload() {
+    const contentArea = document.getElementById('contentArea');
+    if (!contentArea) return;
+    contentArea.innerHTML = `
+        <div class="fade-in space-y-6">
+            <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-yellow-800">Perhatian</h4>
+                        <p class="text-sm text-yellow-700 mt-1">
+                            Pastikan file yang diupload sesuai dengan format template. Data yang sudah ada akan diperbarui jika NPSN sama.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Upload Sekolah -->
+                <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-school text-blue-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Upload Data Sekolah</h3>
+                            <p class="text-sm text-gray-500">Format: .xlsx, .xls, .csv</p>
+                        </div>
+                    </div>
+                    <div class="file-upload-zone rounded-xl p-6 text-center mb-4" id="uploadZoneSekolah" 
+                         ondrop="handleDrop(event, 'sekolah')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-300 mb-3"></i>
+                        <p class="text-sm text-gray-500">Drag & drop file atau</p>
+                        <input type="file" id="fileSekolah" accept=".xlsx,.xls,.csv" class="hidden" onchange="handleFileSelect(event, 'sekolah')">
+                        <button onclick="document.getElementById('fileSekolah').click()" class="mt-2 text-blue-600 hover:text-blue-700 text-sm font-medium">Pilih File</button>
+                    </div>
+                    <p class="text-xs text-gray-400" id="fileInfoSekolah">Belum ada file dipilih</p>
+                    <button onclick="uploadDataSekolah()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-medium mt-4">
+                        <i class="fas fa-upload mr-2"></i>Upload Data Sekolah
+                    </button>
+                </div>
+                
+                <!-- Upload GTK -->
+                <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-chalkboard-teacher text-emerald-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Upload Data GTK</h3>
+                            <p class="text-sm text-gray-500">Format: .xlsx, .xls, .csv</p>
+                        </div>
+                    </div>
+                    <div class="file-upload-zone rounded-xl p-6 text-center mb-4" id="uploadZoneGTK"
+                         ondrop="handleDrop(event, 'gtk')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-300 mb-3"></i>
+                        <p class="text-sm text-gray-500">Drag & drop file atau</p>
+                        <input type="file" id="fileGTK" accept=".xlsx,.xls,.csv" class="hidden" onchange="handleFileSelect(event, 'gtk')">
+                        <button onclick="document.getElementById('fileGTK').click()" class="mt-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium">Pilih File</button>
+                    </div>
+                    <p class="text-xs text-gray-400" id="fileInfoGTK">Belum ada file dipilih</p>
+                    <button onclick="uploadDataGTK()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-sm font-medium mt-4">
+                        <i class="fas fa-upload mr-2"></i>Upload Data GTK
+                    </button>
+                </div>
+                
+                <!-- Upload Siswa -->
+                <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-user-graduate text-purple-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Upload Data Siswa</h3>
+                            <p class="text-sm text-gray-500">Format: .xlsx, .xls, .csv</p>
+                        </div>
+                    </div>
+                    <div class="file-upload-zone rounded-xl p-6 text-center mb-4" id="uploadZoneSiswa"
+                         ondrop="handleDrop(event, 'siswa')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-300 mb-3"></i>
+                        <p class="text-sm text-gray-500">Drag & drop file atau</p>
+                        <input type="file" id="fileSiswa" accept=".xlsx,.xls,.csv" class="hidden" onchange="handleFileSelect(event, 'siswa')">
+                        <button onclick="document.getElementById('fileSiswa').click()" class="mt-2 text-purple-600 hover:text-purple-700 text-sm font-medium">Pilih File</button>
+                    </div>
+                    <p class="text-xs text-gray-400" id="fileInfoSiswa">Belum ada file dipilih</p>
+                    <button onclick="uploadDataSiswa()" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2.5 rounded-xl text-sm font-medium mt-4">
+                        <i class="fas fa-upload mr-2"></i>Upload Data Siswa
+                    </button>
+                </div>
+                
+                <!-- Upload PIP -->
+                <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 bg-rose-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-hand-holding-heart text-rose-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Upload Data PIP</h3>
+                            <p class="text-sm text-gray-500">Format: .xlsx, .xls, .csv</p>
+                        </div>
+                    </div>
+                    <div class="file-upload-zone rounded-xl p-6 text-center mb-4" id="uploadZonePIP"
+                         ondrop="handleDrop(event, 'pip')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-300 mb-3"></i>
+                        <p class="text-sm text-gray-500">Drag & drop file atau</p>
+                        <input type="file" id="filePIP" accept=".xlsx,.xls,.csv" class="hidden" onchange="handleFileSelect(event, 'pip')">
+                        <button onclick="document.getElementById('filePIP').click()" class="mt-2 text-rose-600 hover:text-rose-700 text-sm font-medium">Pilih File</button>
+                    </div>
+                    <p class="text-xs text-gray-400" id="fileInfoPIP">Belum ada file dipilih</p>
+                    <button onclick="uploadDataPIP()" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-xl text-sm font-medium mt-4">
+                        <i class="fas fa-upload mr-2"></i>Upload Data PIP
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// File upload handlers
+let uploadedFiles = { sekolah: null, gtk: null, siswa: null, pip: null };
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.currentTarget.classList.add('dragover');
+}
+
+function handleDragLeave(e) {
+    e.currentTarget.classList.remove('dragover');
+}
+
+function handleDrop(e, type) {
+    e.preventDefault();
+    e.currentTarget.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) setUploadedFile(file, type);
+}
+
+function handleFileSelect(e, type) {
+    const file = e.target.files[0];
+    if (file) setUploadedFile(file, type);
+}
+
+function setUploadedFile(file, type) {
+    uploadedFiles[type] = file;
+    document.getElementById(`fileInfo${type.charAt(0).toUpperCase() + type.slice(1)}`).textContent = file.name;
+    document.getElementById(`uploadZone${type.charAt(0).toUpperCase() + type.slice(1)}`).classList.add('bg-blue-50');
+}
+
+// Download template functions
+function downloadTemplateSekolah() {
+    const headers = ['NPSN', 'Nama Sekolah', 'Jenjang', 'Alamat', 'Kepala Sekolah', 'Status', 'Akreditasi'];
+    const sampleData = [
+        ['10512345', 'PAUD Tunas Mekar', 'PAUD', 'Jl. Melati No. 5', 'Sri Wahyuni, S.Pd.', 'Negeri', 'A'],
+        ['20512345', 'SDN 1 Nusantara', 'SD', 'Jl. Merdeka No. 10', 'Drs. Bambang S.', 'Negeri', 'A'],
+        ['30512345', 'SMPN 1 Nusantara', 'SMP', 'Jl. Diponegoro No. 20', 'Dr. Bambang S., M.Pd.', 'Negeri', 'A'],
+    ];
+    downloadCSV('template_sekolah', headers, sampleData);
+    showToast('Template sekolah berhasil diunduh!');
+}
+
+function downloadTemplateGTK() {
+    const headers = ['NPSN Sekolah', 'NIP', 'Nama', 'Jabatan', 'Mata Pelajaran', 'Pendidikan', 'Status Kepegawaian', 'Tempat Lahir', 'Tanggal Lahir', 'Alamat', 'Telepon', 'Email'];
+    const sampleData = [
+        ['20512345', '198501012010011001', 'Drs. Supriyadi', 'Guru', 'Matematika', 'S1', 'PNS', 'Jakarta', '1985-01-01', 'Jl. Pendidikan No. 1', '081234500001', 'supriyadi@sd1.sch.id'],
+        ['20512345', '198703152011012002', 'Rina Marliana, S.Pd.', 'Guru', 'B. Indonesia', 'S1', 'PNS', 'Bandung', '1987-03-15', 'Jl. Pendidikan No. 2', '081234500002', 'rina@sd1.sch.id'],
+    ];
+    downloadCSV('template_gtk', headers, sampleData);
+    showToast('Template GTK berhasil diunduh!');
+}
+
+function downloadTemplateSiswa() {
+    const headers = ['NPSN Sekolah', 'NIS', 'NISN', 'Nama', 'Kelas', 'Jenis Kelamin (L/P)', 'Tempat Lahir', 'Tanggal Lahir', 'Alamat', 'Nama Orang Tua', 'Telepon Ortu', 'Status'];
+    const sampleData = [
+        ['20512345', '601001', '006000001', 'Andi Pratama', 'I', 'L', 'Jakarta', '2018-05-10', 'Jl. Merdeka No. 1', 'Budi Pratama', '081234567890', 'Aktif'],
+        ['20512345', '601002', '006000002', 'Budi Santoso', 'I', 'L', 'Bandung', '2018-06-15', 'Jl. Pahlawan No. 5', 'Ahmad Santoso', '081234567891', 'Aktif'],
+    ];
+    downloadCSV('template_siswa', headers, sampleData);
+    showToast('Template siswa berhasil diunduh!');
+}
+
+function downloadTemplatePIP() {
+    const headers = ['NPSN Sekolah', 'NISN', 'Nama', 'Kelas', 'Jenis Kelamin (L/P)', 'Nama Orang Tua', 'Pekerjaan Ortu', 'Penghasilan Ortu', 'Alamat'];
+    const sampleData = [
+        ['20512345', '006000001', 'Andi Pratama', 'I', 'L', 'Budi Pratama', 'Petani', '800000', 'Jl. Merdeka No. 1'],
+        ['20512345', '006000002', 'Budi Santoso', 'I', 'L', 'Ahmad Santoso', 'Buruh', '600000', 'Jl. Pahlawan No. 5'],
+    ];
+    downloadCSV('template_pip', headers, sampleData);
+    showToast('Template PIP berhasil diunduh!');
+}
+
+// CSV Download helper
+function downloadCSV(filename, headers, data) {
+    let csv = headers.join(',') + '\n';
+    data.forEach(row => {
+        csv += row.map(cell => `"${cell}"`).join(',') + '\n';
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${filename}.csv`;
+    link.click();
+}
+
+// Upload functions (placeholder - would need backend for real implementation)
+function uploadDataSekolah() {
+    if (!uploadedFiles.sekolah) {
+        showToast('Pilih file terlebih dahulu!', 'error');
+        return;
+    }
+    showToast('Fitur upload memerlukan backend server. File: ' + uploadedFiles.sekolah.name, 'info');
+}
+
+function uploadDataGTK() {
+    if (!uploadedFiles.gtk) {
+        showToast('Pilih file terlebih dahulu!', 'error');
+        return;
+    }
+    showToast('Fitur upload memerlukan backend server. File: ' + uploadedFiles.gtk.name, 'info');
+}
+
+function uploadDataSiswa() {
+    if (!uploadedFiles.siswa) {
+        showToast('Pilih file terlebih dahulu!', 'error');
+        return;
+    }
+    showToast('Fitur upload memerlukan backend server. File: ' + uploadedFiles.siswa.name, 'info');
+}
+
+function uploadDataPIP() {
+    if (!uploadedFiles.pip) {
+        showToast('Pilih file terlebih dahulu!', 'error');
+        return;
+    }
+    showToast('Fitur upload memerlukan backend server. File: ' + uploadedFiles.pip.name, 'info');
+}
+
+// ==================== ARSIP SURAT ====================
+function renderArsipSurat(type, role) {
+    const contentArea = document.getElementById('contentArea');
+    if (!contentArea) return;
+    
+    const isAdmin = role === 'wilayah';
+    const currentSekolahId = DB.currentSekolahId;
+    const currentSekolah = DB.sekolahList.find(s => s.id === currentSekolahId);
+    
+    // Filter data based on role
+    let suratData = type === 'masuk' ? DB.suratMasuk : DB.suratKeluar;
+    
+    if (!isAdmin && currentSekolahId) {
+        if (type === 'masuk') {
+            // Surat masuk: tampilkan surat untuk sekolah ini atau broadcast (sekolahId null)
+            suratData = suratData.filter(s => s.sekolahId === currentSekolahId || s.sekolahId === null);
+        } else {
+            // Surat keluar: tampilkan surat dari sekolah ini
+            suratData = suratData.filter(s => s.sekolahId === currentSekolahId);
+        }
+    }
+    
+    // Sort by date descending
+    suratData = [...suratData].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    
+    const pageConfig = {
+        masuk: {
+            title: 'Surat Masuk',
+            subtitle: isAdmin ? 'Surat masuk ke sekolah dari dinas' : 'Surat masuk dari dinas',
+            icon: 'fa-inbox',
+            color: 'blue',
+            emptyMsg: 'Belum ada surat masuk'
+        },
+        keluar: {
+            title: 'Surat Keluar',
+            subtitle: isAdmin ? 'Surat keluar dari sekolah ke dinas' : 'Surat keluar ke dinas',
+            icon: 'fa-paper-plane',
+            color: 'emerald',
+            emptyMsg: 'Belum ada surat keluar'
+        }
+    };
+    
+    const config = pageConfig[type];
+    
+    // Get jenis surat label
+    const getJenisLabel = (kode) => {
+        const jenis = DB.jenisSurat.find(j => j.kode === kode);
+        return jenis ? jenis.label : kode;
+    };
+    
+    // Status badge
+    const getStatusBadge = (status) => {
+        const badges = {
+            'terkirim': 'bg-blue-100 text-blue-700',
+            'diterima': 'bg-green-100 text-green-700',
+            'dibaca': 'bg-purple-100 text-purple-700',
+            'disetujui': 'bg-emerald-100 text-emerald-700',
+            'ditolak': 'bg-red-100 text-red-700',
+            'diproses': 'bg-yellow-100 text-yellow-700',
+        };
+        return badges[status] || 'bg-gray-100 text-gray-700';
+    };
+    
+    contentArea.innerHTML = `
+        <div class="fade-in space-y-6">
+            <!-- Header Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white rounded-2xl p-5 border shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-${config.color}-100 rounded-xl flex items-center justify-center">
+                            <i class="fas ${config.icon} text-${config.color}-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Total ${config.title}</p>
+                            <p class="text-2xl font-bold">${suratData.length}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl p-5 border shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-check-circle text-green-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Bulan Ini</p>
+                            <p class="text-2xl font-bold">${suratData.filter(s => {
+                                const d = new Date(s.tanggal);
+                                const now = new Date();
+                                return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                            }).length}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl p-5 border shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-file-alt text-purple-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Total Dokumen</p>
+                            <p class="text-2xl font-bold">${suratData.reduce((a, s) => a + (s.dokumen?.length || 0), 0)}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl p-5 border shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-clock text-orange-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Minggu Ini</p>
+                            <p class="text-2xl font-bold">${suratData.filter(s => {
+                                const d = new Date(s.createdAt);
+                                const now = new Date();
+                                const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+                                return d >= weekAgo;
+                            }).length}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filter & Search -->
+            <div class="bg-white rounded-2xl p-4 border shadow-sm">
+                <div class="flex flex-wrap gap-3 items-center">
+                    <div class="flex-1 min-w-64">
+                        <input type="text" id="searchArsip" placeholder="Cari nomor surat, perihal..." 
+                            class="w-full border rounded-xl px-4 py-2.5 text-sm" oninput="filterArsipTable('${type}')">
+                    </div>
+                    <select id="filterJenisSurat" class="border rounded-xl px-4 py-2.5 text-sm" onchange="filterArsipTable('${type}')">
+                        <option value="">Semua Jenis</option>
+                        ${DB.jenisSurat.map(j => `<option value="${j.kode}">${j.label}</option>`).join('')}
+                    </select>
+                    ${isAdmin ? `
+                    <select id="filterSekolahArsip" class="border rounded-xl px-4 py-2.5 text-sm" onchange="filterArsipTable('${type}')">
+                        <option value="">Semua Sekolah</option>
+                        ${DB.sekolahList.map(s => `<option value="${s.id}">${escapeHtml(s.nama)}</option>`).join('')}
+                    </select>
+                    ` : ''}
+                    ${isAdmin && type === 'masuk' ? `
+                    <button onclick="showTambahSuratMasukModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium">
+                        <i class="fas fa-plus mr-2"></i>Tambah Surat Masuk
+                    </button>
+                    ` : ''}
+                    ${isAdmin && type === 'keluar' ? `
+                    <button onclick="showTambahSuratKeluarModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium">
+                        <i class="fas fa-plus mr-2"></i>Tambah Surat Keluar
+                    </button>
+                    ` : ''}
+                </div>
+            </div>
+            
+            <!-- Table -->
+            <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="p-4 text-left">No</th>
+                            <th class="p-4 text-left">No. Surat</th>
+                            <th class="p-4 text-left">Tanggal</th>
+                            <th class="p-4 text-left">Perihal</th>
+                            <th class="p-4 text-left">Jenis</th>
+                            ${isAdmin ? `<th class="p-4 text-left">${type === 'masuk' ? 'Pengirim' : 'Sekolah'}</th>` : ''}
+                            <th class="p-4 text-center">Dokumen</th>
+                            <th class="p-4 text-center">Status</th>
+                            <th class="p-4 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="arsipTbody">
+                        ${suratData.length === 0 ? `
+                            <tr><td colspan="${isAdmin ? 9 : 8}" class="p-8 text-center text-gray-500">
+                                <i class="fas ${config.icon} text-4xl text-gray-300 mb-3 block"></i>
+                                ${config.emptyMsg}
+                            </td></tr>
+                        ` : suratData.map((s, i) => `
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="p-4">${i + 1}</td>
+                                <td class="p-4 font-mono text-xs">${s.nomorSurat}</td>
+                                <td class="p-4">${s.tanggal}</td>
+                                <td class="p-4">
+                                    <p class="font-medium">${escapeHtml(s.perihal)}</p>
+                                    <p class="text-xs text-gray-500 mt-1">${s.keterangan || '-'}</p>
+                                </td>
+                                <td class="p-4">
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs">${getJenisLabel(s.jenis)}</span>
+                                </td>
+                                ${isAdmin ? `
+                                <td class="p-4">
+                                    <p class="text-sm">${type === 'masuk' ? s.pengirim : s.sekolahNama}</p>
+                                    ${type === 'masuk' && s.suratKeluarId ? `<p class="text-xs text-gray-400">Ref: Surat Keluar #${s.suratKeluarId}</p>` : ''}
+                                </td>
+                                ` : ''}
+                                <td class="p-4 text-center">
+                                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-purple-50 text-purple-700 rounded-lg text-xs">
+                                        <i class="fas fa-file-pdf"></i>
+                                        ${s.dokumen?.length || 0} file
+                                    </span>
+                                </td>
+                                <td class="p-4 text-center">
+                                    <span class="px-2 py-1 ${getStatusBadge(s.status)} rounded-lg text-xs capitalize">${s.status}</span>
+                                </td>
+                                <td class="p-4 text-center">
+                                    <button onclick="showDetailArsipModal(${s.id}, '${type}')" class="text-blue-500 hover:text-blue-700 mr-2" title="Detail">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    ${isAdmin ? `
+                                    <button onclick="showEditArsipModal(${s.id}, '${type}')" class="text-yellow-500 hover:text-yellow-700 mr-2" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="showHapusArsipModal(${s.id}, '${type}')" class="text-red-500 hover:text-red-700" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    ` : ''}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+// Filter arsip table
+function filterArsipTable(type) {
+    const search = document.getElementById('searchArsip').value.toLowerCase();
+    const jenis = document.getElementById('filterJenisSurat').value;
+    const sekolahFilter = document.getElementById('filterSekolahArsip')?.value;
+    
+    let suratData = type === 'masuk' ? DB.suratMasuk : DB.suratKeluar;
+    
+    if (!DB.currentRole !== 'wilayah' && DB.currentSekolahId) {
+        if (type === 'masuk') {
+            suratData = suratData.filter(s => s.sekolahId === DB.currentSekolahId || s.sekolahId === null);
+        } else {
+            suratData = suratData.filter(s => s.sekolahId === DB.currentSekolahId);
+        }
+    }
+    
+    const filtered = suratData.filter(s => {
+        const matchSearch = s.nomorSurat.toLowerCase().includes(search) || 
+                           s.perihal.toLowerCase().includes(search);
+        const matchJenis = !jenis || s.jenis === jenis;
+        const matchSekolah = !sekolahFilter || s.sekolahId === parseInt(sekolahFilter);
+        return matchSearch && matchJenis && matchSekolah;
+    });
+    
+    // Re-render table would go here
+    showToast(`Ditemukan ${filtered.length} surat`, 'info');
+}
+
+// Detail arsip modal
+function showDetailArsipModal(id, type) {
+    const surat = type === 'masuk' ? DB.suratMasuk.find(s => s.id === id) : DB.suratKeluar.find(s => s.id === id);
+    if (!surat) return;
+    
+    const getJenisLabel = (kode) => {
+        const jenis = DB.jenisSurat.find(j => j.kode === kode);
+        return jenis ? jenis.label : kode;
+    };
+    
+    showModal(`
+        <div class="p-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 bg-${type === 'masuk' ? 'blue' : 'emerald'}-100 rounded-xl flex items-center justify-center">
+                    <i class="fas ${type === 'masuk' ? 'fa-inbox' : 'fa-paper-plane'} text-${type === 'masuk' ? 'blue' : 'emerald'}-600 text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold">${surat.nomorSurat}</h3>
+                    <p class="text-sm text-gray-500">${type === 'masuk' ? 'Surat Masuk' : 'Surat Keluar'}</p>
+                </div>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs text-gray-500">Tanggal</label>
+                        <p class="font-medium">${surat.tanggal}</p>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500">Jenis Surat</label>
+                        <p class="font-medium">${getJenisLabel(surat.jenis)}</p>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500">Perihal</label>
+                    <p class="font-medium">${escapeHtml(surat.perihal)}</p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs text-gray-500">${type === 'masuk' ? 'Pengirim' : 'Tujuan'}</label>
+                        <p class="font-medium">${type === 'masuk' ? surat.pengirim : surat.tujuan}</p>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-500">Sekolah</label>
+                        <p class="font-medium">${surat.sekolahNama}</p>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500">Keterangan</label>
+                    <p class="font-medium">${surat.keterangan || '-'}</p>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500">Dokumen Lampiran</label>
+                    <div class="mt-2 space-y-2">
+                        ${surat.dokumen?.map(doc => `
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-file-pdf text-red-500"></i>
+                                    <span class="text-sm">${doc}</span>
+                                </div>
+                                <button class="text-blue-600 hover:text-blue-800 text-sm">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                        `).join('') || '<p class="text-gray-400 text-sm">Tidak ada dokumen</p>'}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-medium">Tutup</button>
+            </div>
+        </div>
+    `);
+}
+
+// Add surat masuk modal (Admin Wilayah)
+function showTambahSuratMasukModal() {
+    showModal(`
+        <div class="p-6">
+            <h3 class="text-lg font-semibold mb-4"><i class="fas fa-inbox text-blue-500 mr-2"></i>Tambah Surat Masuk</h3>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">Nomor Surat</label>
+                        <input type="text" id="addNoSuratMasuk" class="w-full border rounded-xl px-4 py-2.5 text-sm" placeholder="001/DISDIK/I/2025">
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">Tanggal</label>
+                        <input type="date" id="addTglSuratMasuk" class="w-full border rounded-xl px-4 py-2.5 text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Tujuan Sekolah</label>
+                    <select id="addSekolahSuratMasuk" class="w-full border rounded-xl px-4 py-2.5 text-sm">
+                        <option value="">Pilih Sekolah</option>
+                        <option value="null">Broadcast (Semua Sekolah)</option>
+                        ${DB.sekolahList.map(s => `<option value="${s.id}">${escapeHtml(s.nama)}</option>`).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Jenis Surat</label>
+                    <select id="addJenisSuratMasuk" class="w-full border rounded-xl px-4 py-2.5 text-sm">
+                        ${DB.jenisSurat.map(j => `<option value="${j.kode}">${j.label}</option>`).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Perihal</label>
+                    <input type="text" id="addPerihalSuratMasuk" class="w-full border rounded-xl px-4 py-2.5 text-sm" placeholder="Perihal surat">
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Keterangan</label>
+                    <textarea id="addKetSuratMasuk" class="w-full border rounded-xl px-4 py-2.5 text-sm" rows="2" placeholder="Keterangan tambahan"></textarea>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Upload Dokumen</label>
+                    <div class="file-upload-zone rounded-xl p-4 text-center">
+                        <input type="file" id="addFileSuratMasuk" multiple accept=".pdf,.doc,.docx" class="hidden">
+                        <button onclick="document.getElementById('addFileSuratMasuk').click()" class="text-blue-600">
+                            <i class="fas fa-cloud-upload-alt mr-2"></i>Pilih File
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="doTambahSuratMasuk()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-medium">Simpan</button>
+                <button onclick="closeModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-medium">Batal</button>
+            </div>
+        </div>
+    `);
+}
+
+function doTambahSuratMasuk() {
+    const nomorSurat = document.getElementById('addNoSuratMasuk').value;
+    const tanggal = document.getElementById('addTglSuratMasuk').value;
+    const sekolahId = document.getElementById('addSekolahSuratMasuk').value;
+    const jenis = document.getElementById('addJenisSuratMasuk').value;
+    const perihal = document.getElementById('addPerihalSuratMasuk').value;
+    const keterangan = document.getElementById('addKetSuratMasuk').value;
+    
+    if (!nomorSurat || !tanggal || !perihal) {
+        showToast('Lengkapi data yang diperlukan!', 'error');
+        return;
+    }
+    
+    const sekolah = sekolahId && sekolahId !== 'null' ? 
+        DB.sekolahList.find(s => s.id === parseInt(sekolahId)) : null;
+    
+    const newId = Math.max(...DB.suratMasuk.map(s => s.id), 0) + 1;
+    
+    DB.suratMasuk.push({
+        id: newId,
+        nomorSurat,
+        tanggal,
+        jenis,
+        perihal,
+        sekolahId: sekolahId === 'null' ? null : parseInt(sekolahId),
+        sekolahNama: sekolah?.nama || 'Semua Sekolah',
+        pengirim: DB.wilayah.nama,
+        suratKeluarId: null,
+        dokumen: [],
+        status: 'diterima',
+        keterangan,
+        createdAt: new Date().toISOString()
+    });
+    
+    closeModal();
+    showToast('Surat masuk berhasil ditambahkan!');
+    
+    // Play notification sound for new surat masuk
+    playAlarmWithAlert('suratMasuk', 'Surat Masuk Baru', `Surat ${nomorSurat} dari ${sekolah?.nama || 'Broadcast'}`);
+    
+    renderArsipSurat('masuk', 'wilayah');
+    
+    // Sync ke Firebase
+    if (firebaseInitialized) {
+        firebaseSaveDocument('suratMasuk', newId.toString(), DB.suratMasuk[DB.suratMasuk.length - 1]);
+    }
+}
+
+// Add surat keluar modal (Admin Wilayah - for creating outgoing letters)
+function showTambahSuratKeluarModal() {
+    showModal(`
+        <div class="p-6">
+            <h3 class="text-lg font-semibold mb-4"><i class="fas fa-paper-plane text-emerald-500 mr-2"></i>Tambah Surat Keluar</h3>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">Nomor Surat</label>
+                        <input type="text" id="addNoSuratKeluar" class="w-full border rounded-xl px-4 py-2.5 text-sm" placeholder="001/SDN1/I/2025">
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">Tanggal</label>
+                        <input type="date" id="addTglSuratKeluar" class="w-full border rounded-xl px-4 py-2.5 text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Sekolah Pengirim</label>
+                    <select id="addSekolahSuratKeluar" class="w-full border rounded-xl px-4 py-2.5 text-sm">
+                        <option value="">Pilih Sekolah</option>
+                        ${DB.sekolahList.map(s => `<option value="${s.id}">${escapeHtml(s.nama)}</option>`).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Jenis Surat</label>
+                    <select id="addJenisSuratKeluar" class="w-full border rounded-xl px-4 py-2.5 text-sm">
+                        ${DB.jenisSurat.map(j => `<option value="${j.kode}">${j.label}</option>`).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Perihal</label>
+                    <input type="text" id="addPerihalSuratKeluar" class="w-full border rounded-xl px-4 py-2.5 text-sm" placeholder="Perihal surat">
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Keterangan</label>
+                    <textarea id="addKetSuratKeluar" class="w-full border rounded-xl px-4 py-2.5 text-sm" rows="2" placeholder="Keterangan tambahan"></textarea>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="doTambahSuratKeluar()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-sm font-medium">Simpan</button>
+                <button onclick="closeModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-medium">Batal</button>
+            </div>
+        </div>
+    `);
+}
+
+function doTambahSuratKeluar() {
+    const nomorSurat = document.getElementById('addNoSuratKeluar').value;
+    const tanggal = document.getElementById('addTglSuratKeluar').value;
+    const sekolahId = document.getElementById('addSekolahSuratKeluar').value;
+    const jenis = document.getElementById('addJenisSuratKeluar').value;
+    const perihal = document.getElementById('addPerihalSuratKeluar').value;
+    const keterangan = document.getElementById('addKetSuratKeluar').value;
+    
+    if (!nomorSurat || !tanggal || !sekolahId || !perihal) {
+        showToast('Lengkapi data yang diperlukan!', 'error');
+        return;
+    }
+    
+    const sekolah = DB.sekolahList.find(s => s.id === parseInt(sekolahId));
+    
+    const newId = Math.max(...DB.suratKeluar.map(s => s.id), 0) + 1;
+    
+    DB.suratKeluar.push({
+        id: newId,
+        nomorSurat,
+        tanggal,
+        jenis,
+        perihal,
+        sekolahId: parseInt(sekolahId),
+        sekolahNama: sekolah?.nama,
+        tujuan: DB.wilayah.nama,
+        pengajuId: null,
+        dokumen: [],
+        status: 'terkirim',
+        keterangan,
+        createdAt: new Date().toISOString()
+    });
+    
+    closeModal();
+    showToast('Surat keluar berhasil ditambahkan!');
+    renderArsipSurat('keluar', 'wilayah');
+    
+    // Sync ke Firebase
+    if (firebaseInitialized) {
+        firebaseSaveDocument('suratKeluar', newId.toString(), DB.suratKeluar[DB.suratKeluar.length - 1]);
+    }
+}
+
+// Hapus arsip modal
+function showHapusArsipModal(id, type) {
+    const surat = type === 'masuk' ? DB.suratMasuk.find(s => s.id === id) : DB.suratKeluar.find(s => s.id === id);
+    if (!surat) return;
+    
+    showModal(`
+        <div class="p-6">
+            <div class="text-center mb-4">
+                <div class="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-trash text-red-600 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold">Hapus Surat</h3>
+                <p class="text-sm text-gray-500 mt-1">${surat.nomorSurat}</p>
+            </div>
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+                <p class="text-sm text-red-700">Surat akan dihapus permanen dan tidak dapat dikembalikan.</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="doHapusArsip(${id}, '${type}')" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl text-sm font-medium">Hapus</button>
+                <button onclick="closeModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-medium">Batal</button>
+            </div>
+        </div>
+    `);
+}
+
+function doHapusArsip(id, type) {
+    if (type === 'masuk') {
+        const idx = DB.suratMasuk.findIndex(s => s.id === id);
+        if (idx > -1) DB.suratMasuk.splice(idx, 1);
+    } else {
+        const idx = DB.suratKeluar.findIndex(s => s.id === id);
+        if (idx > -1) DB.suratKeluar.splice(idx, 1);
+    }
+    
+    closeModal();
+    showToast('Surat berhasil dihapus!');
+    renderArsipSurat(type, 'wilayah');
+    
+    // Sync ke Firebase
+    if (firebaseInitialized) {
+        firebaseDeleteDocument(type === 'masuk' ? 'suratMasuk' : 'suratKeluar', id.toString());
+    }
+}
+
+// Function to create surat keluar when pengajuan is approved
+function createSuratKeluarFromPengajuan(pengajuan) {
+    const sekolah = DB.sekolahList.find(s => s.id === pengajuan.sekolahId);
+    const newId = Math.max(...DB.suratKeluar.map(s => s.id), 0) + 1;
+    
+    const getJenisLabel = (kode) => {
+        const jenis = DB.jenisSurat.find(j => j.kode === kode);
+        return jenis ? jenis.label : kode;
+    };
+    
+    const suratKeluar = {
+        id: newId,
+        nomorSurat: `${String(newId).padStart(3, '0')}/${sekolah?.npsn || 'XXX'}/${new Date().getMonth() + 1}/${new Date().getFullYear()}`,
+        tanggal: new Date().toISOString().split('T')[0],
+        jenis: pengajuan.jenis,
+        perihal: `${getJenisLabel(pengajuan.jenis)} - ${pengajuan.nama}`,
+        sekolahId: pengajuan.sekolahId,
+        sekolahNama: sekolah?.nama,
+        tujuan: DB.wilayah.nama,
+        pengajuId: pengajuan.id,
+        dokumen: pengajuan.dokumen || [],
+        status: 'terkirim',
+        keterangan: `Dari pengajuan #${pengajuan.id}`,
+        createdAt: new Date().toISOString()
+    };
+    
+    DB.suratKeluar.push(suratKeluar);
+    
+    // Sync ke Firebase
+    if (firebaseInitialized) {
+        firebaseSaveDocument('suratKeluar', newId.toString(), suratKeluar);
+    }
+    
+    return suratKeluar;
+}
+
+// Function to create surat masuk (reply from Admin Wilayah)
+function createSuratMasukFromApproval(suratKeluarId, dokumenBalasan = [], keterangan = '') {
+    const suratKeluar = DB.suratKeluar.find(s => s.id === suratKeluarId);
+    if (!suratKeluar) return null;
+    
+    const newId = Math.max(...DB.suratMasuk.map(s => s.id), 0) + 1;
+    
+    const suratMasuk = {
+        id: newId,
+        nomorSurat: `${String(newId).padStart(3, '0')}/DISDIK/${new Date().getMonth() + 1}/${new Date().getFullYear()}`,
+        tanggal: new Date().toISOString().split('T')[0],
+        jenis: suratKeluar.jenis,
+        perihal: `Balasan: ${suratKeluar.perihal}`,
+        sekolahId: suratKeluar.sekolahId,
+        sekolahNama: suratKeluar.sekolahNama,
+        pengirim: DB.wilayah.nama,
+        suratKeluarId: suratKeluarId,
+        dokumen: dokumenBalasan,
+        status: 'diterima',
+        keterangan: keterangan,
+        createdAt: new Date().toISOString()
+    };
+    
+    DB.suratMasuk.push(suratMasuk);
+    
+    // Update surat keluar status
+    suratKeluar.status = 'disetujui';
+    
+    // Sync ke Firebase
+    if (firebaseInitialized) {
+        firebaseSaveDocument('suratMasuk', newId.toString(), suratMasuk);
+        firebaseSaveDocument('suratKeluar', suratKeluarId.toString(), suratKeluar);
+    }
+    
+    return suratMasuk;
 }
 
 function renderWMonitoring() {
@@ -1483,7 +3112,7 @@ function renderWSiswa() {
                                 <tr class="border-b border-gray-100 hover:bg-gray-50">
                                     <td class="p-3">${i+1}</td>
                                     <td class="p-3 font-medium">${escapeHtml(s.nama)}</td>
-                                    <td class="p-3 text-center"><span class="px-2 py-1 ${s.jenjang==='SD'?'bg-blue-100 text-blue-700':'bg-emerald-100 text-emerald-700'} rounded-lg text-xs">${s.jenjang}</span></td>
+                                    <td class="p-3 text-center"><span class="px-2 py-1 ${getJenjangColor(s.jenjang)} rounded-lg text-xs">${s.jenjang}</span></td>
                                     <td class="p-3 text-center">${kelas[0] || '-'}</td>
                                     <td class="p-3 text-center">${kelas[1] || '-'}</td>
                                     <td class="p-3 text-center">${kelas[2] || '-'}</td>
@@ -3250,6 +4879,293 @@ function doSyncSekolah() {
     }, 2000);
 }
 
+// ==================== KELOLA PASSWORD SEKOLAH (Admin Wilayah) ====================
+function renderWPengaturanPassword() {
+    const contentArea = document.getElementById('contentArea');
+    if (!contentArea) return;
+    
+    // Build password data for each sekolah
+    const passwordData = DB.sekolahList.map(sekolah => {
+        const currentPassword = DB.passwords[sekolah.npsn] || '123456';
+        const isDefault = currentPassword === '123456';
+        return {
+            ...sekolah,
+            password: currentPassword,
+            isDefault: isDefault,
+            status: isDefault ? 'Default' : 'Diubah'
+        };
+    });
+    
+    contentArea.innerHTML = `
+        <div class="fade-in space-y-6">
+            <!-- Info Card -->
+            <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-info-circle text-blue-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-blue-800">Informasi Password</h4>
+                        <p class="text-sm text-blue-700 mt-1">
+                            Password default untuk semua sekolah adalah <code class="bg-blue-100 px-2 py-0.5 rounded">123456</code>. 
+                            Admin sekolah dapat mengubah password melalui menu Pengaturan > Ubah Password.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white rounded-2xl p-5 border shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-school text-blue-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Total Sekolah</p>
+                            <p class="text-2xl font-bold">${DB.sekolahList.length}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl p-5 border shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-key text-yellow-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Password Default</p>
+                            <p class="text-2xl font-bold">${passwordData.filter(p => p.isDefault).length}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl p-5 border shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-lock text-green-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Password Diubah</p>
+                            <p class="text-2xl font-bold">${passwordData.filter(p => !p.isDefault).length}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Password Table -->
+            <div class="bg-white rounded-2xl border shadow-sm overflow-hidden">
+                <div class="p-4 border-b flex justify-between items-center">
+                    <h3 class="font-semibold">Daftar Password Admin Sekolah</h3>
+                    <button onclick="showResetAllPasswordModal()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-sm font-medium">
+                        <i class="fas fa-undo mr-2"></i>Reset Semua ke Default
+                    </button>
+                </div>
+                <table class="w-full text-sm">
+                    <thead><tr class="bg-gray-50">
+                        <th class="p-4 text-left">No</th>
+                        <th class="p-4 text-left">NPSN</th>
+                        <th class="p-4 text-left">Nama Sekolah</th>
+                        <th class="p-4 text-center">Jenjang</th>
+                        <th class="p-4 text-center">Username</th>
+                        <th class="p-4 text-center">Password</th>
+                        <th class="p-4 text-center">Status</th>
+                        <th class="p-4 text-center">Aksi</th>
+                    </tr></thead>
+                    <tbody>
+                        ${passwordData.map((s, i) => `
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="p-4">${i+1}</td>
+                                <td class="p-4 font-mono">${s.npsn}</td>
+                                <td class="p-4 font-medium">${escapeHtml(s.nama)}</td>
+                                <td class="p-4 text-center">
+                                    <span class="px-2 py-1 ${getJenjangColor(s.jenjang)} rounded-lg text-xs">${s.jenjang}</span>
+                                </td>
+                                <td class="p-4 text-center font-mono text-sm">${s.npsn}</td>
+                                <td class="p-4 text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <code class="bg-gray-100 px-2 py-1 rounded text-sm" id="pwd-${s.id}">••••••</code>
+                                        <button onclick="toggleShowPassword(${s.id}, '${s.password}')" class="text-gray-400 hover:text-gray-600" title="Tampilkan/Sembunyikan">
+                                            <i class="fas fa-eye" id="eye-${s.id}"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                                <td class="p-4 text-center">
+                                    <span class="px-2 py-1 ${s.isDefault ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'} rounded-lg text-xs">
+                                        ${s.isDefault ? 'Default' : 'Diubah'}
+                                    </span>
+                                </td>
+                                <td class="p-4 text-center">
+                                    <button onclick="showResetPasswordModal(${s.id}, '${s.npsn}', '${escapeHtml(s.nama)}')" class="text-yellow-500 hover:text-yellow-700 mr-2" title="Reset Password">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
+                                    <button onclick="showSetPasswordModal(${s.id}, '${s.npsn}', '${escapeHtml(s.nama)}')" class="text-blue-500 hover:text-blue-700" title="Set Password Baru">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+// Toggle show/hide password
+function toggleShowPassword(id, password) {
+    const pwdEl = document.getElementById(`pwd-${id}`);
+    const eyeEl = document.getElementById(`eye-${id}`);
+    
+    if (pwdEl.textContent === '••••••') {
+        pwdEl.textContent = password;
+        eyeEl.classList.remove('fa-eye');
+        eyeEl.classList.add('fa-eye-slash');
+    } else {
+        pwdEl.textContent = '••••••';
+        eyeEl.classList.remove('fa-eye-slash');
+        eyeEl.classList.add('fa-eye');
+    }
+}
+
+// Modal reset password individual
+function showResetPasswordModal(id, npsn, nama) {
+    showModal(`
+        <div class="p-6">
+            <div class="text-center mb-4">
+                <div class="w-14 h-14 bg-yellow-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-undo text-yellow-600 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold">Reset Password</h3>
+                <p class="text-sm text-gray-500 mt-1">${nama} (${npsn})</p>
+            </div>
+            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
+                <p class="text-sm text-yellow-700">
+                    Password akan direset ke default: <code class="bg-yellow-100 px-2 py-0.5 rounded">123456</code>
+                </p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="doResetPassword(${id}, '${npsn}')" class="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white py-2.5 rounded-xl text-sm font-medium">
+                    <i class="fas fa-undo mr-2"></i>Reset
+                </button>
+                <button onclick="closeModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-medium">Batal</button>
+            </div>
+        </div>
+    `);
+}
+
+// Execute reset password
+function doResetPassword(id, npsn) {
+    DB.passwords[npsn] = '123456';
+    closeModal();
+    showToast(`Password ${npsn} berhasil direset ke default!`);
+    renderWPengaturanPassword();
+    
+    // Sync ke Firebase
+    if (firebaseInitialized) {
+        firebaseSaveDocument('passwords', npsn, { password: '123456', resetAt: new Date().toISOString() });
+    }
+}
+
+// Modal set password baru
+function showSetPasswordModal(id, npsn, nama) {
+    showModal(`
+        <div class="p-6">
+            <div class="text-center mb-4">
+                <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-key text-blue-600 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold">Set Password Baru</h3>
+                <p class="text-sm text-gray-500 mt-1">${nama} (${npsn})</p>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Password Baru</label>
+                    <input type="text" id="newPwdSekolah" class="w-full border rounded-xl px-4 py-2.5 text-sm" placeholder="Minimal 6 karakter" value="123456">
+                </div>
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                    <p class="text-xs text-blue-700">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Password akan digunakan untuk login Admin Sekolah dengan username: <code class="bg-blue-100 px-1 rounded">${npsn}</code>
+                    </p>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="doSetPassword(${id}, '${npsn}')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-medium">
+                    <i class="fas fa-save mr-2"></i>Simpan
+                </button>
+                <button onclick="closeModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-medium">Batal</button>
+            </div>
+        </div>
+    `);
+}
+
+// Execute set password
+function doSetPassword(id, npsn) {
+    const newPwd = document.getElementById('newPwdSekolah').value;
+
+    if (newPwd.length < 6) {
+        showToast('Password minimal 6 karakter!', 'error');
+        return;
+    }
+
+    DB.passwords[npsn] = newPwd;
+    DB.passwordChanged[npsn] = true; // Mark as changed
+    closeModal();
+    showToast(`Password ${npsn} berhasil diubah!`);
+    renderWPengaturanPassword();
+    
+    // Sync ke Firebase
+    if (firebaseInitialized) {
+        firebaseSaveDocument('passwords', npsn, { password: newPwd, updatedAt: new Date().toISOString() });
+    }
+}
+
+// Modal reset semua password
+function showResetAllPasswordModal() {
+    showModal(`
+        <div class="p-6">
+            <div class="text-center mb-4">
+                <div class="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold">Reset Semua Password</h3>
+                <p class="text-sm text-gray-500 mt-1">Semua password akan direset ke default</p>
+            </div>
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+                <p class="text-sm text-red-700">
+                    <strong>Peringatan!</strong> Semua password admin sekolah akan direset ke <code class="bg-red-100 px-2 py-0.5 rounded">123456</code>. 
+                    Tindakan ini tidak dapat dibatalkan.
+                </p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="doResetAllPasswords()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl text-sm font-medium">
+                    <i class="fas fa-undo mr-2"></i>Reset Semua
+                </button>
+                <button onclick="closeModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-medium">Batal</button>
+            </div>
+        </div>
+    `);
+}
+
+// Execute reset all passwords
+function doResetAllPasswords() {
+    DB.sekolahList.forEach(sekolah => {
+        DB.passwords[sekolah.npsn] = '123456';
+        DB.passwordChanged[sekolah.npsn] = false; // Reset status
+    });
+
+    closeModal();
+    showToast('Semua password berhasil direset ke default!');
+    renderWPengaturanPassword();
+
+    // Sync ke Firebase
+    if (firebaseInitialized) {
+        DB.sekolahList.forEach(sekolah => {
+            firebaseSaveDocument('passwords', sekolah.npsn, { password: '123456', resetAt: new Date().toISOString() });
+            firebaseSaveDocument('passwordChanged', sekolah.npsn, { changed: false });
+        });
+    }
+}
+
 // ==================== PENGATURAN PENGUMUMAN (Admin Wilayah) ====================
 function renderPengaturanPengumuman() {
     const contentArea = document.getElementById('contentArea');
@@ -3311,16 +5227,21 @@ function showTambahPengumumanModal() {
 }
 
 function doTambahPengumuman() {
+    const judul = document.getElementById('addPengumumanJudul').value;
     const newId = DB.pengumumanList.length > 0 ? Math.max(...DB.pengumumanList.map(p => p.id)) + 1 : 1;
     DB.pengumumanList.push({
         id: newId,
-        judul: document.getElementById('addPengumumanJudul').value,
+        judul: judul,
         isi: document.getElementById('addPengumumanIsi').value,
         tanggal: document.getElementById('addPengumumanTanggal').value,
         status: 'aktif'
     });
     closeModal();
     showToast('Pengumuman berhasil ditambahkan!');
+    
+    // Play notification sound for new pengumuman
+    playAlarmWithAlert('pengumuman', 'Pengumuman Baru', judul);
+    
     renderPengaturanPengumuman();
 }
 
@@ -3510,12 +5431,10 @@ function changePassword() {
     const oldPass = document.getElementById('oldPassword').value;
     const newPass = document.getElementById('newPassword').value;
     const confirmPass = document.getElementById('confirmPassword').value;
-    const sekolah = DB.sekolahList.find(s => s.id === DB.currentSekolahId);
-    const npsn = sekolah?.npsn || DB.currentUser;
     
-    // Validasi password lama
-    if (oldPass !== DB.passwords[npsn]) {
-        showToast('Password lama tidak sesuai!', 'error');
+    // Validasi input tidak kosong
+    if (!oldPass || !newPass || !confirmPass) {
+        showToast('Semua field harus diisi!', 'error');
         return;
     }
     
@@ -3530,14 +5449,78 @@ function changePassword() {
         return;
     }
     
-    // Simpan password baru
-    DB.passwords[npsn] = newPass;
-    showToast('Password berhasil diubah!');
+    // Jika Firebase sudah terinisialisasi, gunakan Firebase Auth
+    if (firebaseInitialized && firebaseAuth.currentUser) {
+        firebaseChangePassword(oldPass, newPass);
+    } else {
+        // Fallback ke penyimpanan lokal
+        const sekolah = DB.sekolahList.find(s => s.id === DB.currentSekolahId);
+        const npsn = sekolah?.npsn || DB.currentUser;
+        
+        if (oldPass !== DB.passwords[npsn]) {
+            showToast('Password lama tidak sesuai!', 'error');
+            return;
+        }
+        
+        DB.passwords[npsn] = newPass;
+        showToast('Password berhasil diubah (lokal)!');
+        
+        // Kosongkan form
+        document.getElementById('oldPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+    }
+}
+
+// ==================== FIREBASE CHANGE PASSWORD ====================
+async function firebaseChangePassword(oldPassword, newPassword) {
+    const user = firebaseAuth.currentUser;
+    if (!user) {
+        showToast('User tidak terautentikasi!', 'error');
+        return;
+    }
     
-    // Kosongkan form
-    document.getElementById('oldPassword').value = '';
-    document.getElementById('newPassword').value = '';
-    document.getElementById('confirmPassword').value = '';
+    try {
+        // Re-authenticate user sebelum ganti password
+        const credential = firebase.auth.EmailAuthProvider.credential(
+            user.email,
+            oldPassword
+        );
+        
+        await user.reauthenticateWithCredential(credential);
+        
+        // Update password
+        await user.updatePassword(newPassword);
+        
+        showToast('Password berhasil diubah!');
+        
+        // Simpan juga ke Firestore untuk backup
+        await firebaseSaveDocument('users', user.uid, {
+            passwordUpdatedAt: new Date().toISOString()
+        });
+        
+        // Kosongkan form
+        document.getElementById('oldPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+        
+    } catch (error) {
+        console.error('Error changing password:', error);
+        
+        let errorMsg = 'Gagal mengubah password!';
+        
+        if (error.code === 'auth/wrong-password') {
+            errorMsg = 'Password lama tidak sesuai!';
+        } else if (error.code === 'auth/weak-password') {
+            errorMsg = 'Password baru terlalu lemah!';
+        } else if (error.code === 'auth/requires-recent-login') {
+            errorMsg = 'Silakan login ulang, kemudian coba lagi!';
+        } else if (error.code === 'auth/invalid-credential') {
+            errorMsg = 'Password lama tidak valid!';
+        }
+        
+        showToast(errorMsg, 'error');
+    }
 }
 
 // ==================== PIP ADMIN WILAYAH ====================
@@ -4483,6 +6466,922 @@ function doHapusPemberkasanPip(id) {
         closeModal();
         showToast('Pemberkasan berhasil dihapus!');
         renderSPipPemberkasan();
+    }
+}
+
+// ==================== PENGATURAN NOTIFIKASI (Admin Wilayah) ====================
+function renderPengaturanNotifikasi() {
+    const contentArea = document.getElementById('contentArea');
+    if (!contentArea) return;
+    
+    contentArea.innerHTML = `
+        <div class="fade-in space-y-6">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-[#0f1e3c] to-[#1e3a5f] rounded-2xl p-6 text-white">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-bell text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">Pengaturan Notifikasi</h3>
+                        <p class="text-blue-200 text-sm">Atur suara alarm untuk notifikasi surat masuk dan pengumuman</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sound Settings -->
+            <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                <h3 class="font-semibold mb-4 flex items-center gap-2">
+                    <i class="fas fa-volume-up text-blue-500"></i>
+                    Pengaturan Suara
+                </h3>
+                
+                <div class="space-y-4">
+                    <!-- Master Toggle -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-power-off text-blue-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Aktifkan Notifikasi Suara</p>
+                                <p class="text-sm text-gray-500">Mainkan suara saat ada notifikasi baru</p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="soundEnabled" class="sr-only peer" ${DB.soundSettings.enabled ? 'checked' : ''} onchange="toggleSoundEnabled()">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                    
+                    <!-- Surat Masuk Sound -->
+                    <div class="flex items-center justify-between p-4 border rounded-xl ${!DB.soundSettings.enabled ? 'opacity-50' : ''}">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-inbox text-green-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Suara Surat Masuk</p>
+                                <p class="text-sm text-gray-500">Bunyikan saat ada surat masuk baru</p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="suratMasukSound" class="sr-only peer" ${DB.soundSettings.suratMasuk ? 'checked' : ''} ${!DB.soundSettings.enabled ? 'disabled' : ''} onchange="toggleSuratMasukSound()">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                        </label>
+                    </div>
+                    
+                    <!-- Pengumuman Sound -->
+                    <div class="flex items-center justify-between p-4 border rounded-xl ${!DB.soundSettings.enabled ? 'opacity-50' : ''}">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-bullhorn text-amber-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Suara Pengumuman</p>
+                                <p class="text-sm text-gray-500">Bunyikan saat ada pengumuman baru</p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="pengumumanSound" class="sr-only peer" ${DB.soundSettings.pengumuman ? 'checked' : ''} ${!DB.soundSettings.enabled ? 'disabled' : ''} onchange="togglePengumumanSound()">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+                        </label>
+                    </div>
+                    
+                    <!-- Volume Control -->
+                    <div class="p-4 border rounded-xl ${!DB.soundSettings.enabled ? 'opacity-50' : ''}">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-sliders-h text-purple-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Volume Suara</p>
+                                <p class="text-sm text-gray-500">Atur tingkat volume notifikasi</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <i class="fas fa-volume-down text-gray-400"></i>
+                            <input type="range" id="volumeSlider" min="0" max="100" value="${DB.soundSettings.volume * 100}" class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" ${!DB.soundSettings.enabled ? 'disabled' : ''} onchange="updateVolume(this.value)">
+                            <i class="fas fa-volume-up text-gray-400"></i>
+                            <span class="text-sm font-medium w-12 text-right" id="volumeValue">${Math.round(DB.soundSettings.volume * 100)}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Test Sound -->
+            <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                <h3 class="font-semibold mb-4 flex items-center gap-2">
+                    <i class="fas fa-play-circle text-green-500"></i>
+                    Uji Suara
+                </h3>
+                <p class="text-sm text-gray-500 mb-4">Klik tombol di bawah untuk menguji suara notifikasi</p>
+                <div class="flex flex-wrap gap-3">
+                    <button onclick="testSoundType('suratMasuk')" class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition ${!DB.soundSettings.enabled || !DB.soundSettings.suratMasuk ? 'opacity-50 cursor-not-allowed' : ''}" ${!DB.soundSettings.enabled ? 'disabled' : ''}>
+                        <i class="fas fa-inbox"></i>
+                        Uji Suara Surat Masuk
+                    </button>
+                    <button onclick="testSoundType('pengumuman')" class="flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition ${!DB.soundSettings.enabled || !DB.soundSettings.pengumuman ? 'opacity-50 cursor-not-allowed' : ''}" ${!DB.soundSettings.enabled ? 'disabled' : ''}>
+                        <i class="fas fa-bullhorn"></i>
+                        Uji Suara Pengumuman
+                    </button>
+                    <button onclick="testSoundType('default')" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition ${!DB.soundSettings.enabled ? 'opacity-50 cursor-not-allowed' : ''}" ${!DB.soundSettings.enabled ? 'disabled' : ''}>
+                        <i class="fas fa-bell"></i>
+                        Uji Suara Default
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Browser Notification -->
+            <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                <h3 class="font-semibold mb-4 flex items-center gap-2">
+                    <i class="fas fa-desktop text-purple-500"></i>
+                    Notifikasi Browser
+                </h3>
+                <p class="text-sm text-gray-500 mb-4">Aktifkan notifikasi desktop untuk mendapatkan pemberitahuan saat tidak di tab aplikasi</p>
+                <button onclick="requestNotificationPermission()" class="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition">
+                    <i class="fas fa-bell"></i>
+                    Aktifkan Notifikasi Browser
+                </button>
+                <p class="text-xs text-gray-400 mt-2">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Status: ${'Notification' in window ? (Notification.permission === 'granted' ? '<span class="text-green-600 font-medium">Diizinkan</span>' : Notification.permission === 'denied' ? '<span class="text-red-600 font-medium">Ditolak</span>' : '<span class="text-gray-600">Belum diizinkan</span>') : '<span class="text-gray-600">Tidak didukung browser</span>'}
+                </p>
+            </div>
+            
+            <!-- Info -->
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-info-circle text-blue-600 mt-0.5"></i>
+                    <div>
+                        <p class="font-medium text-blue-800">Tentang Notifikasi Suara</p>
+                        <ul class="text-sm text-blue-700 mt-2 space-y-1">
+                            <li>• Suara akan diputar saat Admin Wilayah menambahkan surat masuk atau pengumuman baru</li>
+                            <li>• Pastikan volume perangkat Anda tidak dalam keadaan senyap</li>
+                            <li>• Suara menggunakan Web Audio API yang didukung oleh browser modern</li>
+                            <li>• Klik tombol "Uji Suara" untuk memastikan suara berfungsi dengan baik</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Toggle sound enabled
+function toggleSoundEnabled() {
+    DB.soundSettings.enabled = document.getElementById('soundEnabled').checked;
+    showToast(DB.soundSettings.enabled ? 'Notifikasi suara diaktifkan!' : 'Notifikasi suara dinonaktifkan!', DB.soundSettings.enabled ? 'success' : 'info');
+    renderPengaturanNotifikasi();
+}
+
+// Toggle surat masuk sound
+function toggleSuratMasukSound() {
+    DB.soundSettings.suratMasuk = document.getElementById('suratMasukSound').checked;
+    showToast(DB.soundSettings.suratMasuk ? 'Suara surat masuk diaktifkan!' : 'Suara surat masuk dinonaktifkan!', 'info');
+}
+
+// Toggle pengumuman sound
+function togglePengumumanSound() {
+    DB.soundSettings.pengumuman = document.getElementById('pengumumanSound').checked;
+    showToast(DB.soundSettings.pengumuman ? 'Suara pengumuman diaktifkan!' : 'Suara pengumuman dinonaktifkan!', 'info');
+}
+
+// Update volume
+function updateVolume(value) {
+    DB.soundSettings.volume = value / 100;
+    document.getElementById('volumeValue').textContent = value + '%';
+}
+
+// Test sound type
+function testSoundType(type) {
+    if (!DB.soundSettings.enabled) {
+        showToast('Aktifkan notifikasi suara terlebih dahulu!', 'warning');
+        return;
+    }
+
+    playNotificationSound(type);
+    showToast(`Suara ${type === 'suratMasuk' ? 'Surat Masuk' : type === 'pengumuman' ? 'Pengumuman' : 'Default'} sedang diputar...`, 'info');
+}
+
+// ==================== LEGER GAJI - ADMIN WILAYAH ====================
+function renderWLaporanLeger() {
+    const contentArea = document.getElementById('contentArea');
+    if (!contentArea) return;
+
+    contentArea.innerHTML = `
+        <div class="fade-in space-y-6">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-emerald-600 to-emerald-800 rounded-2xl p-6 text-white">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-money-check-alt text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">Cetak Leger Gaji</h3>
+                        <p class="text-emerald-200 text-sm">Upload dan kelola file leger gaji bulanan</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Upload -->
+            <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                <h3 class="font-semibold mb-4 flex items-center gap-2">
+                    <i class="fas fa-upload text-emerald-500"></i>
+                    Upload Leger Gaji Baru
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">Bulan/Tahun</label>
+                        <input type="month" id="legerBulan" class="w-full border rounded-xl px-4 py-2.5 text-sm" value="${new Date().toISOString().slice(0, 7)}">
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">File Leger (PDF/Excel)</label>
+                        <input type="file" id="legerFile" class="w-full border rounded-xl px-4 py-2.5 text-sm" accept=".pdf,.xlsx,.xls">
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="uploadLegerGaji()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium">
+                            <i class="fas fa-cloud-upload-alt mr-2"></i>Upload
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistik -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white rounded-2xl p-5 border shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-file-alt text-emerald-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Total File</p>
+                            <p class="text-2xl font-bold">${DB.legerGajiList.length}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl p-5 border shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-download text-blue-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Total Download</p>
+                            <p class="text-2xl font-bold">${DB.legerGajiList.reduce((a, l) => a + (l.downloadCount || 0), 0)}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl p-5 border shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-check-circle text-purple-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">File Aktif</p>
+                            <p class="text-2xl font-bold">${DB.legerGajiList.filter(l => l.status === 'aktif').length}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabel Riwayat Upload -->
+            <div class="bg-white rounded-2xl border shadow-sm overflow-hidden">
+                <div class="px-6 py-4 bg-gray-50 border-b flex items-center justify-between">
+                    <h3 class="font-semibold">Riwayat Upload Leger Gaji</h3>
+                    <span class="text-sm text-gray-500">${DB.legerGajiList.length} file</span>
+                </div>
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="p-4 text-left">No</th>
+                            <th class="p-4 text-left">Bulan</th>
+                            <th class="p-4 text-left">Nama File</th>
+                            <th class="p-4 text-center">Ukuran</th>
+                            <th class="p-4 text-center">Tanggal Upload</th>
+                            <th class="p-4 text-center">Download</th>
+                            <th class="p-4 text-center">Status</th>
+                            <th class="p-4 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${DB.legerGajiList.length === 0 ? `
+                            <tr><td colspan="8" class="p-8 text-center text-gray-500">
+                                <i class="fas fa-inbox text-4xl text-gray-300 mb-3 block"></i>
+                                Belum ada file leger gaji yang diupload
+                            </td></tr>
+                        ` : DB.legerGajiList.map((l, i) => `
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="p-4">${i + 1}</td>
+                                <td class="p-4 font-medium">${formatBulanTahun(l.bulan)}</td>
+                                <td class="p-4">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-file-pdf text-red-500"></i>
+                                        <span class="truncate max-w-48">${l.namaFile}</span>
+                                    </div>
+                                </td>
+                                <td class="p-4 text-center">${l.ukuran}</td>
+                                <td class="p-4 text-center">${l.tanggalUpload}</td>
+                                <td class="p-4 text-center">
+                                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs">
+                                        <i class="fas fa-download"></i> ${l.downloadCount || 0}
+                                    </span>
+                                </td>
+                                <td class="p-4 text-center">
+                                    <span class="px-2 py-1 ${l.status === 'aktif' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'} rounded-lg text-xs">${l.status === 'aktif' ? 'Aktif' : 'Nonaktif'}</span>
+                                </td>
+                                <td class="p-4 text-center">
+                                    <button onclick="toggleLegerStatus(${l.id})" class="text-blue-500 hover:text-blue-700 mr-2" title="Toggle Status">
+                                        <i class="fas fa-toggle-${l.status === 'aktif' ? 'on' : 'off'}"></i>
+                                    </button>
+                                    <button onclick="hapusLegerGaji(${l.id})" class="text-red-500 hover:text-red-700" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+// Format bulan tahun
+function formatBulanTahun(bulan) {
+    if (!bulan) return '-';
+    const [year, month] = bulan.split('-');
+    const bulanNama = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    return `${bulanNama[parseInt(month)]} ${year}`;
+}
+
+// Upload leger gaji
+function uploadLegerGaji() {
+    const bulan = document.getElementById('legerBulan').value;
+    const fileInput = document.getElementById('legerFile');
+
+    if (!bulan || !fileInput.files[0]) {
+        showToast('Pilih bulan dan file leger gaji!', 'error');
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const newId = DB.legerGajiList.length > 0 ? Math.max(...DB.legerGajiList.map(l => l.id)) + 1 : 1;
+
+    // Check if same month already exists
+    const existing = DB.legerGajiList.find(l => l.bulan === bulan);
+    if (existing) {
+        showToast('Leger gaji untuk bulan tersebut sudah ada!', 'warning');
+        return;
+    }
+
+    DB.legerGajiList.unshift({
+        id: newId,
+        bulan: bulan,
+        namaFile: file.name,
+        ukuran: formatFileSize(file.size),
+        tanggalUpload: new Date().toISOString().split('T')[0],
+        uploadBy: 'Admin Wilayah',
+        status: 'aktif',
+        downloadCount: 0
+    });
+
+    showToast('Leger gaji berhasil diupload!');
+    renderWLaporanLeger();
+
+    // Sync ke Firebase
+    if (firebaseInitialized) {
+        firebaseSaveDocument('legerGaji', newId.toString(), DB.legerGajiList[0]);
+    }
+}
+
+// Format file size
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+// Toggle leger status
+function toggleLegerStatus(id) {
+    const leger = DB.legerGajiList.find(l => l.id === id);
+    if (leger) {
+        leger.status = leger.status === 'aktif' ? 'nonaktif' : 'aktif';
+        showToast(`Leger gaji berhasil di${leger.status === 'aktif' ? 'aktifkan' : 'nonaktifkan'}!`);
+        renderWLaporanLeger();
+    }
+}
+
+// Hapus leger gaji
+function hapusLegerGaji(id) {
+    showModal(`
+        <div class="p-6">
+            <div class="text-center mb-4">
+                <div class="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-trash text-red-600 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold">Hapus Leger Gaji</h3>
+                <p class="text-sm text-gray-500 mt-1">File akan dihapus permanen</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="doHapusLegerGaji(${id})" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl text-sm font-medium">Hapus</button>
+                <button onclick="closeModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-medium">Batal</button>
+            </div>
+        </div>
+    `);
+}
+
+function doHapusLegerGaji(id) {
+    const idx = DB.legerGajiList.findIndex(l => l.id === id);
+    if (idx > -1) {
+        DB.legerGajiList.splice(idx, 1);
+        closeModal();
+        showToast('Leger gaji berhasil dihapus!');
+        renderWLaporanLeger();
+
+        if (firebaseInitialized) {
+            firebaseDeleteDocument('legerGaji', id.toString());
+        }
+    }
+}
+
+// ==================== LEGER GAJI - ADMIN SEKOLAH ====================
+function renderSLaporanLeger() {
+    const contentArea = document.getElementById('contentArea');
+    if (!contentArea) return;
+
+    const sekolah = DB.sekolahList.find(s => s.id === DB.currentSekolahId);
+    const downloadLogs = DB.legerGajiDownloadLog.filter(l => l.sekolahId === DB.currentSekolahId);
+    const availableLeger = DB.legerGajiList.filter(l => l.status === 'aktif');
+
+    contentArea.innerHTML = `
+        <div class="fade-in space-y-6">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl p-6 text-white">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-money-check-alt text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">Cetak Leger Gaji</h3>
+                        <p class="text-blue-200 text-sm">Unduh leger gaji bulanan - ${sekolah?.nama || 'Sekolah'}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Download -->
+            <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                <h3 class="font-semibold mb-4 flex items-center gap-2">
+                    <i class="fas fa-download text-blue-500"></i>
+                    Unduh Leger Gaji
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">Pilih Bulan/Tahun</label>
+                        <select id="legerBulanDownload" class="w-full border rounded-xl px-4 py-2.5 text-sm">
+                            <option value="">-- Pilih Leger Gaji --</option>
+                            ${availableLeger.map(l => `<option value="${l.id}">${formatBulanTahun(l.bulan)}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="flex items-end md:col-span-2">
+                        <button onclick="downloadLegerGaji()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-sm font-medium">
+                            <i class="fas fa-download mr-2"></i>Unduh Leger Gaji
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leger Tersedia -->
+            <div class="bg-white rounded-2xl border shadow-sm overflow-hidden">
+                <div class="px-6 py-4 bg-gray-50 border-b">
+                    <h3 class="font-semibold">Leger Gaji Tersedia</h3>
+                </div>
+                <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                    ${availableLeger.length === 0 ? `
+                        <div class="md:col-span-3 p-4 text-center text-gray-500">
+                            <i class="fas fa-inbox text-3xl text-gray-300 mb-2 block"></i>
+                            Belum ada leger gaji yang tersedia
+                        </div>
+                    ` : availableLeger.map(l => `
+                        <div class="border rounded-xl p-4 hover:bg-gray-50 cursor-pointer transition" onclick="selectLegerAndDownload(${l.id})">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-file-pdf text-red-600"></i>
+                                </div>
+                                <div>
+                                    <p class="font-medium">${formatBulanTahun(l.bulan)}</p>
+                                    <p class="text-xs text-gray-500">${l.namaFile}</p>
+                                </div>
+                            </div>
+                            <div class="mt-2 flex items-center justify-between text-xs text-gray-400">
+                                <span>${l.ukuran}</span>
+                                <span><i class="fas fa-download mr-1"></i>${l.downloadCount || 0}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <!-- Tabel Riwayat Download -->
+            <div class="bg-white rounded-2xl border shadow-sm overflow-hidden">
+                <div class="px-6 py-4 bg-gray-50 border-b flex items-center justify-between">
+                    <h3 class="font-semibold">Riwayat Unduh Leger Gaji</h3>
+                    <span class="text-sm text-gray-500">${downloadLogs.length} file</span>
+                </div>
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="p-4 text-left">No</th>
+                            <th class="p-4 text-left">Bulan</th>
+                            <th class="p-4 text-left">Nama File</th>
+                            <th class="p-4 text-center">Tanggal Unduh</th>
+                            <th class="p-4 text-center">Diunduh Oleh</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${downloadLogs.length === 0 ? `
+                            <tr><td colspan="5" class="p-8 text-center text-gray-500">
+                                <i class="fas fa-history text-4xl text-gray-300 mb-3 block"></i>
+                                Belum ada riwayat unduh leger gaji
+                            </td></tr>
+                        ` : downloadLogs.map((d, i) => {
+                            const leger = DB.legerGajiList.find(l => l.id === d.legerId);
+                            return `
+                                <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                    <td class="p-4">${i + 1}</td>
+                                    <td class="p-4 font-medium">${leger ? formatBulanTahun(leger.bulan) : '-'}</td>
+                                    <td class="p-4">
+                                        <div class="flex items-center gap-2">
+                                            <i class="fas fa-file-pdf text-red-500"></i>
+                                            <span>${leger?.namaFile || '-'}</span>
+                                        </div>
+                                    </td>
+                                    <td class="p-4 text-center">${d.tanggalDownload}</td>
+                                    <td class="p-4 text-center">${d.downloadBy}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+// Download leger gaji
+function downloadLegerGaji() {
+    const legerId = document.getElementById('legerBulanDownload').value;
+    if (!legerId) {
+        showToast('Pilih leger gaji yang ingin diunduh!', 'error');
+        return;
+    }
+    selectLegerAndDownload(parseInt(legerId));
+}
+
+// Select and download leger
+function selectLegerAndDownload(legerId) {
+    const leger = DB.legerGajiList.find(l => l.id === legerId);
+    if (!leger) {
+        showToast('Leger gaji tidak ditemukan!', 'error');
+        return;
+    }
+
+    // Update download count
+    leger.downloadCount = (leger.downloadCount || 0) + 1;
+
+    // Add to download log
+    const sekolah = DB.sekolahList.find(s => s.id === DB.currentSekolahId);
+    const newLogId = DB.legerGajiDownloadLog.length > 0 ? Math.max(...DB.legerGajiDownloadLog.map(l => l.id)) + 1 : 1;
+
+    const now = new Date();
+    DB.legerGajiDownloadLog.push({
+        id: newLogId,
+        legerId: legerId,
+        sekolahId: DB.currentSekolahId,
+        sekolahNama: sekolah?.nama || '',
+        tanggalDownload: now.toISOString().split('T')[0] + ' ' + now.toTimeString().slice(0, 5),
+        downloadBy: 'Admin ' + (sekolah?.nama || 'Sekolah')
+    });
+
+    showToast(`Mengunduh ${leger.namaFile}...`, 'info');
+
+    // In real implementation, trigger file download
+    // For demo, just show success message
+    setTimeout(() => {
+        showToast('Leger gaji berhasil diunduh!', 'success');
+        renderSLaporanLeger();
+    }, 1000);
+
+    // Sync ke Firebase
+    if (firebaseInitialized) {
+        firebaseSaveDocument('legerGajiDownloadLog', newLogId.toString(), DB.legerGajiDownloadLog[DB.legerGajiDownloadLog.length - 1]);
+    }
+}
+
+// ==================== HAK AKSES STAFF ====================
+function renderHakAksesStaff() {
+    const contentArea = document.getElementById('contentArea');
+    if (!contentArea) return;
+
+    contentArea.innerHTML = `
+        <div class="fade-in space-y-6">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-purple-600 to-purple-800 rounded-2xl p-6 text-white">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-user-shield text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">Hak Akses Staff</h3>
+                        <p class="text-purple-200 text-sm">Kelola hak akses menu untuk staf dinas</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tambah Staff -->
+            <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                <h3 class="font-semibold mb-4 flex items-center gap-2">
+                    <i class="fas fa-user-plus text-purple-500"></i>
+                    Tambah Staff dengan Hak Akses
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">Nama Lengkap</label>
+                        <input type="text" id="staffNama" class="w-full border rounded-xl px-4 py-2.5 text-sm" placeholder="Nama lengkap">
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">NIP</label>
+                        <input type="text" id="staffNip" class="w-full border rounded-xl px-4 py-2.5 text-sm" placeholder="NIP">
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">Jabatan</label>
+                        <select id="staffJabatan" class="w-full border rounded-xl px-4 py-2.5 text-sm">
+                            <option value="Koordinator">Koordinator</option>
+                            <option value="Pengawas">Pengawas Sekolah</option>
+                            <option value="Pengawas PAI">Pengawas PAI</option>
+                            <option value="PNFI">Penilik PNFI</option>
+                            <option value="Staf">Staf</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">Email</label>
+                        <input type="email" id="staffEmail" class="w-full border rounded-xl px-4 py-2.5 text-sm" placeholder="email@dinas.go.id">
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label class="text-sm text-gray-600 mb-2 block">Pilih Hak Akses Menu</label>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
+                        ${DB.menuAccessList.map(m => `
+                            <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="checkbox" class="staffAccess" value="${m.kode}">
+                                <i class="fas ${m.icon} text-gray-500 text-sm"></i>
+                                <span class="text-sm">${m.label}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <button onclick="tambahStaffAccess()" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2.5 rounded-xl text-sm font-medium">
+                        <i class="fas fa-plus mr-2"></i>Tambah Staff
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabel Staff -->
+            <div class="bg-white rounded-2xl border shadow-sm overflow-hidden">
+                <div class="px-6 py-4 bg-gray-50 border-b flex items-center justify-between">
+                    <h3 class="font-semibold">Daftar Staff dengan Hak Akses</h3>
+                    <span class="text-sm text-gray-500">${DB.staffAccessList.length} staff</span>
+                </div>
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="p-4 text-left">No</th>
+                            <th class="p-4 text-left">Nama</th>
+                            <th class="p-4 text-left">NIP</th>
+                            <th class="p-4 text-center">Jabatan</th>
+                            <th class="p-4 text-center">Hak Akses</th>
+                            <th class="p-4 text-center">Status</th>
+                            <th class="p-4 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${DB.staffAccessList.length === 0 ? `
+                            <tr><td colspan="7" class="p-8 text-center text-gray-500">
+                                <i class="fas fa-users text-4xl text-gray-300 mb-3 block"></i>
+                                Belum ada staff dengan hak akses khusus
+                            </td></tr>
+                        ` : DB.staffAccessList.map((s, i) => `
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="p-4">${i + 1}</td>
+                                <td class="p-4 font-medium">${escapeHtml(s.nama)}</td>
+                                <td class="p-4 font-mono text-xs">${s.nip}</td>
+                                <td class="p-4 text-center">${s.jabatan}</td>
+                                <td class="p-4 text-center">
+                                    <div class="flex flex-wrap gap-1 justify-center">
+                                        ${s.hakAkses.map(h => {
+                                            const menu = DB.menuAccessList.find(m => m.kode === h);
+                                            return `<span class="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs">${menu?.label || h}</span>`;
+                                        }).join('')}
+                                    </div>
+                                </td>
+                                <td class="p-4 text-center">
+                                    <span class="px-2 py-1 ${s.status === 'aktif' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'} rounded-lg text-xs">${s.status === 'aktif' ? 'Aktif' : 'Nonaktif'}</span>
+                                </td>
+                                <td class="p-4 text-center">
+                                    <button onclick="editStaffAccess(${s.id})" class="text-yellow-500 hover:text-yellow-700 mr-2" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="toggleStaffStatus(${s.id})" class="text-blue-500 hover:text-blue-700 mr-2" title="Toggle Status">
+                                        <i class="fas fa-toggle-${s.status === 'aktif' ? 'on' : 'off'}"></i>
+                                    </button>
+                                    <button onclick="hapusStaffAccess(${s.id})" class="text-red-500 hover:text-red-700" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Info -->
+            <div class="bg-purple-50 border border-purple-200 rounded-xl p-4">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-info-circle text-purple-600 mt-0.5"></i>
+                    <div>
+                        <p class="font-medium text-purple-800">Tentang Hak Akses Staff</p>
+                        <ul class="text-sm text-purple-700 mt-2 space-y-1">
+                            <li>• Staff yang ditambahkan akan mendapat akses ke menu yang dipilih</li>
+                            <li>• Hak akses dapat diubah kapan saja oleh Admin Wilayah</li>
+                            <li>• Staff dengan status nonaktif tidak dapat mengakses sistem</li>
+                            <li>• Pastikan email staff valid untuk keperluan notifikasi</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Tambah staff access
+function tambahStaffAccess() {
+    const nama = document.getElementById('staffNama').value.trim();
+    const nip = document.getElementById('staffNip').value.trim();
+    const jabatan = document.getElementById('staffJabatan').value;
+    const email = document.getElementById('staffEmail').value.trim();
+
+    const accessCheckboxes = document.querySelectorAll('.staffAccess:checked');
+    const hakAkses = Array.from(accessCheckboxes).map(cb => cb.value);
+
+    if (!nama || !nip || hakAkses.length === 0) {
+        showToast('Lengkapi nama, NIP, dan pilih minimal satu hak akses!', 'error');
+        return;
+    }
+
+    const newId = DB.staffAccessList.length > 0 ? Math.max(...DB.staffAccessList.map(s => s.id)) + 1 : 1;
+
+    DB.staffAccessList.push({
+        id: newId,
+        nama: nama,
+        nip: nip,
+        jabatan: jabatan,
+        email: email,
+        hakAkses: hakAkses,
+        status: 'aktif',
+        createdAt: new Date().toISOString().split('T')[0]
+    });
+
+    showToast('Staff berhasil ditambahkan dengan hak akses!');
+    renderHakAksesStaff();
+
+    // Sync ke Firebase
+    if (firebaseInitialized) {
+        firebaseSaveDocument('staffAccess', newId.toString(), DB.staffAccessList[DB.staffAccessList.length - 1]);
+    }
+}
+
+// Edit staff access
+function editStaffAccess(id) {
+    const staff = DB.staffAccessList.find(s => s.id === id);
+    if (!staff) return;
+
+    showModal(`
+        <div class="p-6">
+            <h3 class="text-lg font-semibold mb-4"><i class="fas fa-edit text-yellow-500 mr-2"></i>Edit Hak Akses Staff</h3>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">Nama</label>
+                        <input type="text" id="editStaffNama" value="${escapeHtml(staff.nama)}" class="w-full border rounded-xl px-4 py-2.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">NIP</label>
+                        <input type="text" id="editStaffNip" value="${staff.nip}" class="w-full border rounded-xl px-4 py-2.5 text-sm">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">Jabatan</label>
+                        <select id="editStaffJabatan" class="w-full border rounded-xl px-4 py-2.5 text-sm">
+                            <option value="Koordinator" ${staff.jabatan === 'Koordinator' ? 'selected' : ''}>Koordinator</option>
+                            <option value="Pengawas" ${staff.jabatan === 'Pengawas' ? 'selected' : ''}>Pengawas Sekolah</option>
+                            <option value="Pengawas PAI" ${staff.jabatan === 'Pengawas PAI' ? 'selected' : ''}>Pengawas PAI</option>
+                            <option value="PNFI" ${staff.jabatan === 'PNFI' ? 'selected' : ''}>Penilik PNFI</option>
+                            <option value="Staf" ${staff.jabatan === 'Staf' ? 'selected' : ''}>Staf</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">Email</label>
+                        <input type="email" id="editStaffEmail" value="${staff.email}" class="w-full border rounded-xl px-4 py-2.5 text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600 mb-2 block">Hak Akses Menu</label>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        ${DB.menuAccessList.map(m => `
+                            <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="checkbox" class="editStaffAccess" value="${m.kode}" ${staff.hakAkses.includes(m.kode) ? 'checked' : ''}>
+                                <i class="fas ${m.icon} text-gray-500 text-sm"></i>
+                                <span class="text-sm">${m.label}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="doEditStaffAccess(${id})" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2.5 rounded-xl text-sm font-medium">Update</button>
+                <button onclick="closeModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-medium">Batal</button>
+            </div>
+        </div>
+    `);
+}
+
+function doEditStaffAccess(id) {
+    const staff = DB.staffAccessList.find(s => s.id === id);
+    if (!staff) return;
+
+    const accessCheckboxes = document.querySelectorAll('.editStaffAccess:checked');
+    const hakAkses = Array.from(accessCheckboxes).map(cb => cb.value);
+
+    staff.nama = document.getElementById('editStaffNama').value;
+    staff.nip = document.getElementById('editStaffNip').value;
+    staff.jabatan = document.getElementById('editStaffJabatan').value;
+    staff.email = document.getElementById('editStaffEmail').value;
+    staff.hakAkses = hakAkses;
+
+    closeModal();
+    showToast('Hak akses staff berhasil diupdate!');
+    renderHakAksesStaff();
+
+    // Sync ke Firebase
+    if (firebaseInitialized) {
+        firebaseSaveDocument('staffAccess', id.toString(), staff);
+    }
+}
+
+// Toggle staff status
+function toggleStaffStatus(id) {
+    const staff = DB.staffAccessList.find(s => s.id === id);
+    if (staff) {
+        staff.status = staff.status === 'aktif' ? 'nonaktif' : 'aktif';
+        showToast(`Staff berhasil di${staff.status === 'aktif' ? 'aktifkan' : 'nonaktifkan'}!`);
+        renderHakAksesStaff();
+    }
+}
+
+// Hapus staff access
+function hapusStaffAccess(id) {
+    const staff = DB.staffAccessList.find(s => s.id === id);
+    if (!staff) return;
+
+    showModal(`
+        <div class="p-6">
+            <div class="text-center mb-4">
+                <div class="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-user-times text-red-600 text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold">Hapus Staff</h3>
+                <p class="text-sm text-gray-500 mt-1">${escapeHtml(staff.nama)}</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="doHapusStaffAccess(${id})" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl text-sm font-medium">Hapus</button>
+                <button onclick="closeModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-medium">Batal</button>
+            </div>
+        </div>
+    `);
+}
+
+function doHapusStaffAccess(id) {
+    const idx = DB.staffAccessList.findIndex(s => s.id === id);
+    if (idx > -1) {
+        DB.staffAccessList.splice(idx, 1);
+        closeModal();
+        showToast('Staff berhasil dihapus!');
+        renderHakAksesStaff();
+
+        if (firebaseInitialized) {
+            firebaseDeleteDocument('staffAccess', id.toString());
+        }
     }
 }
 

@@ -17,6 +17,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <!-- Firebase Storage -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <!-- SheetJS (xlsx) for Excel file handling -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         * { font-family: 'Inter', sans-serif; }
@@ -253,7 +255,7 @@
                     <p class="text-xs text-blue-200 font-medium mb-2"><i class="fas fa-info-circle mr-1"></i>Informasi Login Default:</p>
                     <div class="text-xs text-blue-100/70 space-y-1">
                         <p><span class="text-blue-200">Admin Wilayah:</span> Username: <code class="bg-white/10 px-1.5 py-0.5 rounded">NIP</code> (tanpa spasi) | Password: <code class="bg-white/10 px-1.5 py-0.5 rounded">123456</code></p>
-                        <p class="text-blue-300/50 pl-1">Contoh NIP: <code class="bg-white/5 px-1 py-0.5 rounded">198712212025211021</code></p>
+                        <p class="text-blue-300/50 pl-1">Contoh NIP: <code class="bg-white/5 px-1 py-0.5 rounded">198701212019211035</code></p>
                         <p><span class="text-blue-200">Admin Sekolah:</span> Username = NPSN sekolah | Password: <code class="bg-white/10 px-1.5 py-0.5 rounded">123456</code></p>
                     </div>
                 </div>
@@ -1604,8 +1606,6 @@ function buildSidebar() {
             { id:'w-dashboard', icon:'fa-th-large', label:'Dashboard' },
             { id:'w-sekolah', icon:'fa-school', label:'Manajemen Sekolah', hasSubmenu: true, submenu: [
                 { id:'w-sekolah-data', label:'Data Sekolah' },
-                { id:'w-sekolah-template', label:'Unduh Template' },
-                { id:'w-sekolah-upload', label:'Upload Template' },
             ]},
             { id:'w-monitoring', icon:'fa-desktop', label:'Monitoring' },
             { id:'w-siswa', icon:'fa-users', label:'Data Siswa Wilayah' },
@@ -1722,7 +1722,7 @@ function navigateTo(page) {
     
     // Open parent submenu
     const pageMapping = {
-        'w-sekolah-data':'w-sekolah','w-sekolah-template':'w-sekolah','w-sekolah-upload':'w-sekolah',
+        'w-sekolah-data':'w-sekolah',
         'w-pengajuan-kenaikan':'w-pengajuan','w-pengajuan-kgb':'w-pengajuan','w-pengajuan-pensiun':'w-pengajuan','w-pengajuan-dkp':'w-pengajuan','w-pengajuan-mutasi':'w-pengajuan','w-pengajuan-pengantar':'w-pengajuan','w-pengajuan-haji':'w-pengajuan','w-pengajuan-melahirkan':'w-pengajuan',
         'w-arsip-masuk':'w-arsip','w-arsip-keluar':'w-arsip',
         's-arsip-masuk':'s-arsip','s-arsip-keluar':'s-arsip',
@@ -1743,9 +1743,7 @@ function navigateTo(page) {
     const pages = {
         // Wilayah pages
         'w-dashboard': { title:'Dashboard Wilayah', subtitle:'Ringkasan data', render: renderWDashboard },
-        'w-sekolah-data': { title:'Data Sekolah', subtitle:'Kelola data sekolah', render: renderWSekolah },
-        'w-sekolah-template': { title:'Unduh Template', subtitle:'Template import data sekolah', render: renderWSekolahTemplate },
-        'w-sekolah-upload': { title:'Upload Template', subtitle:'Import data dari template', render: renderWSekolahUpload },
+        'w-sekolah-data': { title:'Data Sekolah', subtitle:'Kelola data sekolah, unduh dan upload template', render: renderWSekolah },
         'w-monitoring': { title:'Monitoring', subtitle:'Status sinkronisasi', render: renderWMonitoring },
         'w-siswa': { title:'Data Siswa Wilayah', subtitle:'Rekap siswa semua sekolah', render: renderWSiswa },
         'w-gtk': { title:'Data GTK Wilayah', subtitle:'Rekap GTK semua sekolah', render: renderWGtk },
@@ -1840,6 +1838,122 @@ function renderWSekolah() {
     if (!contentArea) return;
     contentArea.innerHTML = `
         <div class="fade-in space-y-6">
+            <!-- Download & Upload Template Section -->
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-5 border border-blue-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-semibold text-gray-800"><i class="fas fa-file-excel text-green-600 mr-2"></i>Import Data Sekolah (Format XLSX)</h3>
+                    <div class="flex gap-2">
+                        <button onclick="downloadAllTemplates()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-medium">
+                            <i class="fas fa-download mr-2"></i>Unduh Semua Template
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+                    <!-- Template Sekolah -->
+                    <div class="bg-white rounded-xl p-4 border shadow-sm">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-school text-blue-600 text-sm"></i>
+                            </div>
+                            <span class="font-medium text-sm">Template Sekolah</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="downloadTemplateSekolah()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg text-xs font-medium">
+                                <i class="fas fa-download mr-1"></i>Unduh
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Template GTK -->
+                    <div class="bg-white rounded-xl p-4 border shadow-sm">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chalkboard-teacher text-emerald-600 text-sm"></i>
+                            </div>
+                            <span class="font-medium text-sm">Template GTK</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="downloadTemplateGTK()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-1.5 rounded-lg text-xs font-medium">
+                                <i class="fas fa-download mr-1"></i>Unduh
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Template Siswa -->
+                    <div class="bg-white rounded-xl p-4 border shadow-sm">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-user-graduate text-purple-600 text-sm"></i>
+                            </div>
+                            <span class="font-medium text-sm">Template Siswa</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="downloadTemplateSiswa()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-1.5 rounded-lg text-xs font-medium">
+                                <i class="fas fa-download mr-1"></i>Unduh
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Template PIP -->
+                    <div class="bg-white rounded-xl p-4 border shadow-sm">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-hand-holding-heart text-rose-600 text-sm"></i>
+                            </div>
+                            <span class="font-medium text-sm">Template PIP</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="downloadTemplatePIP()" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-1.5 rounded-lg text-xs font-medium">
+                                <i class="fas fa-download mr-1"></i>Unduh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Upload Section -->
+                <div class="bg-white rounded-xl p-4 border">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-cloud-upload-alt text-orange-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium">Upload Data dari Template XLSX</h4>
+                            <p class="text-xs text-gray-500">Format: .xlsx (Microsoft Excel)</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div>
+                            <select id="uploadTypeSelect" class="w-full border rounded-lg px-3 py-2 text-sm mb-2">
+                                <option value="sekolah">Data Sekolah</option>
+                                <option value="gtk">Data GTK</option>
+                                <option value="siswa">Data Siswa</option>
+                                <option value="pip">Data PIP</option>
+                            </select>
+                            <div class="file-upload-zone rounded-lg p-4 text-center cursor-pointer" id="uploadZoneWSekolah" 
+                                 onclick="document.getElementById('fileUploadWSekolah').click()">
+                                <i class="fas fa-file-excel text-2xl text-green-500 mb-1"></i>
+                                <p class="text-xs text-gray-500">Klik untuk pilih file</p>
+                                <p class="text-xs text-gray-400" id="fileInfoWSekolah">Belum ada file</p>
+                                <input type="file" id="fileUploadWSekolah" accept=".xlsx,.xls" class="hidden" onchange="handleWSekolahUpload(this)">
+                            </div>
+                        </div>
+                        <div class="md:col-span-3 flex items-end">
+                            <button onclick="processWSekolahUpload()" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white py-2.5 rounded-xl text-sm font-medium">
+                                <i class="fas fa-upload mr-2"></i>Upload dan Import Data
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <p class="text-xs text-yellow-700">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            <strong>Petunjuk:</strong> 1) Unduh template sesuai jenis data, 2) Isi data di file Excel, 3) Upload file yang sudah diisi. Data yang sudah ada akan diperbarui jika NPSN sama.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Data Sekolah Table -->
             <div class="flex justify-between items-center">
                 <div class="flex gap-3">
                     <input type="text" id="searchSekolah" placeholder="Cari sekolah..." class="border rounded-xl px-4 py-2 text-sm w-64" oninput="filterSekolahTable()">
@@ -2068,222 +2182,6 @@ function doHapusSekolah(id) {
     }
 }
 
-// ==================== TEMPLATE SEKOLAH (Admin Wilayah) ====================
-function renderWSekolahTemplate() {
-    const contentArea = document.getElementById('contentArea');
-    if (!contentArea) return;
-    contentArea.innerHTML = `
-        <div class="fade-in space-y-6">
-            <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-                <div class="flex items-start gap-3">
-                    <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <i class="fas fa-info-circle text-blue-600"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold text-blue-800">Petunjuk Import Data Sekolah</h4>
-                        <p class="text-sm text-blue-700 mt-1">
-                            1. Unduh template sesuai format yang disediakan<br>
-                            2. Isi data sekolah sesuai kolom yang tersedia<br>
-                            3. Upload file yang sudah diisi melalui menu Upload Template<br>
-                            4. Sistem akan memvalidasi dan mengimpor data secara otomatis
-                        </p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Template Sekolah -->
-                <div class="bg-white rounded-2xl p-6 border shadow-sm">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-school text-blue-600 text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold">Template Data Sekolah</h3>
-                            <p class="text-sm text-gray-500">Format Excel (.xlsx)</p>
-                        </div>
-                    </div>
-                    <p class="text-sm text-gray-600 mb-4">Template untuk import data sekolah baru secara massal. Berisi kolom NPSN, Nama, Jenjang, Alamat, Kepala Sekolah, Status, dan Akreditasi.</p>
-                    <button onclick="downloadTemplateSekolah()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-medium">
-                        <i class="fas fa-download mr-2"></i>Unduh Template Sekolah
-                    </button>
-                </div>
-                
-                <!-- Template GTK -->
-                <div class="bg-white rounded-2xl p-6 border shadow-sm">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-chalkboard-teacher text-emerald-600 text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold">Template Data GTK</h3>
-                            <p class="text-sm text-gray-500">Format Excel (.xlsx)</p>
-                        </div>
-                    </div>
-                    <p class="text-sm text-gray-600 mb-4">Template untuk import data Guru dan Tenaga Kependidikan. Berisi kolom NIP, Nama, Jabatan, Mata Pelajaran, Pendidikan, Status Kepegawaian.</p>
-                    <button onclick="downloadTemplateGTK()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-sm font-medium">
-                        <i class="fas fa-download mr-2"></i>Unduh Template GTK
-                    </button>
-                </div>
-                
-                <!-- Template Siswa -->
-                <div class="bg-white rounded-2xl p-6 border shadow-sm">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-user-graduate text-purple-600 text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold">Template Data Siswa</h3>
-                            <p class="text-sm text-gray-500">Format Excel (.xlsx)</p>
-                        </div>
-                    </div>
-                    <p class="text-sm text-gray-600 mb-4">Template untuk import data siswa. Berisi kolom NIS, NISN, Nama, Kelas, Jenis Kelamin, Tempat/Tanggal Lahir, Alamat, Data Orang Tua.</p>
-                    <button onclick="downloadTemplateSiswa()" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2.5 rounded-xl text-sm font-medium">
-                        <i class="fas fa-download mr-2"></i>Unduh Template Siswa
-                    </button>
-                </div>
-                
-                <!-- Template Sarpras -->
-                <div class="bg-white rounded-2xl p-6 border shadow-sm">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-hand-holding-heart text-rose-600 text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold">Template Data PIP</h3>
-                            <p class="text-sm text-gray-500">Format Excel (.xlsx)</p>
-                        </div>
-                    </div>
-                    <p class="text-sm text-gray-600 mb-4">Template untuk import calon penerima PIP. Berisi kolom NISN, Nama, Kelas, Data Orang Tua, Pekerjaan Ortu, Penghasilan Ortu.</p>
-                    <button onclick="downloadTemplatePIP()" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-xl text-sm font-medium">
-                        <i class="fas fa-download mr-2"></i>Unduh Template PIP
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function renderWSekolahUpload() {
-    const contentArea = document.getElementById('contentArea');
-    if (!contentArea) return;
-    contentArea.innerHTML = `
-        <div class="fade-in space-y-6">
-            <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
-                <div class="flex items-start gap-3">
-                    <div class="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <i class="fas fa-exclamation-triangle text-yellow-600"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-semibold text-yellow-800">Perhatian</h4>
-                        <p class="text-sm text-yellow-700 mt-1">
-                            Pastikan file yang diupload sesuai dengan format template. Data yang sudah ada akan diperbarui jika NPSN sama.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Upload Sekolah -->
-                <div class="bg-white rounded-2xl p-6 border shadow-sm">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-school text-blue-600 text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold">Upload Data Sekolah</h3>
-                            <p class="text-sm text-gray-500">Format: .xlsx, .xls, .csv</p>
-                        </div>
-                    </div>
-                    <div class="file-upload-zone rounded-xl p-6 text-center mb-4" id="uploadZoneSekolah" 
-                         ondrop="handleDrop(event, 'sekolah')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
-                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-300 mb-3"></i>
-                        <p class="text-sm text-gray-500">Drag & drop file atau</p>
-                        <input type="file" id="fileSekolah" accept=".xlsx,.xls,.csv" class="hidden" onchange="handleFileSelect(event, 'sekolah')">
-                        <button onclick="document.getElementById('fileSekolah').click()" class="mt-2 text-blue-600 hover:text-blue-700 text-sm font-medium">Pilih File</button>
-                    </div>
-                    <p class="text-xs text-gray-400" id="fileInfoSekolah">Belum ada file dipilih</p>
-                    <button onclick="uploadDataSekolah()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-medium mt-4">
-                        <i class="fas fa-upload mr-2"></i>Upload Data Sekolah
-                    </button>
-                </div>
-                
-                <!-- Upload GTK -->
-                <div class="bg-white rounded-2xl p-6 border shadow-sm">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-chalkboard-teacher text-emerald-600 text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold">Upload Data GTK</h3>
-                            <p class="text-sm text-gray-500">Format: .xlsx, .xls, .csv</p>
-                        </div>
-                    </div>
-                    <div class="file-upload-zone rounded-xl p-6 text-center mb-4" id="uploadZoneGTK"
-                         ondrop="handleDrop(event, 'gtk')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
-                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-300 mb-3"></i>
-                        <p class="text-sm text-gray-500">Drag & drop file atau</p>
-                        <input type="file" id="fileGTK" accept=".xlsx,.xls,.csv" class="hidden" onchange="handleFileSelect(event, 'gtk')">
-                        <button onclick="document.getElementById('fileGTK').click()" class="mt-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium">Pilih File</button>
-                    </div>
-                    <p class="text-xs text-gray-400" id="fileInfoGTK">Belum ada file dipilih</p>
-                    <button onclick="uploadDataGTK()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-sm font-medium mt-4">
-                        <i class="fas fa-upload mr-2"></i>Upload Data GTK
-                    </button>
-                </div>
-                
-                <!-- Upload Siswa -->
-                <div class="bg-white rounded-2xl p-6 border shadow-sm">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-user-graduate text-purple-600 text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold">Upload Data Siswa</h3>
-                            <p class="text-sm text-gray-500">Format: .xlsx, .xls, .csv</p>
-                        </div>
-                    </div>
-                    <div class="file-upload-zone rounded-xl p-6 text-center mb-4" id="uploadZoneSiswa"
-                         ondrop="handleDrop(event, 'siswa')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
-                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-300 mb-3"></i>
-                        <p class="text-sm text-gray-500">Drag & drop file atau</p>
-                        <input type="file" id="fileSiswa" accept=".xlsx,.xls,.csv" class="hidden" onchange="handleFileSelect(event, 'siswa')">
-                        <button onclick="document.getElementById('fileSiswa').click()" class="mt-2 text-purple-600 hover:text-purple-700 text-sm font-medium">Pilih File</button>
-                    </div>
-                    <p class="text-xs text-gray-400" id="fileInfoSiswa">Belum ada file dipilih</p>
-                    <button onclick="uploadDataSiswa()" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2.5 rounded-xl text-sm font-medium mt-4">
-                        <i class="fas fa-upload mr-2"></i>Upload Data Siswa
-                    </button>
-                </div>
-                
-                <!-- Upload PIP -->
-                <div class="bg-white rounded-2xl p-6 border shadow-sm">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="w-12 h-12 bg-rose-100 rounded-xl flex items-center justify-center">
-                            <i class="fas fa-hand-holding-heart text-rose-600 text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold">Upload Data PIP</h3>
-                            <p class="text-sm text-gray-500">Format: .xlsx, .xls, .csv</p>
-                        </div>
-                    </div>
-                    <div class="file-upload-zone rounded-xl p-6 text-center mb-4" id="uploadZonePIP"
-                         ondrop="handleDrop(event, 'pip')" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
-                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-300 mb-3"></i>
-                        <p class="text-sm text-gray-500">Drag & drop file atau</p>
-                        <input type="file" id="filePIP" accept=".xlsx,.xls,.csv" class="hidden" onchange="handleFileSelect(event, 'pip')">
-                        <button onclick="document.getElementById('filePIP').click()" class="mt-2 text-rose-600 hover:text-rose-700 text-sm font-medium">Pilih File</button>
-                    </div>
-                    <p class="text-xs text-gray-400" id="fileInfoPIP">Belum ada file dipilih</p>
-                    <button onclick="uploadDataPIP()" class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-xl text-sm font-medium mt-4">
-                        <i class="fas fa-upload mr-2"></i>Upload Data PIP
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
 // File upload handlers
 let uploadedFiles = { sekolah: null, gtk: null, siswa: null, pip: null };
 
@@ -2314,7 +2212,7 @@ function setUploadedFile(file, type) {
     document.getElementById(`uploadZone${type.charAt(0).toUpperCase() + type.slice(1)}`).classList.add('bg-blue-50');
 }
 
-// Download template functions
+// Download template functions - XLSX Format
 function downloadTemplateSekolah() {
     const headers = ['NPSN', 'Nama Sekolah', 'Jenjang', 'Alamat', 'Kepala Sekolah', 'Status', 'Akreditasi'];
     const sampleData = [
@@ -2322,8 +2220,8 @@ function downloadTemplateSekolah() {
         ['20512345', 'SDN 1 Nusantara', 'SD', 'Jl. Merdeka No. 10', 'Drs. Bambang S.', 'Negeri', 'A'],
         ['30512345', 'SMPN 1 Nusantara', 'SMP', 'Jl. Diponegoro No. 20', 'Dr. Bambang S., M.Pd.', 'Negeri', 'A'],
     ];
-    downloadCSV('template_sekolah', headers, sampleData);
-    showToast('Template sekolah berhasil diunduh!');
+    downloadXLSX('template_sekolah', headers, sampleData);
+    showToast('Template sekolah berhasil diunduh (format XLSX)!');
 }
 
 function downloadTemplateGTK() {
@@ -2332,8 +2230,8 @@ function downloadTemplateGTK() {
         ['20512345', '198501012010011001', 'Drs. Supriyadi', 'Guru', 'Matematika', 'S1', 'PNS', 'Jakarta', '1985-01-01', 'Jl. Pendidikan No. 1', '081234500001', 'supriyadi@sd1.sch.id'],
         ['20512345', '198703152011012002', 'Rina Marliana, S.Pd.', 'Guru', 'B. Indonesia', 'S1', 'PNS', 'Bandung', '1987-03-15', 'Jl. Pendidikan No. 2', '081234500002', 'rina@sd1.sch.id'],
     ];
-    downloadCSV('template_gtk', headers, sampleData);
-    showToast('Template GTK berhasil diunduh!');
+    downloadXLSX('template_gtk', headers, sampleData);
+    showToast('Template GTK berhasil diunduh (format XLSX)!');
 }
 
 function downloadTemplateSiswa() {
@@ -2342,8 +2240,8 @@ function downloadTemplateSiswa() {
         ['20512345', '601001', '006000001', 'Andi Pratama', 'I', 'L', 'Jakarta', '2018-05-10', 'Jl. Merdeka No. 1', 'Budi Pratama', '081234567890', 'Aktif'],
         ['20512345', '601002', '006000002', 'Budi Santoso', 'I', 'L', 'Bandung', '2018-06-15', 'Jl. Pahlawan No. 5', 'Ahmad Santoso', '081234567891', 'Aktif'],
     ];
-    downloadCSV('template_siswa', headers, sampleData);
-    showToast('Template siswa berhasil diunduh!');
+    downloadXLSX('template_siswa', headers, sampleData);
+    showToast('Template siswa berhasil diunduh (format XLSX)!');
 }
 
 function downloadTemplatePIP() {
@@ -2352,11 +2250,70 @@ function downloadTemplatePIP() {
         ['20512345', '006000001', 'Andi Pratama', 'I', 'L', 'Budi Pratama', 'Petani', '800000', 'Jl. Merdeka No. 1'],
         ['20512345', '006000002', 'Budi Santoso', 'I', 'L', 'Ahmad Santoso', 'Buruh', '600000', 'Jl. Pahlawan No. 5'],
     ];
-    downloadCSV('template_pip', headers, sampleData);
-    showToast('Template PIP berhasil diunduh!');
+    downloadXLSX('template_pip', headers, sampleData);
+    showToast('Template PIP berhasil diunduh (format XLSX)!');
 }
 
-// CSV Download helper
+// Download semua template dalam satu file
+function downloadAllTemplates() {
+    const wb = XLSX.utils.book_new();
+    
+    // Sheet Sekolah
+    const sekolahHeaders = ['NPSN', 'Nama Sekolah', 'Jenjang', 'Alamat', 'Kepala Sekolah', 'Status', 'Akreditasi'];
+    const sekolahData = [
+        sekolahHeaders,
+        ['10512345', 'PAUD Tunas Mekar', 'PAUD', 'Jl. Melati No. 5', 'Sri Wahyuni, S.Pd.', 'Negeri', 'A'],
+        ['20512345', 'SDN 1 Nusantara', 'SD', 'Jl. Merdeka No. 10', 'Drs. Bambang S.', 'Negeri', 'A'],
+    ];
+    const wsSekolah = XLSX.utils.aoa_to_sheet(sekolahData);
+    XLSX.utils.book_append_sheet(wb, wsSekolah, 'Template Sekolah');
+    
+    // Sheet GTK
+    const gtkHeaders = ['NPSN Sekolah', 'NIP', 'Nama', 'Jabatan', 'Mata Pelajaran', 'Pendidikan', 'Status Kepegawaian', 'Tempat Lahir', 'Tanggal Lahir', 'Alamat', 'Telepon', 'Email'];
+    const gtkData = [
+        gtkHeaders,
+        ['20512345', '198501012010011001', 'Drs. Supriyadi', 'Guru', 'Matematika', 'S1', 'PNS', 'Jakarta', '1985-01-01', 'Jl. Pendidikan No. 1', '081234500001', 'supriyadi@sd1.sch.id'],
+    ];
+    const wsGtk = XLSX.utils.aoa_to_sheet(gtkData);
+    XLSX.utils.book_append_sheet(wb, wsGtk, 'Template GTK');
+    
+    // Sheet Siswa
+    const siswaHeaders = ['NPSN Sekolah', 'NIS', 'NISN', 'Nama', 'Kelas', 'Jenis Kelamin (L/P)', 'Tempat Lahir', 'Tanggal Lahir', 'Alamat', 'Nama Orang Tua', 'Telepon Ortu', 'Status'];
+    const siswaData = [
+        siswaHeaders,
+        ['20512345', '601001', '006000001', 'Andi Pratama', 'I', 'L', 'Jakarta', '2018-05-10', 'Jl. Merdeka No. 1', 'Budi Pratama', '081234567890', 'Aktif'],
+    ];
+    const wsSiswa = XLSX.utils.aoa_to_sheet(siswaData);
+    XLSX.utils.book_append_sheet(wb, wsSiswa, 'Template Siswa');
+    
+    // Sheet PIP
+    const pipHeaders = ['NPSN Sekolah', 'NISN', 'Nama', 'Kelas', 'Jenis Kelamin (L/P)', 'Nama Orang Tua', 'Pekerjaan Ortu', 'Penghasilan Ortu', 'Alamat'];
+    const pipData = [
+        pipHeaders,
+        ['20512345', '006000001', 'Andi Pratama', 'I', 'L', 'Budi Pratama', 'Petani', '800000', 'Jl. Merdeka No. 1'],
+    ];
+    const wsPip = XLSX.utils.aoa_to_sheet(pipData);
+    XLSX.utils.book_append_sheet(wb, wsPip, 'Template PIP');
+    
+    XLSX.writeFile(wb, 'semua_template_siap.xlsx');
+    showToast('Semua template berhasil diunduh (format XLSX)!');
+}
+
+// XLSX Download helper
+function downloadXLSX(filename, headers, data) {
+    const wb = XLSX.utils.book_new();
+    const wsData = [headers, ...data];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    
+    // Set column widths
+    const colWidths = headers.map(h => ({ wch: Math.max(h.length, 15) }));
+    ws['!cols'] = colWidths;
+    
+    XLSX.utils.book_append_sheet(wb, ws, 'Data');
+    XLSX.writeFile(wb, `${filename}.xlsx`);
+}
+
+// CSV Download helper (keep for backward compatibility)
 function downloadCSV(filename, headers, data) {
     let csv = headers.join(',') + '\n';
     data.forEach(row => {
@@ -2401,6 +2358,260 @@ function uploadDataPIP() {
         return;
     }
     showToast('Fitur upload memerlukan backend server. File: ' + uploadedFiles.pip.name, 'info');
+}
+
+// File upload handlers for Admin Wilayah Data Sekolah page
+let uploadedWsekolahFile = null;
+
+function handleWSekolahUpload(input) {
+    const file = input.files[0];
+    if (file) {
+        uploadedWsekolahFile = file;
+        document.getElementById('fileInfoWSekolah').textContent = file.name;
+        document.getElementById('uploadZoneWSekolah').classList.add('bg-green-50');
+    }
+}
+
+function processWSekolahUpload() {
+    if (!uploadedWsekolahFile) {
+        showToast('Pilih file terlebih dahulu!', 'error');
+        return;
+    }
+    
+    const uploadType = document.getElementById('uploadTypeSelect').value;
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+            
+            if (jsonData.length === 0) {
+                showToast('File tidak berisi data!', 'error');
+                return;
+            }
+            
+            // Process data based on type
+            let processedCount = 0;
+            let errorCount = 0;
+            
+            if (uploadType === 'sekolah') {
+                jsonData.forEach(row => {
+                    try {
+                        const npsn = String(row['NPSN'] || row['npsn'] || '').trim();
+                        const nama = row['Nama Sekolah'] || row['nama'] || row['Nama'] || '';
+                        
+                        if (!npsn || !nama) {
+                            errorCount++;
+                            return;
+                        }
+                        
+                        // Check if school exists
+                        const existingIdx = DB.sekolahList.findIndex(s => s.npsn === npsn);
+                        
+                        if (existingIdx >= 0) {
+                            // Update existing
+                            DB.sekolahList[existingIdx] = {
+                                ...DB.sekolahList[existingIdx],
+                                nama: nama,
+                                jenjang: row['Jenjang'] || row['jenjang'] || DB.sekolahList[existingIdx].jenjang,
+                                alamat: row['Alamat'] || row['alamat'] || DB.sekolahList[existingIdx].alamat,
+                                kepsek: row['Kepala Sekolah'] || row['kepsek'] || DB.sekolahList[existingIdx].kepsek,
+                                status: row['Status'] || row['status'] || DB.sekolahList[existingIdx].status,
+                                akreditasi: row['Akreditasi'] || row['akreditasi'] || DB.sekolahList[existingIdx].akreditasi,
+                            };
+                        } else {
+                            // Add new
+                            const newId = Math.max(...DB.sekolahList.map(s => s.id), 0) + 1;
+                            DB.sekolahList.push({
+                                id: newId,
+                                npsn: npsn,
+                                nama: nama,
+                                jenjang: row['Jenjang'] || row['jenjang'] || 'SD',
+                                alamat: row['Alamat'] || row['alamat'] || '',
+                                kepsek: row['Kepala Sekolah'] || row['kepsek'] || '',
+                                status: row['Status'] || row['status'] || 'Negeri',
+                                akreditasi: row['Akreditasi'] || row['akreditasi'] || 'B',
+                                siswa: 0, guru: 0, rombel: 0, online: false, lastSync: '-'
+                            });
+                            
+                            // Set default password
+                            DB.passwords[npsn] = '123456';
+                        }
+                        processedCount++;
+                    } catch (err) {
+                        errorCount++;
+                    }
+                });
+                
+                // Sync to Firebase
+                if (firebaseInitialized) {
+                    DB.sekolahList.forEach(s => {
+                        firebaseSaveDocument('sekolah', s.id.toString(), s);
+                    });
+                }
+            } else if (uploadType === 'gtk') {
+                jsonData.forEach(row => {
+                    try {
+                        const npsnSekolah = String(row['NPSN Sekolah'] || row['npsn'] || '').trim();
+                        const nip = String(row['NIP'] || row['nip'] || '').trim();
+                        const nama = row['Nama'] || row['nama'] || '';
+                        
+                        if (!nip || !nama) {
+                            errorCount++;
+                            return;
+                        }
+                        
+                        // Find school by NPSN
+                        const sekolah = DB.sekolahList.find(s => s.npsn === npsnSekolah);
+                        if (!sekolah) {
+                            errorCount++;
+                            return;
+                        }
+                        
+                        if (!DB.gtkList[sekolah.id]) {
+                            DB.gtkList[sekolah.id] = [];
+                        }
+                        
+                        // Check if exists
+                        const existingIdx = DB.gtkList[sekolah.id].findIndex(g => g.nip === nip);
+                        const gtkData = {
+                            id: existingIdx >= 0 ? DB.gtkList[sekolah.id][existingIdx].id : Date.now(),
+                            nip: nip,
+                            nama: nama,
+                            jabatan: row['Jabatan'] || row['jabatan'] || 'Guru',
+                            mapel: row['Mata Pelajaran'] || row['mapel'] || '',
+                            pendidikan: row['Pendidikan'] || row['pendidikan'] || 'S1',
+                            statusKepeg: row['Status Kepegawaian'] || row['statusKepeg'] || 'PNS',
+                            tempatLahir: row['Tempat Lahir'] || row['tempatLahir'] || '',
+                            tglLahir: row['Tanggal Lahir'] || row['tglLahir'] || '',
+                            alamat: row['Alamat'] || row['alamat'] || '',
+                            telp: row['Telepon'] || row['telp'] || '',
+                            email: row['Email'] || row['email'] || ''
+                        };
+                        
+                        if (existingIdx >= 0) {
+                            DB.gtkList[sekolah.id][existingIdx] = gtkData;
+                        } else {
+                            DB.gtkList[sekolah.id].push(gtkData);
+                        }
+                        processedCount++;
+                    } catch (err) {
+                        errorCount++;
+                    }
+                });
+            } else if (uploadType === 'siswa') {
+                jsonData.forEach(row => {
+                    try {
+                        const npsnSekolah = String(row['NPSN Sekolah'] || row['npsn'] || '').trim();
+                        const nisn = String(row['NISN'] || row['nisn'] || '').trim();
+                        const nama = row['Nama'] || row['nama'] || '';
+                        
+                        if (!nisn || !nama) {
+                            errorCount++;
+                            return;
+                        }
+                        
+                        // Find school by NPSN
+                        const sekolah = DB.sekolahList.find(s => s.npsn === npsnSekolah);
+                        if (!sekolah) {
+                            errorCount++;
+                            return;
+                        }
+                        
+                        if (!DB.siswaList[sekolah.id]) {
+                            DB.siswaList[sekolah.id] = [];
+                        }
+                        
+                        // Check if exists
+                        const existingIdx = DB.siswaList[sekolah.id].findIndex(s => s.nisn === nisn);
+                        const siswaData = {
+                            id: existingIdx >= 0 ? DB.siswaList[sekolah.id][existingIdx].id : Date.now(),
+                            nis: row['NIS'] || row['nis'] || '',
+                            nisn: nisn,
+                            nama: nama,
+                            kelas: row['Kelas'] || row['kelas'] || 'I',
+                            jk: (row['Jenis Kelamin (L/P)'] || row['jk'] || 'L').toUpperCase(),
+                            tempatLahir: row['Tempat Lahir'] || row['tempatLahir'] || '',
+                            tglLahir: row['Tanggal Lahir'] || row['tglLahir'] || '',
+                            alamat: row['Alamat'] || row['alamat'] || '',
+                            namaOrtu: row['Nama Orang Tua'] || row['namaOrtu'] || '',
+                            telpOrtu: row['Telepon Ortu'] || row['telpOrtu'] || '',
+                            status: row['Status'] || row['status'] || 'Aktif'
+                        };
+                        
+                        if (existingIdx >= 0) {
+                            DB.siswaList[sekolah.id][existingIdx] = siswaData;
+                        } else {
+                            DB.siswaList[sekolah.id].push(siswaData);
+                        }
+                        processedCount++;
+                    } catch (err) {
+                        errorCount++;
+                    }
+                });
+            } else if (uploadType === 'pip') {
+                jsonData.forEach(row => {
+                    try {
+                        const npsnSekolah = String(row['NPSN Sekolah'] || row['npsn'] || '').trim();
+                        const nisn = String(row['NISN'] || row['nisn'] || '').trim();
+                        const nama = row['Nama'] || row['nama'] || '';
+                        
+                        if (!nisn || !nama) {
+                            errorCount++;
+                            return;
+                        }
+                        
+                        // Find school by NPSN
+                        const sekolah = DB.sekolahList.find(s => s.npsn === npsnSekolah);
+                        if (!sekolah) {
+                            errorCount++;
+                            return;
+                        }
+                        
+                        if (!DB.pipCalon[sekolah.id]) {
+                            DB.pipCalon[sekolah.id] = [];
+                        }
+                        
+                        const pipData = {
+                            id: Date.now() + Math.random(),
+                            nisn: nisn,
+                            nama: nama,
+                            kelas: row['Kelas'] || row['kelas'] || 'I',
+                            jk: (row['Jenis Kelamin (L/P)'] || row['jk'] || 'L').toUpperCase(),
+                            namaOrtu: row['Nama Orang Tua'] || row['namaOrtu'] || '',
+                            pekerjaanOrtu: row['Pekerjaan Ortu'] || row['pekerjaanOrtu'] || '',
+                            penghasilanOrtu: row['Penghasilan Ortu'] || row['penghasilanOrtu'] || '0',
+                            alamat: row['Alamat'] || row['alamat'] || '',
+                            status: 'Calon'
+                        };
+                        
+                        DB.pipCalon[sekolah.id].push(pipData);
+                        processedCount++;
+                    } catch (err) {
+                        errorCount++;
+                    }
+                });
+            }
+            
+            // Refresh display
+            renderWSekolah();
+            
+            if (processedCount > 0) {
+                showToast(`Berhasil mengimport ${processedCount} data!${errorCount > 0 ? ` (${errorCount} gagal)` : ''}`, 'success');
+            } else {
+                showToast('Tidak ada data yang berhasil diimport!', 'error');
+            }
+            
+        } catch (error) {
+            console.error('Error parsing file:', error);
+            showToast('Gagal membaca file! Pastikan format file benar.', 'error');
+        }
+    };
+    
+    reader.readAsArrayBuffer(uploadedWsekolahFile);
 }
 
 // ==================== ARSIP SURAT ====================

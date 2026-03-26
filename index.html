@@ -62,6 +62,175 @@
         .logo-img-large { width: 64px; height: 64px; object-fit: contain; background: white; padding: 4px; border-radius: 12px; }
         .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; display: inline-block; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Mega Mendung Batik Pattern */
+        .mega-mendung-bg {
+            position: relative;
+            overflow: hidden;
+        }
+        .mega-mendung-bg::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                /* Cloud layer 1 */
+                radial-gradient(ellipse 80px 50px at 10% 20%, rgba(30, 58, 95, 0.4) 0%, transparent 70%),
+                radial-gradient(ellipse 100px 60px at 30% 35%, rgba(37, 99, 235, 0.3) 0%, transparent 70%),
+                radial-gradient(ellipse 120px 70px at 50% 15%, rgba(30, 64, 175, 0.35) 0%, transparent 70%),
+                radial-gradient(ellipse 90px 55px at 75% 25%, rgba(37, 99, 235, 0.25) 0%, transparent 70%),
+                radial-gradient(ellipse 110px 65px at 90% 40%, rgba(30, 58, 95, 0.3) 0%, transparent 70%),
+                /* Cloud layer 2 */
+                radial-gradient(ellipse 70px 45px at 15% 55%, rgba(30, 64, 175, 0.3) 0%, transparent 70%),
+                radial-gradient(ellipse 95px 55px at 40% 70%, rgba(37, 99, 235, 0.25) 0%, transparent 70%),
+                radial-gradient(ellipse 85px 50px at 65% 60%, rgba(30, 58, 95, 0.35) 0%, transparent 70%),
+                radial-gradient(ellipse 105px 60px at 85% 75%, rgba(37, 99, 235, 0.3) 0%, transparent 70%),
+                /* Cloud layer 3 */
+                radial-gradient(ellipse 75px 45px at 5% 85%, rgba(30, 64, 175, 0.25) 0%, transparent 70%),
+                radial-gradient(ellipse 90px 55px at 55% 90%, rgba(37, 99, 235, 0.2) 0%, transparent 70%),
+                radial-gradient(ellipse 80px 50px at 95% 95%, rgba(30, 58, 95, 0.3) 0%, transparent 70%),
+                /* Accent clouds */
+                radial-gradient(ellipse 60px 35px at 25% 45%, rgba(59, 130, 246, 0.2) 0%, transparent 70%),
+                radial-gradient(ellipse 70px 40px at 70% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .mega-mendung-bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                /* Wave patterns - typical of mega mendung */
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 10px,
+                    rgba(255, 255, 255, 0.02) 10px,
+                    rgba(255, 255, 255, 0.02) 20px
+                ),
+                /* Decorative curves */
+                radial-gradient(ellipse 150px 80px at 20% 10%, rgba(96, 165, 250, 0.15) 0%, transparent 60%),
+                radial-gradient(ellipse 180px 90px at 80% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 60%),
+                radial-gradient(ellipse 160px 85px at 40% 80%, rgba(96, 165, 250, 0.12) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .mega-mendung-bg > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Sidebar Mega Mendung */
+        .sidebar-mega-mendung {
+            background: linear-gradient(180deg, #0f172a 0%, #1e3a5f 40%, #1e40af 70%, #1e3a5f 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .sidebar-mega-mendung::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                /* Traditional mega mendung cloud shapes */
+                radial-gradient(ellipse 60px 35px at 10% 5%, rgba(96, 165, 250, 0.2) 0%, transparent 70%),
+                radial-gradient(ellipse 80px 45px at 35% 8%, rgba(59, 130, 246, 0.15) 0%, transparent 70%),
+                radial-gradient(ellipse 70px 40px at 60% 3%, rgba(96, 165, 250, 0.18) 0%, transparent 70%),
+                radial-gradient(ellipse 90px 50px at 85% 10%, rgba(59, 130, 246, 0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 65px 38px at 20% 15%, rgba(96, 165, 250, 0.1) 0%, transparent 70%),
+                radial-gradient(ellipse 75px 42px at 50% 18%, rgba(59, 130, 246, 0.15) 0%, transparent 70%),
+                radial-gradient(ellipse 85px 48px at 75% 12%, rgba(96, 165, 250, 0.13) 0%, transparent 70%),
+                /* Middle clouds */
+                radial-gradient(ellipse 55px 32px at 5% 35%, rgba(96, 165, 250, 0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 70px 40px at 30% 40%, rgba(59, 130, 246, 0.1) 0%, transparent 70%),
+                radial-gradient(ellipse 60px 35px at 55% 38%, rgba(96, 165, 250, 0.14) 0%, transparent 70%),
+                radial-gradient(ellipse 80px 45px at 80% 42%, rgba(59, 130, 246, 0.11) 0%, transparent 70%),
+                /* Lower clouds */
+                radial-gradient(ellipse 50px 30px at 15% 60%, rgba(96, 165, 250, 0.1) 0%, transparent 70%),
+                radial-gradient(ellipse 65px 38px at 45% 65%, rgba(59, 130, 246, 0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 75px 42px at 70% 62%, rgba(96, 165, 250, 0.09) 0%, transparent 70%),
+                radial-gradient(ellipse 60px 35px at 90% 68%, rgba(59, 130, 246, 0.13) 0%, transparent 70%),
+                /* Bottom clouds */
+                radial-gradient(ellipse 70px 40px at 10% 85%, rgba(96, 165, 250, 0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 85px 48px at 40% 90%, rgba(59, 130, 246, 0.1) 0%, transparent 70%),
+                radial-gradient(ellipse 65px 38px at 65% 88%, rgba(96, 165, 250, 0.11) 0%, transparent 70%),
+                radial-gradient(ellipse 80px 45px at 90% 92%, rgba(59, 130, 246, 0.09) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .sidebar-mega-mendung::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                /* Subtle wave pattern overlay */
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 5px,
+                    rgba(255, 255, 255, 0.01) 5px,
+                    rgba(255, 255, 255, 0.01) 10px
+                );
+            pointer-events: none;
+            z-index: 0;
+        }
+        .sidebar-mega-mendung > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Enhanced login modal with mega mendung */
+        .login-mega-mendung {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 30%, #1e40af 60%, #1e3a5f 80%, #0f172a 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .login-mega-mendung::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                /* Large decorative clouds */
+                radial-gradient(ellipse 200px 120px at -10% 10%, rgba(96, 165, 250, 0.25) 0%, transparent 60%),
+                radial-gradient(ellipse 250px 150px at 110% 20%, rgba(59, 130, 246, 0.2) 0%, transparent 60%),
+                radial-gradient(ellipse 180px 100px at 50% -10%, rgba(96, 165, 250, 0.18) 0%, transparent 60%),
+                /* Medium clouds */
+                radial-gradient(ellipse 120px 70px at 20% 40%, rgba(59, 130, 246, 0.15) 0%, transparent 70%),
+                radial-gradient(ellipse 140px 80px at 75% 50%, rgba(96, 165, 250, 0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 100px 60px at 45% 65%, rgba(59, 130, 246, 0.1) 0%, transparent 70%),
+                /* Small accent clouds */
+                radial-gradient(ellipse 80px 50px at 10% 80%, rgba(96, 165, 250, 0.15) 0%, transparent 70%),
+                radial-gradient(ellipse 90px 55px at 90% 85%, rgba(59, 130, 246, 0.13) 0%, transparent 70%),
+                radial-gradient(ellipse 70px 45px at 60% 90%, rgba(96, 165, 250, 0.1) 0%, transparent 70%),
+                /* Traditional curvy cloud patterns */
+                radial-gradient(ellipse 60px 35px at 30% 25%, rgba(147, 197, 253, 0.15) 0%, transparent 60%),
+                radial-gradient(ellipse 50px 30px at 65% 35%, rgba(147, 197, 253, 0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 55px 32px at 35% 75%, rgba(147, 197, 253, 0.1) 0%, transparent 60%),
+                radial-gradient(ellipse 65px 38px at 70% 70%, rgba(147, 197, 253, 0.13) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .login-mega-mendung::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                /* Subtle shimmer effect */
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 15px,
+                    rgba(255, 255, 255, 0.015) 15px,
+                    rgba(255, 255, 255, 0.015) 30px
+                ),
+                /* Golden accent - typical of premium batik */
+                radial-gradient(ellipse 100px 60px at 85% 15%, rgba(251, 191, 36, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 80px 50px at 15% 90%, rgba(251, 191, 36, 0.06) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .login-mega-mendung > * {
+            position: relative;
+            z-index: 1;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -70,7 +239,7 @@
 <div id="mainApp" class="min-h-screen flex">
     <div id="sidebarOverlay" class="sidebar-overlay no-print" onclick="toggleSidebar()"></div>
 
-    <aside id="sidebar" class="w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-white flex flex-col fixed h-full z-30 no-print">
+    <aside id="sidebar" class="w-64 sidebar-mega-mendung text-white flex flex-col fixed h-full z-30 no-print">
         <div class="p-5 border-b border-white/10">
             <div class="flex items-center gap-3">
                 <img src="https://i.pinimg.com/1200x/76/39/2d/76392d91c9c22d8ec5563b1126cd55b8.jpg" alt="Logo" class="logo-img">
@@ -144,7 +313,7 @@
 <div id="loginModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeLoginModal()"></div>
     <div class="relative w-full max-w-md fade-in z-10">
-        <div class="login-bg-modal rounded-2xl p-8 shadow-2xl border border-white/10">
+        <div class="login-mega-mendung rounded-2xl p-8 shadow-2xl border border-white/10">
             <div class="text-center mb-6">
                 <img src="https://i.pinimg.com/1200x/76/39/2d/76392d91c9c22d8ec5563b1126cd55b8.jpg" alt="Logo" class="logo-img-large mx-auto mb-3">
                 <h2 class="text-xl font-bold text-white">Masuk ke SIAP</h2>

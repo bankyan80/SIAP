@@ -153,35 +153,77 @@
             <button onclick="closeLoginModal()" class="absolute top-4 right-4 w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition">
                 <i class="fas fa-times"></i>
             </button>
-            <div class="space-y-4">
+            
+            <!-- Tab Login/Register -->
+            <div class="flex mb-4 bg-white/10 rounded-xl p-1">
+                <button id="tabLogin" onclick="switchTab('login')" class="flex-1 py-2 rounded-lg text-sm font-medium text-white bg-white/20 transition">Masuk</button>
+                <button id="tabRegister" onclick="switchTab('register')" class="flex-1 py-2 rounded-lg text-sm font-medium text-blue-200 hover:text-white transition">Daftar</button>
+            </div>
+            
+            <!-- Login Form -->
+            <div id="loginForm" class="space-y-4">
                 <div>
-                    <label class="text-sm text-blue-200 mb-1.5 block">Level Akses</label>
-                    <select id="loginRole" class="w-full bg-white/10 border border-white/20 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="wilayah" class="text-gray-800">Admin Wilayah (Dinas Pendidikan)</option>
-                        <option value="sekolah" class="text-gray-800">Admin Satuan Pendidikan</option>
-                    </select>
-                </div>
-                <div id="sekolahSelect" class="hidden">
-                    <label class="text-sm text-blue-200 mb-1.5 block">Pilih Satuan Pendidikan</label>
-                    <select id="loginSekolah" class="w-full bg-white/10 border border-white/20 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
-                </div>
-                <div>
-                    <label class="text-sm text-blue-200 mb-1.5 block">Username</label>
+                    <label class="text-sm text-blue-200 mb-1.5 block">Email</label>
                     <div class="relative">
-                        <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-blue-300"></i>
-                        <input id="loginUser" type="text" placeholder="Masukkan username" class="w-full bg-white/10 border border-white/20 text-white rounded-xl pl-11 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-300/50">
+                        <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-blue-300"></i>
+                        <input id="loginEmail" type="email" placeholder="Masukkan email" class="w-full bg-white/10 border border-white/20 text-white rounded-xl pl-11 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-300/50">
                     </div>
                 </div>
                 <div>
                     <label class="text-sm text-blue-200 mb-1.5 block">Password</label>
                     <div class="relative">
                         <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-blue-300"></i>
-                        <input id="loginPass" type="password" placeholder="Masukkan password" class="w-full bg-white/10 border border-white/20 text-white rounded-xl pl-11 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-300/50" onkeypress="if(event.key==='Enter')doLogin()">
+                        <input id="loginPassword" type="password" placeholder="Masukkan password" class="w-full bg-white/10 border border-white/20 text-white rounded-xl pl-11 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-300/50" onkeypress="if(event.key==='Enter')doLogin()">
                     </div>
+                </div>
+                <div class="flex justify-between items-center">
+                    <label class="flex items-center gap-2 text-sm text-blue-200">
+                        <input type="checkbox" id="rememberMe" class="rounded">
+                        Ingat saya
+                    </label>
+                    <button onclick="showResetPassword()" class="text-sm text-blue-300 hover:text-white transition">Lupa password?</button>
                 </div>
                 <button onclick="doLogin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-blue-600/30">
                     <i class="fas fa-sign-in-alt mr-2"></i>Masuk
                 </button>
+            </div>
+            
+            <!-- Register Form -->
+            <div id="registerForm" class="hidden space-y-4">
+                <div>
+                    <label class="text-sm text-blue-200 mb-1.5 block">Nama Lengkap</label>
+                    <input id="regNama" type="text" placeholder="Nama lengkap" class="w-full bg-white/10 border border-white/20 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-300/50">
+                </div>
+                <div>
+                    <label class="text-sm text-blue-200 mb-1.5 block">Email</label>
+                    <input id="regEmail" type="email" placeholder="Masukkan email" class="w-full bg-white/10 border border-white/20 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-300/50">
+                </div>
+                <div>
+                    <label class="text-sm text-blue-200 mb-1.5 block">Password (min. 6 karakter)</label>
+                    <input id="regPassword" type="password" placeholder="Buat password" class="w-full bg-white/10 border border-white/20 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-300/50">
+                </div>
+                <div>
+                    <label class="text-sm text-blue-200 mb-1.5 block">Konfirmasi Password</label>
+                    <input id="regPasswordConfirm" type="password" placeholder="Ulangi password" class="w-full bg-white/10 border border-white/20 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-blue-300/50">
+                </div>
+                <div>
+                    <label class="text-sm text-blue-200 mb-1.5 block">Tipe Akun</label>
+                    <select id="regRole" class="w-full bg-white/10 border border-white/20 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="sekolah" class="text-gray-800">Admin Sekolah</option>
+                    </select>
+                </div>
+                <div id="regSekolahSelect" class="hidden">
+                    <label class="text-sm text-blue-200 mb-1.5 block">Pilih Sekolah</label>
+                    <select id="regSekolahId" class="w-full bg-white/10 border border-white/20 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+                </div>
+                <button onclick="doRegister()" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-green-600/30">
+                    <i class="fas fa-user-plus mr-2"></i>Daftar
+                </button>
+            </div>
+            
+            <div class="mt-4 text-center">
+                <p class="text-xs text-blue-300">Dengan masuk, Anda menyetujui</p>
+                <p class="text-xs text-blue-200">Syarat & Ketentuan yang berlaku</p>
             </div>
         </div>
     </div>
@@ -201,32 +243,101 @@ const firebaseConfig = {
 
 // Initialize Firebase
 let db = null;
+let auth = null;
 let firebaseReady = false;
+let currentUserData = null;
 
 async function initFirebase() {
     try {
         if (typeof firebase !== 'undefined') {
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
+            auth = firebase.auth();
+            
+            // Test connection with timeout
+            console.log('Testing Firebase connection...');
+            
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Connection timeout')), 5000);
+            });
+            
+            const testConnection = db.collection('_test').limit(1).get();
+            
+            await Promise.race([testConnection, timeoutPromise]);
+            
             firebaseReady = true;
-            console.log('Firebase initialized successfully');
+            console.log('Firebase connected successfully');
+            
+            // Listen for auth state changes
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    console.log('User signed in:', user.email);
+                    // Load user data from Firestore
+                    await loadUserData(user);
+                } else {
+                    console.log('User signed out');
+                    currentUserData = null;
+                    DB.currentUser = null;
+                    DB.currentRole = null;
+                    DB.isLoggedIn = false;
+                }
+            });
             
             // Load all data from Firestore
             await loadAllDataFromFirestore();
             
-            // If no data was loaded, seed initial data
-            if (DB.sekolahList.length === 0 || DB.sekolahList.length <= 8) {
-                // Check if we should seed (Firestore was empty)
-                const checkSnapshot = await db.collection('sekolah').limit(1).get();
-                if (checkSnapshot.empty) {
-                    console.log('Firestore is empty, seeding initial data...');
-                    await seedInitialDataToFirestore();
-                }
-            }
         }
     } catch (error) {
-        console.error('Firebase initialization error:', error);
-        showToast('Menggunakan mode offline (data tidak tersimpan ke cloud)', 'warning');
+        console.error('Firebase connection error:', error);
+        firebaseReady = false;
+        showToast('Mode offline aktif - data tersimpan lokal saja', 'warning');
+    }
+}
+
+// Load user-specific data
+async function loadUserData(user) {
+    if (!user || !db) return;
+    
+    try {
+        // Check if user is admin wilayah
+        const adminDoc = await db.collection('admins').doc(user.uid).get();
+        if (adminDoc.exists) {
+            currentUserData = adminDoc.data();
+            DB.currentUser = user.email;
+            DB.currentRole = 'wilayah';
+            DB.isLoggedIn = true;
+            initApp();
+            return;
+        }
+        
+        // Check if user is sekolah admin
+        const sekolahDoc = await db.collection('sekolah_admins').doc(user.uid).get();
+        if (sekolahDoc.exists) {
+            currentUserData = sekolahDoc.data();
+            DB.currentUser = user.email;
+            DB.currentRole = 'sekolah';
+            DB.currentSekolahId = currentUserData.sekolahId;
+            DB.isLoggedIn = true;
+            initApp();
+            return;
+        }
+        
+        // If not found in either, check localStorage for mapping
+        const userMap = localStorage.getItem('siap_userMap');
+        if (userMap) {
+            const map = JSON.parse(userMap);
+            const userInfo = map[user.email];
+            if (userInfo) {
+                DB.currentUser = user.email;
+                DB.currentRole = userInfo.role;
+                DB.currentSekolahId = userInfo.sekolahId;
+                DB.isLoggedIn = true;
+                initApp();
+            }
+        }
+        
+    } catch (error) {
+        console.error('Error loading user data:', error);
     }
 }
 
@@ -706,6 +817,55 @@ async function seedInitialDataToFirestore() {
 function formatRupiah(n) { return 'Rp ' + Number(n).toLocaleString('id-ID'); }
 function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
 
+// LocalStorage functions for offline persistence
+function saveToLocalStorage() {
+    try {
+        localStorage.setItem('siap_sekolah', JSON.stringify(DB.sekolahList));
+        localStorage.setItem('siap_passwords', JSON.stringify(DB.passwords));
+        localStorage.setItem('siap_pengumuman', JSON.stringify(DB.pengumumanList));
+        localStorage.setItem('siap_pengajuan', JSON.stringify(DB.pengajuanList));
+        localStorage.setItem('siap_pipVerval', JSON.stringify(DB.pipVerval));
+        localStorage.setItem('siap_pipPemberkasan', JSON.stringify(DB.pipPemberkasan));
+        localStorage.setItem('siap_settings', JSON.stringify({
+            pipTahunAktif: DB.pipTahunAktif,
+            pipNominal: DB.pipNominal
+        }));
+        console.log('Data saved to localStorage');
+    } catch (e) {
+        console.error('Error saving to localStorage:', e);
+    }
+}
+
+function loadFromLocalStorage() {
+    try {
+        const sekolah = localStorage.getItem('siap_sekolah');
+        const passwords = localStorage.getItem('siap_passwords');
+        const pengumuman = localStorage.getItem('siap_pengumuman');
+        const pengajuan = localStorage.getItem('siap_pengajuan');
+        const pipVerval = localStorage.getItem('siap_pipVerval');
+        const pipPemberkasan = localStorage.getItem('siap_pipPemberkasan');
+        const settings = localStorage.getItem('siap_settings');
+        
+        if (sekolah) DB.sekolahList = JSON.parse(sekolah);
+        if (passwords) DB.passwords = { ...DB.passwords, ...JSON.parse(passwords) };
+        if (pengumuman) DB.pengumumanList = JSON.parse(pengumuman);
+        if (pengajuan) DB.pengajuanList = JSON.parse(pengajuan);
+        if (pipVerval) DB.pipVerval = JSON.parse(pipVerval);
+        if (pipPemberkasan) DB.pipPemberkasan = JSON.parse(pipPemberkasan);
+        if (settings) {
+            const s = JSON.parse(settings);
+            DB.pipTahunAktif = s.pipTahunAktif || '2025';
+            DB.pipNominal = s.pipNominal || 450000;
+        }
+        
+        console.log('Data loaded from localStorage');
+        return true;
+    } catch (e) {
+        console.error('Error loading from localStorage:', e);
+        return false;
+    }
+}
+
 function showToast(msg, type='success') {
     const c = document.getElementById('toastContainer');
     const colors = { success:'bg-green-500', error:'bg-red-500', warning:'bg-yellow-500', info:'bg-blue-500' };
@@ -789,54 +949,265 @@ let chartInstances = {};
 function destroyCharts() { Object.values(chartInstances).forEach(c => { if (c && c.destroy) c.destroy(); }); chartInstances = {}; }
 
 // ==================== LOGIN/LOGOUT ====================
-function showLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
-function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
-
-document.getElementById('loginRole').addEventListener('change', function() {
-    const sel = document.getElementById('sekolahSelect');
-    if (this.value === 'sekolah') {
-        sel.classList.remove('hidden');
-        document.getElementById('loginSekolah').innerHTML = DB.sekolahList.map(s => `<option value="${s.id}" class="text-gray-800">${escapeHtml(s.nama)}</option>`).join('');
-    } else { sel.classList.add('hidden'); }
-});
-
-function doLogin() {
-    const role = document.getElementById('loginRole').value;
-    const user = document.getElementById('loginUser').value;
-    const pass = document.getElementById('loginPass').value;
-
-    // Validasi kredensial
-    if (role === 'wilayah') {
-        // Admin Wilayah: username = k_017, password = 123456
-        if (user !== 'k_017' || pass !== '123456') {
-            showToast('Username atau password salah!', 'error');
-            return;
-        }
-        DB.currentRole = 'wilayah';
-        DB.currentUser = user;
-        DB.isLoggedIn = true;
-    } else {
-        // Admin Sekolah: username = NPSN sekolah, password = 123456
-        const sekolahId = parseInt(document.getElementById('loginSekolah').value);
-        const sekolah = DB.sekolahList.find(s => s.id === sekolahId);
-        if (!sekolah || user !== sekolah.npsn || pass !== '123456') {
-            showToast('Username atau password salah! Gunakan NPSN sebagai username.', 'error');
-            return;
-        }
-        DB.currentRole = 'sekolah';
-        DB.currentUser = user;
-        DB.currentSekolahId = sekolahId;
-        DB.isLoggedIn = true;
-    }
-
-    closeLoginModal();
-    initApp();
-    showToast('Berhasil masuk ke sistem!');
+function showLoginModal() { 
+    document.getElementById('loginModal').classList.remove('hidden');
+    switchTab('login');
 }
 
-function doLogout() {
-    DB.currentUser = null; DB.currentRole = null; DB.currentSekolahId = null; DB.isLoggedIn = false;
-    destroyCharts(); initPublicView(); showToast('Anda telah keluar dari sistem.', 'info');
+function closeLoginModal() { 
+    document.getElementById('loginModal').classList.add('hidden'); 
+}
+
+function switchTab(tab) {
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const tabLogin = document.getElementById('tabLogin');
+    const tabRegister = document.getElementById('tabRegister');
+    
+    if (tab === 'login') {
+        loginForm.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+        tabLogin.classList.add('bg-white/20', 'text-white');
+        tabLogin.classList.remove('text-blue-200');
+        tabRegister.classList.remove('bg-white/20', 'text-white');
+        tabRegister.classList.add('text-blue-200');
+    } else {
+        loginForm.classList.add('hidden');
+        registerForm.classList.remove('hidden');
+        tabRegister.classList.add('bg-white/20', 'text-white');
+        tabRegister.classList.remove('text-blue-200');
+        tabLogin.classList.remove('bg-white/20', 'text-white');
+        tabLogin.classList.add('text-blue-200');
+        
+        // Populate sekolah dropdown for registration
+        populateSekolahDropdown();
+    }
+}
+
+function populateSekolahDropdown() {
+    const select = document.getElementById('regSekolahId');
+    if (select && DB.sekolahList.length > 0) {
+        select.innerHTML = DB.sekolahList.map(s => 
+            `<option value="${s.id}" class="text-gray-800">${escapeHtml(s.nama)} (${s.npsn})</option>`
+        ).join('');
+    }
+}
+
+async function doLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    
+    if (!email || !password) {
+        showToast('Email dan password harus diisi!', 'error');
+        return;
+    }
+    
+    if (!firebaseReady || !auth) {
+        showToast('Firebase belum siap. Gunakan mode offline.', 'warning');
+        fallbackLogin(email, password);
+        return;
+    }
+    
+    try {
+        showToast('Memverifikasi...', 'info');
+        
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        
+        closeLoginModal();
+        showToast('Berhasil masuk!', 'success');
+        
+    } catch (error) {
+        console.error('Login error:', error);
+        
+        let errorMsg = 'Login gagal!';
+        if (error.code === 'auth/user-not-found') {
+            errorMsg = 'Email tidak terdaftar!';
+        } else if (error.code === 'auth/wrong-password') {
+            errorMsg = 'Password salah!';
+        } else if (error.code === 'auth/invalid-email') {
+            errorMsg = 'Format email tidak valid!';
+        } else if (error.code === 'auth/too-many-requests') {
+            errorMsg = 'Terlalu banyak percobaan. Coba lagi nanti.';
+        }
+        
+        showToast(errorMsg, 'error');
+    }
+}
+
+// Fallback login for offline mode
+function fallbackLogin(email, password) {
+    // Check localStorage for user credentials
+    const userMap = localStorage.getItem('siap_userMap');
+    if (userMap) {
+        const map = JSON.parse(userMap);
+        const userInfo = map[email];
+        if (userInfo && userInfo.password === password) {
+            DB.currentUser = email;
+            DB.currentRole = userInfo.role;
+            DB.currentSekolahId = userInfo.sekolahId;
+            DB.isLoggedIn = true;
+            closeLoginModal();
+            initApp();
+            showToast('Berhasil masuk (mode offline)!', 'success');
+            return;
+        }
+    }
+    
+    // Check default admin
+    if (email === 'admin@siap.go.id' && password === 'admin123') {
+        DB.currentUser = email;
+        DB.currentRole = 'wilayah';
+        DB.isLoggedIn = true;
+        closeLoginModal();
+        initApp();
+        showToast('Berhasil masuk (admin default)!', 'success');
+        return;
+    }
+    
+    showToast('Email atau password salah!', 'error');
+}
+
+async function doRegister() {
+    const nama = document.getElementById('regNama').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+    const passwordConfirm = document.getElementById('regPasswordConfirm').value;
+    const role = document.getElementById('regRole').value;
+    const sekolahId = document.getElementById('regSekolahId')?.value;
+    
+    // Validasi
+    if (!nama || !email || !password || !passwordConfirm) {
+        showToast('Semua field harus diisi!', 'error');
+        return;
+    }
+    
+    if (password.length < 6) {
+        showToast('Password minimal 6 karakter!', 'error');
+        return;
+    }
+    
+    if (password !== passwordConfirm) {
+        showToast('Konfirmasi password tidak cocok!', 'error');
+        return;
+    }
+    
+    if (!firebaseReady || !auth) {
+        showToast('Firebase belum siap. Tidak bisa mendaftar.', 'error');
+        return;
+    }
+    
+    try {
+        showToast('Membuat akun...', 'info');
+        
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        
+        // Save user data to Firestore
+        const userData = {
+            uid: user.uid,
+            nama: nama,
+            email: email,
+            role: role,
+            sekolahId: sekolahId ? parseInt(sekolahId) : null,
+            createdAt: new Date().toISOString(),
+            status: 'pending' // Perlu approval admin wilayah
+        };
+        
+        await db.collection('sekolah_admins').doc(user.uid).set(userData);
+        
+        // Also save to localStorage for offline access
+        const userMap = JSON.parse(localStorage.getItem('siap_userMap') || '{}');
+        userMap[email] = { ...userData, password: password };
+        localStorage.setItem('siap_userMap', JSON.stringify(userMap));
+        
+        showToast('Akun berhasil dibuat! Silakan login.', 'success');
+        switchTab('login');
+        
+    } catch (error) {
+        console.error('Register error:', error);
+        
+        let errorMsg = 'Pendaftaran gagal!';
+        if (error.code === 'auth/email-already-in-use') {
+            errorMsg = 'Email sudah terdaftar!';
+        } else if (error.code === 'auth/invalid-email') {
+            errorMsg = 'Format email tidak valid!';
+        } else if (error.code === 'auth/weak-password') {
+            errorMsg = 'Password terlalu lemah!';
+        }
+        
+        showToast(errorMsg, 'error');
+    }
+}
+
+function showResetPassword() {
+    const email = document.getElementById('loginEmail').value.trim();
+    
+    showModal(`
+        <div class="p-6">
+            <h3 class="text-lg font-semibold mb-4"><i class="fas fa-key text-blue-500 mr-2"></i>Reset Password</h3>
+            <p class="text-sm text-gray-600 mb-4">Masukkan email Anda. Kami akan mengirim link untuk reset password.</p>
+            <div class="mb-4">
+                <label class="text-sm text-gray-600 mb-1 block">Email</label>
+                <input type="email" id="resetEmail" value="${email}" class="w-full border rounded-xl px-4 py-2.5 text-sm" placeholder="Email Anda">
+            </div>
+            <div class="flex gap-3">
+                <button onclick="doResetPassword()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-medium">Kirim Link Reset</button>
+                <button onclick="closeModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-medium">Batal</button>
+            </div>
+        </div>
+    `);
+}
+
+async function doResetPassword() {
+    const email = document.getElementById('resetEmail').value.trim();
+    
+    if (!email) {
+        showToast('Masukkan email Anda!', 'error');
+        return;
+    }
+    
+    if (!firebaseReady || !auth) {
+        showToast('Firebase belum siap. Tidak bisa reset password.', 'error');
+        return;
+    }
+    
+    try {
+        await auth.sendPasswordResetEmail(email);
+        closeModal();
+        showToast('Link reset password telah dikirim ke email Anda!', 'success');
+    } catch (error) {
+        console.error('Reset password error:', error);
+        
+        let errorMsg = 'Gagal mengirim email reset!';
+        if (error.code === 'auth/user-not-found') {
+            errorMsg = 'Email tidak terdaftar!';
+        } else if (error.code === 'auth/invalid-email') {
+            errorMsg = 'Format email tidak valid!';
+        }
+        
+        showToast(errorMsg, 'error');
+    }
+}
+
+async function doLogout() {
+    try {
+        if (auth) {
+            await auth.signOut();
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+    }
+    
+    DB.currentUser = null; 
+    DB.currentRole = null; 
+    DB.currentSekolahId = null; 
+    DB.isLoggedIn = false;
+    currentUserData = null;
+    
+    destroyCharts(); 
+    initPublicView(); 
+    showToast('Anda telah keluar dari sistem.', 'info');
 }
 
 function updateUIForLoginState() {
@@ -1270,6 +1641,8 @@ function hapusSekolahTerpilih() {
 }
 
 async function doHapusSekolahTerpilih() {
+    const jumlahDihapus = selectedSekolahIds.length;
+    
     for (const id of selectedSekolahIds) {
         const idx = DB.sekolahList.findIndex(x => x.id === id);
         if (idx > -1) {
@@ -1281,17 +1654,24 @@ async function doHapusSekolahTerpilih() {
                 delete DB.passwords[deletedSekolah.npsn];
             }
             
-            // Delete from Firestore
-            await deleteSekolahFromFirestore(id);
+            // Delete from Firestore (if connected)
+            if (firebaseReady) {
+                await deleteSekolahFromFirestore(id);
+            }
         }
     }
     
-    // Save passwords to Firestore
-    await savePasswordToFirestore();
+    // Save to localStorage (always)
+    saveToLocalStorage();
+    
+    // Save passwords to Firestore (if connected)
+    if (firebaseReady) {
+        await savePasswordToFirestore();
+    }
     
     selectedSekolahIds = [];
     closeModal();
-    showToast('Sekolah terpilih berhasil dihapus dari cloud!');
+    showToast(`${jumlahDihapus} sekolah berhasil dihapus!`, 'success');
     renderWSekolah();
     updateSekolahDropdown();
 }
@@ -1346,12 +1726,17 @@ function doTambahSekolah() {
     // Add password for the new school (NPSN as username)
     DB.passwords[newSekolah.npsn] = '123456';
     
-    // Save to Firestore
-    saveSekolahToFirestore(newSekolah);
-    savePasswordToFirestore(newSekolah.npsn, '123456');
+    // Save to localStorage (always)
+    saveToLocalStorage();
+    
+    // Save to Firestore (if connected)
+    if (firebaseReady) {
+        saveSekolahToFirestore(newSekolah);
+        savePasswordToFirestore(newSekolah.npsn, '123456');
+    }
     
     closeModal();
-    showToast('Sekolah berhasil ditambahkan dan tersimpan ke cloud!');
+    showToast('Sekolah berhasil ditambahkan!', 'success');
     renderWSekolah();
     updateSekolahDropdown();
 }
@@ -1394,11 +1779,16 @@ function doEditSekolah(id) {
         s.status = document.getElementById('editStatus').value;
         s.akreditasi = document.getElementById('editAkr').value;
         
-        // Save to Firestore
-        saveSekolahToFirestore(s);
+        // Save to localStorage (always)
+        saveToLocalStorage();
+        
+        // Save to Firestore (if connected)
+        if (firebaseReady) {
+            saveSekolahToFirestore(s);
+        }
         
         closeModal();
-        showToast('Sekolah berhasil diupdate dan tersimpan ke cloud!');
+        showToast('Sekolah berhasil diupdate!', 'success');
         renderWSekolah();
         updateSekolahDropdown();
     }
@@ -1434,14 +1824,19 @@ function doHapusSekolah(id) {
         // Delete password for the school
         if (deletedSekolah && DB.passwords[deletedSekolah.npsn]) {
             delete DB.passwords[deletedSekolah.npsn];
+        }
+        
+        // Save to localStorage (always)
+        saveToLocalStorage();
+        
+        // Delete from Firestore (if connected)
+        if (firebaseReady) {
+            deleteSekolahFromFirestore(id);
             savePasswordToFirestore();
         }
         
-        // Delete from Firestore
-        deleteSekolahFromFirestore(id);
-        
         closeModal();
-        showToast('Sekolah berhasil dihapus dari cloud!');
+        showToast('Sekolah berhasil dihapus!', 'success');
         renderWSekolah();
         updateSekolahDropdown();
     }
@@ -3440,10 +3835,15 @@ function changePassword() {
     // Simpan password baru
     DB.passwords[npsn] = newPass;
     
-    // Save to Firestore
-    savePasswordToFirestore(npsn, newPass);
+    // Save to localStorage (always)
+    saveToLocalStorage();
     
-    showToast('Password berhasil diubah dan tersimpan ke cloud!');
+    // Save to Firestore (if connected)
+    if (firebaseReady) {
+        savePasswordToFirestore(npsn, newPass);
+    }
+    
+    showToast('Password berhasil diubah!', 'success');
     
     // Kosongkan form
     document.getElementById('oldPassword').value = '';
@@ -4330,16 +4730,41 @@ async function initializeApp() {
         contentArea.innerHTML = `
             <div class="flex flex-col items-center justify-center min-h-[400px]">
                 <div class="loading-spinner" style="width: 40px; height: 40px;"></div>
-                <p class="mt-4 text-gray-500">Memuat data dari cloud...</p>
+                <p class="mt-4 text-gray-500">Memuat data...</p>
+                <p class="text-xs text-gray-400 mt-2">Mencoba koneksi ke cloud...</p>
             </div>
         `;
     }
     
-    // Initialize Firebase and load data
-    await initFirebase();
+    // First, load from localStorage for immediate display
+    const hasLocalData = loadFromLocalStorage();
+    if (hasLocalData) {
+        console.log('Using cached data from localStorage');
+    }
     
-    // Then show the public view
+    // Try to initialize Firebase with timeout
+    const firebaseTimeout = new Promise((resolve) => {
+        setTimeout(() => {
+            console.log('Firebase init timeout, continuing with local data');
+            resolve(null);
+        }, 6000);
+    });
+    
+    try {
+        await Promise.race([initFirebase(), firebaseTimeout]);
+    } catch (error) {
+        console.error('Init error:', error);
+    }
+    
+    // Show the public view regardless of Firebase status
     initPublicView();
+    
+    // Show connection status
+    if (firebaseReady) {
+        showToast('✓ Terhubung ke cloud', 'success');
+    } else {
+        showToast('⚡ Mode offline - perubahan tersimpan lokal', 'warning');
+    }
 }
 
 initializeApp();

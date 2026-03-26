@@ -192,6 +192,9 @@
                 <button id="topLoginBtn" onclick="showLoginModal()" class="flex items-center gap-2 bg-gradient-to-r from-[#0f1e3c] to-[#1e3a5f] hover:from-[#1e3a5f] hover:to-[#0f1e3c] text-white px-5 py-2.5 rounded-xl text-sm font-medium transition shadow-sm border border-red-600">
                     <i class="fas fa-sign-in-alt"></i><span>Masuk</span>
                 </button>
+                <div id="tahunAjaranHeader" class="hidden px-3 py-1.5 bg-indigo-50 border border-indigo-200 rounded-full text-xs text-indigo-700 font-medium">
+                    <i class="fas fa-calendar-alt mr-1"></i><span id="tahunAjaranDisplay">2025/2026</span>
+                </div>
                 <div class="text-right">
                     <p class="text-sm font-medium text-gray-700" id="topDate"></p>
                     <p class="text-xs text-gray-400" id="topTime"></p>
@@ -249,16 +252,6 @@
                 <button onclick="doLogin()" class="w-full bg-gradient-to-r from-[#b91c1c] to-[#dc2626] hover:from-[#dc2626] hover:to-[#b91c1c] text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-red-600/30">
                     <i class="fas fa-sign-in-alt mr-2"></i>Masuk
                 </button>
-                
-                <!-- Info Login Default -->
-                <div class="mt-4 p-3 bg-white/5 rounded-xl border border-white/10">
-                    <p class="text-xs text-blue-200 font-medium mb-2"><i class="fas fa-info-circle mr-1"></i>Informasi Login Default:</p>
-                    <div class="text-xs text-blue-100/70 space-y-1">
-                        <p><span class="text-blue-200">Admin Wilayah:</span> Username: <code class="bg-white/10 px-1.5 py-0.5 rounded">NIP</code> (tanpa spasi) | Password: <code class="bg-white/10 px-1.5 py-0.5 rounded">123456</code></p>
-                        <p class="text-blue-300/50 pl-1">Contoh NIP: <code class="bg-white/5 px-1 py-0.5 rounded">198701212019211035</code></p>
-                        <p><span class="text-blue-200">Admin Sekolah:</span> Username = NPSN sekolah | Password: <code class="bg-white/10 px-1.5 py-0.5 rounded">123456</code></p>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -532,6 +525,153 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeFirebase();
 });
 
+// ==================== COMPREHENSIVE FIREBASE SYNC ====================
+// Helper function to sync any data to Firebase
+async function syncToFirebase(collection, docId, data) {
+    if (!firebaseInitialized) return { success: false, error: 'Firebase tidak siap' };
+    return await firebaseSaveDocument(collection, docId, data);
+}
+
+// Helper function to delete from Firebase
+async function deleteFromFirebase(collection, docId) {
+    if (!firebaseInitialized) return { success: false, error: 'Firebase tidak siap' };
+    return await firebaseDeleteDocument(collection, docId);
+}
+
+// Sync all sekolah data
+async function syncAllSekolahToFirebase() {
+    if (!firebaseInitialized) return;
+    for (const sekolah of DB.sekolahList) {
+        await firebaseSaveDocument('sekolah', sekolah.id.toString(), sekolah);
+    }
+}
+
+// Sync staf dinas
+async function syncStafDinasToFirebase() {
+    if (!firebaseInitialized) return;
+    await firebaseSaveDocument('settings', 'stafDinas', { list: DB.stafDinas });
+}
+
+// Sync admin wilayah list
+async function syncAdminWilayahToFirebase() {
+    if (!firebaseInitialized) return;
+    await firebaseSaveDocument('settings', 'adminWilayah', { list: DB.adminWilayahList });
+}
+
+// Sync siswa list for a school
+async function syncSiswaToFirebase(sekolahId) {
+    if (!firebaseInitialized) return;
+    const siswaData = DB.siswaList[sekolahId] || [];
+    await firebaseSaveDocument('siswa', sekolahId.toString(), { siswaList: siswaData });
+}
+
+// Sync GTK list for a school
+async function syncGTKToFirebase(sekolahId) {
+    if (!firebaseInitialized) return;
+    const gtkData = DB.gtkList[sekolahId] || [];
+    await firebaseSaveDocument('gtk', sekolahId.toString(), { gtkList: gtkData });
+}
+
+// Sync sarpras for a school
+async function syncSarprasToFirebase(sekolahId) {
+    if (!firebaseInitialized) return;
+    const sarpras = DB.sarprasList.find(s => s.sekolahId === sekolahId);
+    if (sarpras) {
+        await firebaseSaveDocument('sarpras', sekolahId.toString(), sarpras);
+    }
+}
+
+// Sync pengajuan list
+async function syncPengajuanToFirebase() {
+    if (!firebaseInitialized) return;
+    await firebaseSaveDocument('settings', 'pengajuanList', { list: DB.pengajuanList });
+}
+
+// Sync surat masuk
+async function syncSuratMasukToFirebase() {
+    if (!firebaseInitialized) return;
+    await firebaseSaveDocument('settings', 'suratMasuk', { list: DB.suratMasuk });
+}
+
+// Sync surat keluar
+async function syncSuratKeluarToFirebase() {
+    if (!firebaseInitialized) return;
+    await firebaseSaveDocument('settings', 'suratKeluar', { list: DB.suratKeluar });
+}
+
+// Sync PIP data
+async function syncPIPToFirebase() {
+    if (!firebaseInitialized) return;
+    await firebaseSaveDocument('settings', 'pipCalon', { data: DB.pipCalon });
+    await firebaseSaveDocument('settings', 'pipUsulan', { data: DB.pipUsulan });
+    await firebaseSaveDocument('settings', 'pipKuota', { data: DB.pipKuota });
+    await firebaseSaveDocument('settings', 'pipVerval', { list: DB.pipVerval });
+    await firebaseSaveDocument('settings', 'pipPemberkasan', { list: DB.pipPemberkasan });
+}
+
+// Sync pengumuman
+async function syncPengumumanToFirebase() {
+    if (!firebaseInitialized) return;
+    await firebaseSaveDocument('settings', 'pengumumanList', { list: DB.pengumumanList });
+}
+
+// Sync notifications
+async function syncNotificationsToFirebase() {
+    if (!firebaseInitialized) return;
+    await firebaseSaveDocument('settings', 'notifications', { list: DB.notifications });
+}
+
+// Sync wilayah settings
+async function syncWilayahToFirebase() {
+    if (!firebaseInitialized) return;
+    await firebaseSaveDocument('settings', 'wilayah', DB.wilayah);
+}
+
+// Sync keuangan for a school
+async function syncKeuanganToFirebase(sekolahId) {
+    if (!firebaseInitialized) return;
+    const keuangan = DB.keuangan[sekolahId];
+    if (keuangan) {
+        await firebaseSaveDocument('keuangan', sekolahId.toString(), { keuanganList: keuangan });
+    }
+}
+
+// Sync leger gaji
+async function syncLegerGajiToFirebase() {
+    if (!firebaseInitialized) return;
+    await firebaseSaveDocument('settings', 'legerGajiList', { list: DB.legerGajiList });
+}
+
+// Sync all data (for bulk operations)
+async function syncAllToFirebase() {
+    if (!firebaseInitialized) return;
+    
+    // Sync sekolah
+    await syncAllSekolahToFirebase();
+    
+    // Sync settings
+    await syncStafDinasToFirebase();
+    await syncAdminWilayahToFirebase();
+    await syncPengajuanToFirebase();
+    await syncSuratMasukToFirebase();
+    await syncSuratKeluarToFirebase();
+    await syncPIPToFirebase();
+    await syncPengumumanToFirebase();
+    await syncNotificationsToFirebase();
+    await syncWilayahToFirebase();
+    await syncLegerGajiToFirebase();
+    
+    // Sync per-school data
+    for (const sekolah of DB.sekolahList) {
+        await syncSiswaToFirebase(sekolah.id);
+        await syncGTKToFirebase(sekolah.id);
+        await syncSarprasToFirebase(sekolah.id);
+        await syncKeuanganToFirebase(sekolah.id);
+    }
+    
+    console.log('✅ Semua data berhasil disinkronkan ke Firebase!');
+}
+
 // ==================== DATA STORE ====================
 const DB = {
     currentUser: null, currentRole: null, currentSekolahId: null, isLoggedIn: false,
@@ -545,6 +685,15 @@ const DB = {
         email: "disdik@nusantara.go.id",
         website: "www.disdik-nusantara.go.id"
     },
+
+    // Tahun Ajaran Aktif
+    tahunAjaran: "2025/2026",
+    
+    // Daftar Tahun Ajaran yang tersedia
+    tahunAjaranList: [
+        "2025/2026", "2026/2027", "2027/2028", "2028/2029", "2029/2030",
+        "2030/2031", "2031/2032", "2032/2033", "2033/2034", "2034/2035", "2035/2036"
+    ],
 
     // Data Staf Dinas
     stafDinas: [
@@ -581,31 +730,31 @@ const DB = {
 
     sekolahList: [
         // PAUD
-        { id: 1, npsn: "10512345", nama: "PAUD Tunas Mekar", jenjang: "PAUD", alamat: "Jl. Melati No. 5", kepsek: "Sri Wahyuni, S.Pd.", akreditasi: "A", status: "Negeri", siswa: 45, guru: 4, rombel: 3, online: true, lastSync: "2026-01-15 08:30" },
-        { id: 2, npsn: "10512346", nama: "PAUD Ceria Bangsa", jenjang: "PAUD", alamat: "Jl. Mawar No. 12", kepsek: "Dewi Kartika, A.Ma.Paud", akreditasi: "B", status: "Swasta", siswa: 38, guru: 3, rombel: 2, online: true, lastSync: "2026-01-15 08:25" },
+        { id: 1, npsn: "10512345", nama: "PAUD Tunas Mekar", jenjang: "PAUD", alamat: "Jl. Melati No. 5", kepsek: "Sri Wahyuni, S.Pd.", akreditasi: "A", status: "Negeri", siswa: 45, guru: 4, rombel: 3, online: true, lastSync: "2025-01-15 08:30" },
+        { id: 2, npsn: "10512346", nama: "PAUD Ceria Bangsa", jenjang: "PAUD", alamat: "Jl. Mawar No. 12", kepsek: "Dewi Kartika, A.Ma.Paud", akreditasi: "B", status: "Swasta", siswa: 38, guru: 3, rombel: 2, online: true, lastSync: "2025-01-15 08:25" },
         // TK
-        { id: 3, npsn: "10512347", nama: "TK Negeri 1 Nusantara", jenjang: "TK", alamat: "Jl. Anggrek No. 8", kepsek: "Hj. Siti Aminah, S.Pd.", akreditasi: "A", status: "Negeri", siswa: 86, guru: 6, rombel: 4, online: true, lastSync: "2026-01-15 08:20" },
-        { id: 4, npsn: "10512348", nama: "TK Islam Nurul Huda", jenjang: "TK", alamat: "Jl. Masjid No. 15", kepsek: "Ustadzah Fatimah, S.Pd.I", akreditasi: "A", status: "Swasta", siswa: 62, guru: 5, rombel: 3, online: false, lastSync: "2026-01-14 16:45" },
+        { id: 3, npsn: "10512347", nama: "TK Negeri 1 Nusantara", jenjang: "TK", alamat: "Jl. Anggrek No. 8", kepsek: "Hj. Siti Aminah, S.Pd.", akreditasi: "A", status: "Negeri", siswa: 86, guru: 6, rombel: 4, online: true, lastSync: "2025-01-15 08:20" },
+        { id: 4, npsn: "10512348", nama: "TK Islam Nurul Huda", jenjang: "TK", alamat: "Jl. Masjid No. 15", kepsek: "Ustadzah Fatimah, S.Pd.I", akreditasi: "A", status: "Swasta", siswa: 62, guru: 5, rombel: 3, online: false, lastSync: "2025-01-14 16:45" },
         // RA
-        { id: 5, npsn: "10512349", nama: "RA Al-Ikhlas", jenjang: "RA", alamat: "Jl. Pesantren No. 7", kepsek: "Ustadzah Aminah, S.Ag", akreditasi: "A", status: "Swasta", siswa: 54, guru: 4, rombel: 2, online: true, lastSync: "2026-01-15 08:15" },
+        { id: 5, npsn: "10512349", nama: "RA Al-Ikhlas", jenjang: "RA", alamat: "Jl. Pesantren No. 7", kepsek: "Ustadzah Aminah, S.Ag", akreditasi: "A", status: "Swasta", siswa: 54, guru: 4, rombel: 2, online: true, lastSync: "2025-01-15 08:15" },
         // SD
-        { id: 6, npsn: "20512345", nama: "SDN 1 Nusantara", jenjang: "SD", alamat: "Jl. Merdeka No. 10", kepsek: "Drs. Bambang Suryanto", akreditasi: "A", status: "Negeri", siswa: 342, guru: 18, rombel: 12, online: true, lastSync: "2026-01-15 08:30" },
-        { id: 7, npsn: "20512346", nama: "SDN 2 Nusantara", jenjang: "SD", alamat: "Jl. Pahlawan No. 5", kepsek: "Ahmad Rizki, M.Pd.", akreditasi: "A", status: "Negeri", siswa: 298, guru: 16, rombel: 12, online: true, lastSync: "2026-01-15 08:25" },
-        { id: 8, npsn: "20512347", nama: "SDN 3 Nusantara", jenjang: "SD", alamat: "Jl. Pemuda No. 15", kepsek: "Dewi Lestari, S.Pd.", akreditasi: "B", status: "Negeri", siswa: 256, guru: 14, rombel: 10, online: false, lastSync: "2026-01-14 16:45" },
+        { id: 6, npsn: "20512345", nama: "SDN 1 Nusantara", jenjang: "SD", alamat: "Jl. Merdeka No. 10", kepsek: "Drs. Bambang Suryanto", akreditasi: "A", status: "Negeri", siswa: 342, guru: 18, rombel: 12, online: true, lastSync: "2025-01-15 08:30" },
+        { id: 7, npsn: "20512346", nama: "SDN 2 Nusantara", jenjang: "SD", alamat: "Jl. Pahlawan No. 5", kepsek: "Ahmad Rizki, M.Pd.", akreditasi: "A", status: "Negeri", siswa: 298, guru: 16, rombel: 12, online: true, lastSync: "2025-01-15 08:25" },
+        { id: 8, npsn: "20512347", nama: "SDN 3 Nusantara", jenjang: "SD", alamat: "Jl. Pemuda No. 15", kepsek: "Dewi Lestari, S.Pd.", akreditasi: "B", status: "Negeri", siswa: 256, guru: 14, rombel: 10, online: false, lastSync: "2025-01-14 16:45" },
         // MI
-        { id: 9, npsn: "20512348", nama: "MI Nurul Hidayah", jenjang: "MI", alamat: "Jl. Pondok No. 20", kepsek: "Ustadz Ahmad Faisal, S.Pd.I", akreditasi: "A", status: "Swasta", siswa: 185, guru: 12, rombel: 6, online: true, lastSync: "2026-01-15 08:10" },
+        { id: 9, npsn: "20512348", nama: "MI Nurul Hidayah", jenjang: "MI", alamat: "Jl. Pondok No. 20", kepsek: "Ustadz Ahmad Faisal, S.Pd.I", akreditasi: "A", status: "Swasta", siswa: 185, guru: 12, rombel: 6, online: true, lastSync: "2025-01-15 08:10" },
         // SMP
-        { id: 10, npsn: "30512345", nama: "SMPN 1 Nusantara", jenjang: "SMP", alamat: "Jl. Diponegoro No. 20", kepsek: "Dr. Bambang S., M.Pd.", akreditasi: "A", status: "Negeri", siswa: 576, guru: 32, rombel: 18, online: true, lastSync: "2026-01-15 08:15" },
-        { id: 11, npsn: "30512346", nama: "SMPN 2 Nusantara", jenjang: "SMP", alamat: "Jl. Kartini No. 8", kepsek: "Ratna Dewi, M.Pd.", akreditasi: "A", status: "Negeri", siswa: 512, guru: 28, rombel: 16, online: true, lastSync: "2026-01-15 07:50" },
-        { id: 12, npsn: "30512347", nama: "SMPS Bina Bangsa", jenjang: "SMP", alamat: "Jl. Kenanga No. 12", kepsek: "Maria Tanujaya, M.Pd.", akreditasi: "A", status: "Swasta", siswa: 310, guru: 20, rombel: 10, online: true, lastSync: "2026-01-15 08:10" },
+        { id: 10, npsn: "30512345", nama: "SMPN 1 Nusantara", jenjang: "SMP", alamat: "Jl. Diponegoro No. 20", kepsek: "Dr. Bambang S., M.Pd.", akreditasi: "A", status: "Negeri", siswa: 576, guru: 32, rombel: 18, online: true, lastSync: "2025-01-15 08:15" },
+        { id: 11, npsn: "30512346", nama: "SMPN 2 Nusantara", jenjang: "SMP", alamat: "Jl. Kartini No. 8", kepsek: "Ratna Dewi, M.Pd.", akreditasi: "A", status: "Negeri", siswa: 512, guru: 28, rombel: 16, online: true, lastSync: "2025-01-15 07:50" },
+        { id: 12, npsn: "30512347", nama: "SMPS Bina Bangsa", jenjang: "SMP", alamat: "Jl. Kenanga No. 12", kepsek: "Maria Tanujaya, M.Pd.", akreditasi: "A", status: "Swasta", siswa: 310, guru: 20, rombel: 10, online: true, lastSync: "2025-01-15 08:10" },
         // MTs
-        { id: 13, npsn: "30512348", nama: "MTs Al-Hidayah", jenjang: "MTs", alamat: "Jl. Pondok No. 22", kepsek: "Ustadz Faisal Rahman, S.Pd.I", akreditasi: "A", status: "Swasta", siswa: 245, guru: 18, rombel: 9, online: true, lastSync: "2026-01-15 08:05" },
+        { id: 13, npsn: "30512348", nama: "MTs Al-Hidayah", jenjang: "MTs", alamat: "Jl. Pondok No. 22", kepsek: "Ustadz Faisal Rahman, S.Pd.I", akreditasi: "A", status: "Swasta", siswa: 245, guru: 18, rombel: 9, online: true, lastSync: "2025-01-15 08:05" },
         // SDLB
-        { id: 14, npsn: "20512349", nama: "SDLB Negeri 1 Nusantara", jenjang: "SDLB", alamat: "Jl. Cendrawasih No. 3", kepsek: "Drs. Agus Santoso", akreditasi: "A", status: "Negeri", siswa: 48, guru: 12, rombel: 6, online: true, lastSync: "2026-01-15 08:00" },
+        { id: 14, npsn: "20512349", nama: "SDLB Negeri 1 Nusantara", jenjang: "SDLB", alamat: "Jl. Cendrawasih No. 3", kepsek: "Drs. Agus Santoso", akreditasi: "A", status: "Negeri", siswa: 48, guru: 12, rombel: 6, online: true, lastSync: "2025-01-15 08:00" },
         // SMPLB
-        { id: 15, npsn: "30512349", nama: "SMPLB Negeri 1 Nusantara", jenjang: "SMPLB", alamat: "Jl. Cendrawasih No. 5", kepsek: "Dra. Hj. Siti Rahayu", akreditasi: "A", status: "Negeri", siswa: 36, guru: 10, rombel: 3, online: true, lastSync: "2026-01-15 07:55" },
+        { id: 15, npsn: "30512349", nama: "SMPLB Negeri 1 Nusantara", jenjang: "SMPLB", alamat: "Jl. Cendrawasih No. 5", kepsek: "Dra. Hj. Siti Rahayu", akreditasi: "A", status: "Negeri", siswa: 36, guru: 10, rombel: 3, online: true, lastSync: "2025-01-15 07:55" },
         // PKBM
-        { id: 16, npsn: "40512345", nama: "PKBM Harapan Bangsa", jenjang: "PKBM", alamat: "Jl. Pendidikan No. 15", kepsek: "Ir. Bambang Wijaya", akreditasi: "B", status: "Swasta", siswa: 125, guru: 8, rombel: 4, online: false, lastSync: "2026-01-13 14:20" },
+        { id: 16, npsn: "40512345", nama: "PKBM Harapan Bangsa", jenjang: "PKBM", alamat: "Jl. Pendidikan No. 15", kepsek: "Ir. Bambang Wijaya", akreditasi: "B", status: "Swasta", siswa: 125, guru: 8, rombel: 4, online: false, lastSync: "2025-01-13 14:20" },
     ],
 
     // Data Sarpras per Sekolah
@@ -655,9 +804,9 @@ const DB = {
     },
 
     pengajuanList: [
-        { id: 1, jenis: 'kenaikan_pangkat', nama: 'Drs. Supriyadi', nip: '198501012010011001', tanggal: '2026-01-10', status: 'diproses', sekolahId: 6, dokumen: ['sk_cpns.pdf', 'ijazah.pdf'] },
-        { id: 2, jenis: 'kgb', nama: 'Rina Marliana, S.Pd.', nip: '198703152011012002', tanggal: '2026-01-12', status: 'diajukan', sekolahId: 6, dokumen: ['sk_pangkat.pdf'] },
-        { id: 3, jenis: 'mutasi_siswa', nama: 'Andi Pratama', nisn: '006000001', tanggal: '2026-01-14', status: 'disetujui', sekolahId: 6, dokumen: ['rapor.pdf'] },
+        { id: 1, jenis: 'kenaikan_pangkat', nama: 'Drs. Supriyadi', nip: '198501012010011001', tanggal: '2025-01-10', status: 'diproses', sekolahId: 6, dokumen: ['sk_cpns.pdf', 'ijazah.pdf'] },
+        { id: 2, jenis: 'kgb', nama: 'Rina Marliana, S.Pd.', nip: '198703152011012002', tanggal: '2025-01-12', status: 'diajukan', sekolahId: 6, dokumen: ['sk_pangkat.pdf'] },
+        { id: 3, jenis: 'mutasi_siswa', nama: 'Andi Pratama', nisn: '006000001', tanggal: '2025-01-14', status: 'disetujui', sekolahId: 6, dokumen: ['rapor.pdf'] },
     ],
 
     dokumenRequired: {
@@ -679,8 +828,8 @@ const DB = {
 
     // Data Pengumuman dari Admin Wilayah
     pengumumanList: [
-        { id: 1, judul: 'Jadwal Pelaporan Semester Genap', isi: 'Diharapkan seluruh sekolah melaporkan data semester genap paling lambat tanggal 30 Juni 2026. Pastikan semua data sudah terisi dengan lengkap.', tanggal: '2026-01-15', status: 'aktif' },
-        { id: 2, judul: 'Sosialisasi Kurikulum Merdeka', isi: 'Akan dilaksanakan sosialisasi kurikulum merdeka pada tanggal 20 Januari 2026. Seluruh kepala sekolah diwajibkan hadir.', tanggal: '2026-01-12', status: 'aktif' },
+        { id: 1, judul: 'Jadwal Pelaporan Semester Genap', isi: 'Diharapkan seluruh sekolah melaporkan data semester genap paling lambat tanggal 30 Juni 2025. Pastikan semua data sudah terisi dengan lengkap.', tanggal: '2025-01-15', status: 'aktif' },
+        { id: 2, judul: 'Sosialisasi Kurikulum Merdeka', isi: 'Akan dilaksanakan sosialisasi kurikulum merdeka pada tanggal 20 Januari 2025. Seluruh kepala sekolah diwajibkan hadir.', tanggal: '2025-01-12', status: 'aktif' },
     ],
 
     // ==================== ARSIP SURAT ====================
@@ -688,8 +837,8 @@ const DB = {
     suratKeluar: [
         { 
             id: 1, 
-            nomorSurat: '001/SDN1/I/2026', 
-            tanggal: '2026-01-15', 
+            nomorSurat: '001/SDN1/I/2025', 
+            tanggal: '2025-01-15', 
             jenis: 'kenaikan_pangkat', 
             perihal: 'Usulan Kenaikan Pangkat - Drs. Supriyadi',
             sekolahId: 6, 
@@ -699,12 +848,12 @@ const DB = {
             dokumen: ['sk_cpns.pdf', 'ijazah.pdf', 'sk_pangkat_terakhir.pdf'],
             status: 'terkirim',
             keterangan: 'Berkas lengkap, menunggu verifikasi',
-            createdAt: '2026-01-15 10:30:00'
+            createdAt: '2025-01-15 10:30:00'
         },
         { 
             id: 2, 
-            nomorSurat: '002/SDN1/I/2026', 
-            tanggal: '2026-01-18', 
+            nomorSurat: '002/SDN1/I/2025', 
+            tanggal: '2025-01-18', 
             jenis: 'mutasi_siswa', 
             perihal: 'Permohonan Mutasi Siswa - Andi Pratama',
             sekolahId: 6, 
@@ -714,7 +863,7 @@ const DB = {
             dokumen: ['rapor.pdf', 'kk.pdf', 'akta.pdf'],
             status: 'disetujui',
             keterangan: 'Mutasi disetujui',
-            createdAt: '2026-01-18 14:20:00'
+            createdAt: '2025-01-18 14:20:00'
         },
     ],
 
@@ -722,8 +871,8 @@ const DB = {
     suratMasuk: [
         { 
             id: 1, 
-            nomorSurat: '015/DISDIK/I/2026', 
-            tanggal: '2026-01-20', 
+            nomorSurat: '015/DISDIK/I/2025', 
+            tanggal: '2025-01-20', 
             jenis: 'kenaikan_pangkat', 
             perihal: 'Surat Keputusan Kenaikan Pangkat - Drs. Supriyadi',
             sekolahId: 6, 
@@ -732,13 +881,13 @@ const DB = {
             suratKeluarId: 1, // referensi ke surat keluar
             dokumen: ['sk_kenaikan_pangkat.pdf', 'sk_tmt.pdf'],
             status: 'diterima',
-            keterangan: 'SK Kenaikan Pangkat efektif 1 April 2026',
-            createdAt: '2026-01-20 09:00:00'
+            keterangan: 'SK Kenaikan Pangkat efektif 1 April 2025',
+            createdAt: '2025-01-20 09:00:00'
         },
         { 
             id: 2, 
-            nomorSurat: '022/DISDIK/I/2026', 
-            tanggal: '2026-01-22', 
+            nomorSurat: '022/DISDIK/I/2025', 
+            tanggal: '2025-01-22', 
             jenis: 'mutasi_siswa', 
             perihal: 'Surat Persetujuan Mutasi Siswa - Andi Pratama',
             sekolahId: 6, 
@@ -748,22 +897,22 @@ const DB = {
             dokumen: ['surat_persetujuan_mutasi.pdf'],
             status: 'diterima',
             keterangan: 'Siswa dapat melanjutkan pindah ke sekolah tujuan',
-            createdAt: '2026-01-22 11:30:00'
+            createdAt: '2025-01-22 11:30:00'
         },
         { 
             id: 3, 
-            nomorSurat: '030/DISDIK/I/2026', 
-            tanggal: '2026-01-25', 
+            nomorSurat: '030/DISDIK/I/2025', 
+            tanggal: '2025-01-25', 
             jenis: 'pengumuman', 
-            perihal: 'Jadwal Pelaksanaan UNBK SMP 2026',
+            perihal: 'Jadwal Pelaksanaan UNBK SMP 2025',
             sekolahId: null, // null = broadcast ke semua sekolah
             sekolahNama: 'Semua Sekolah',
             pengirim: 'Dinas Pendidikan Kab. Nusantara',
             suratKeluarId: null,
-            dokumen: ['jadwal_unbk_2026.pdf', 'jtk_unbk.pdf'],
+            dokumen: ['jadwal_unbk_2025.pdf', 'jtk_unbk.pdf'],
             status: 'diterima',
             keterangan: 'Mohon perhatian jadwal yang terlampir',
-            createdAt: '2026-01-25 08:00:00'
+            createdAt: '2025-01-25 08:00:00'
         },
     ],
 
@@ -788,7 +937,7 @@ const DB = {
     // Password storage (dalam aplikasi nyata harus di-hash)
     passwords: {
         // Admin Wilayah - Login menggunakan NIP
-        '198001292026211035': '123456', // Admin Utama (NIP tanpa spasi)
+        'K1_017': '123456', // Admin Utama (NIP tanpa spasi)
         // Admin Sekolah - Login menggunakan NPSN
         '10512345': '123456', // PAUD Tunas Mekar
         '10512346': '123456', // PAUD Ceria Bangsa
@@ -810,7 +959,7 @@ const DB = {
 
     // Track apakah password sudah pernah diganti (untuk popup first-time)
     passwordChanged: {
-        '198001292026211035': false, // Admin Utama
+        'K1_017': false, // Admin Utama
         '10512345': false, // PAUD Tunas Mekar
         '10512346': false, // PAUD Ceria Bangsa
         '10512347': false, // TK Negeri 1
@@ -831,7 +980,7 @@ const DB = {
 
     // Data Admin Wilayah dengan NIP
     adminWilayahList: [
-        { nip: '198001292026211035', nama: 'Admin Utama Dinas Pendidikan', jabatan: 'Kepala Dinas', email: 'admin@dinas.go.id', isMain: true },
+        { nip: 'K1_017', nama: 'Admin Utama Dinas Pendidikan', jabatan: 'Kepala Dinas', email: 'admin@dinas.go.id', isMain: true },
     ],
 
     // ==================== PIP DATA ====================
@@ -874,25 +1023,25 @@ const DB = {
     // Usulan PIP dari sekolah (setelah diverifikasi Admin Sekolah)
     pipUsulan: {
         1: [
-            { id: 1, nisn: '001000001', nama: 'Andi Pratama', kelas: 'I', jk: 'L', namaOrtu: 'Budi Pratama', pekerjaanOrtu: 'Petani', penghasilanOrtu: 800000, statusUsulan: 'diajukan', tanggalUsul: '2026-01-10' },
-            { id: 2, nisn: '001000002', nama: 'Budi Santoso', kelas: 'I', jk: 'L', namaOrtu: 'Ahmad Santoso', pekerjaanOrtu: 'Buruh', penghasilanOrtu: 600000, statusUsulan: 'diajukan', tanggalUsul: '2026-01-10' },
+            { id: 1, nisn: '001000001', nama: 'Andi Pratama', kelas: 'I', jk: 'L', namaOrtu: 'Budi Pratama', pekerjaanOrtu: 'Petani', penghasilanOrtu: 800000, statusUsulan: 'diajukan', tanggalUsul: '2025-01-10' },
+            { id: 2, nisn: '001000002', nama: 'Budi Santoso', kelas: 'I', jk: 'L', namaOrtu: 'Ahmad Santoso', pekerjaanOrtu: 'Buruh', penghasilanOrtu: 600000, statusUsulan: 'diajukan', tanggalUsul: '2025-01-10' },
         ],
     },
 
     // Hasil Verval PIP (oleh Admin Wilayah)
     pipVerval: [
-        { id: 1, sekolahId: 1, sekolah: 'SDN 1 Nusantara', nisn: '001000001', nama: 'Andi Pratama', kelas: 'I', statusVerval: 'terverifikasi', tanggalVerval: '2026-01-15' },
-        { id: 2, sekolahId: 1, sekolah: 'SDN 1 Nusantara', nisn: '001000002', nama: 'Budi Santoso', kelas: 'I', statusVerval: 'terverifikasi', tanggalVerval: '2026-01-15' },
+        { id: 1, sekolahId: 1, sekolah: 'SDN 1 Nusantara', nisn: '001000001', nama: 'Andi Pratama', kelas: 'I', statusVerval: 'terverifikasi', tanggalVerval: '2025-01-15' },
+        { id: 2, sekolahId: 1, sekolah: 'SDN 1 Nusantara', nisn: '001000002', nama: 'Budi Santoso', kelas: 'I', statusVerval: 'terverifikasi', tanggalVerval: '2025-01-15' },
     ],
 
     // Pemberkasan PIP
     pipPemberkasan: [
-        { id: 1, sekolahId: 1, sekolah: 'SDN 1 Nusantara', nisn: '001000001', nama: 'Andi Pratama', statusBerkas: 'lengkap', tanggalBerkas: '2026-01-20', buktiBank: 'bukti_transfer_001.pdf' },
-        { id: 2, sekolahId: 1, sekolah: 'SDN 1 Nusantara', nisn: '001000002', nama: 'Budi Santoso', kelas: 'I', statusBerkas: 'lengkap', tanggalBerkas: '2026-01-20', buktiBank: 'bukti_transfer_002.pdf' },
+        { id: 1, sekolahId: 1, sekolah: 'SDN 1 Nusantara', nisn: '001000001', nama: 'Andi Pratama', statusBerkas: 'lengkap', tanggalBerkas: '2025-01-20', buktiBank: 'bukti_transfer_001.pdf' },
+        { id: 2, sekolahId: 1, sekolah: 'SDN 1 Nusantara', nisn: '001000002', nama: 'Budi Santoso', kelas: 'I', statusBerkas: 'lengkap', tanggalBerkas: '2025-01-20', buktiBank: 'bukti_transfer_002.pdf' },
     ],
 
     // Tahun PIP aktif
-    pipTahunAktif: '2026',
+    pipTahunAktif: '2025',
 
     // Nominal PIP per siswa
     pipNominal: 450000,
@@ -913,21 +1062,27 @@ const DB = {
     // ==================== LEGER GAJI DATA ====================
     // Leger Gaji yang diupload oleh Admin Wilayah
     legerGajiList: [
-        { id: 1, bulan: '2026-01', namaFile: 'leger_gaji_januari_2026.pdf', ukuran: '2.5 MB', tanggalUpload: '2026-01-25', uploadBy: 'Admin Wilayah', status: 'aktif', downloadCount: 5 },
-        { id: 2, bulan: '2025-12', namaFile: 'leger_gaji_desember_2025.pdf', ukuran: '2.3 MB', tanggalUpload: '2025-12-23', uploadBy: 'Admin Wilayah', status: 'aktif', downloadCount: 16 },
+        { id: 1, bulan: '2025-01', namaFile: 'leger_gaji_januari_2025.pdf', ukuran: '2.5 MB', tanggalUpload: '2025-01-25', uploadBy: 'Admin Wilayah', status: 'aktif', downloadCount: 5 },
+        { id: 2, bulan: '2024-12', namaFile: 'leger_gaji_desember_2024.pdf', ukuran: '2.3 MB', tanggalUpload: '2024-12-23', uploadBy: 'Admin Wilayah', status: 'aktif', downloadCount: 16 },
     ],
 
     // Riwayat download leger gaji oleh sekolah
     legerGajiDownloadLog: [
-        { id: 1, legerId: 1, sekolahId: 6, sekolahNama: 'SDN 1 Nusantara', tanggalDownload: '2026-01-26 10:30', downloadBy: 'Admin SDN 1' },
-        { id: 2, legerId: 1, sekolahId: 10, sekolahNama: 'SMPN 1 Nusantara', tanggalDownload: '2026-01-26 11:45', downloadBy: 'Admin SMPN 1' },
+        { id: 1, legerId: 1, sekolahId: 6, sekolahNama: 'SDN 1 Nusantara', tanggalDownload: '2025-01-26 10:30', downloadBy: 'Admin SDN 1' },
+        { id: 2, legerId: 1, sekolahId: 10, sekolahNama: 'SMPN 1 Nusantara', tanggalDownload: '2025-01-26 11:45', downloadBy: 'Admin SMPN 1' },
     ],
 
     // ==================== HAK AKSES STAFF ====================
     // Daftar staff dengan hak akses khusus
     staffAccessList: [
-        { id: 1, nama: 'Budi Santoso', nip: '198501012010011001', jabatan: 'Koordinator', email: 'budi@dinas.go.id', hakAkses: ['pengajuan', 'laporan', 'arsip'], status: 'aktif', createdAt: '2026-01-10' },
-        { id: 2, nama: 'Siti Rahayu', nip: '198703152011012002', jabatan: 'Staf', email: 'siti@dinas.go.id', hakAkses: ['laporan'], status: 'aktif', createdAt: '2026-01-12' },
+        { id: 1, nama: 'Budi Santoso', nip: '198501012010011001', jabatan: 'Koordinator', email: 'budi@dinas.go.id', hakAkses: ['pengajuan', 'laporan', 'arsip'], status: 'aktif', createdAt: '2025-01-10' },
+        { id: 2, nama: 'Siti Rahayu', nip: '198703152011012002', jabatan: 'Staf', email: 'siti@dinas.go.id', hakAkses: ['laporan'], status: 'aktif', createdAt: '2025-01-12' },
+    ],
+
+    // ==================== CUSTOM MENU ====================
+    // Menu kustom yang ditambahkan oleh Admin Wilayah
+    customMenus: [
+        // Contoh: { id: 'custom-1', icon: 'fa-star', label: 'Menu Baru', active: true, contentType: 'html', content: '<p>Konten</p>', hasSubmenu: false, submenu: [] }
     ],
 
     // Daftar menu yang bisa diberikan akses
@@ -1277,6 +1432,25 @@ document.getElementById('loginSekolah').addEventListener('change', function() {
     }
 });
 
+// Function to update login sekolah dropdown
+function updateLoginSekolahDropdown() {
+    const dropdown = document.getElementById('loginSekolah');
+    if (!dropdown) return;
+    
+    dropdown.innerHTML = DB.sekolahList.map(s => 
+        `<option value="${s.id}" class="text-gray-800">${escapeHtml(s.nama)} (${s.npsn})</option>`
+    ).join('');
+    
+    // Update default selection
+    if (DB.sekolahList.length > 0) {
+        dropdown.value = DB.sekolahList[0].id;
+        const userField = document.getElementById('loginUser');
+        if (userField) {
+            userField.value = DB.sekolahList[0].npsn;
+        }
+    }
+}
+
 function doLogin() {
     const role = document.getElementById('loginRole').value;
     const user = document.getElementById('loginUser').value.trim().replace(/\s/g, ''); // Hapus spasi
@@ -1481,6 +1655,15 @@ function updateUIForLoginState() {
         if (loggedIn && DB.currentRole === 'wilayah') { syncStatus.classList.remove('hidden'); syncStatus.classList.add('flex'); }
         else { syncStatus.classList.add('hidden'); syncStatus.classList.remove('flex'); }
     }
+    // Show tahun ajaran header when logged in
+    const tahunAjaranHeader = document.getElementById('tahunAjaranHeader');
+    if (tahunAjaranHeader) {
+        tahunAjaranHeader.classList.toggle('hidden', !loggedIn);
+        if (loggedIn) {
+            const taDisplay = document.getElementById('tahunAjaranDisplay');
+            if (taDisplay) taDisplay.textContent = DB.tahunAjaran || '2025/2026';
+        }
+    }
     const userInfoSection = document.getElementById('userInfoSection');
     if (userInfoSection) userInfoSection.style.display = loggedIn ? 'block' : 'none';
     const bottom = document.getElementById('sidebarBottom');
@@ -1641,12 +1824,23 @@ function buildSidebar() {
             { id:'w-pengaturan', icon:'fa-cogs', label:'Pengaturan', hasSubmenu: true, submenu: [
                 { id:'w-pengaturan-profil', label:'Profil Wilayah' },
                 { id:'w-pengaturan-staf', label:'Data Staf Dinas' },
+                { id:'w-pengaturan-tahunajaran', label:'Tahun Ajaran' },
                 { id:'w-pengaturan-password', label:'Kelola Password' },
                 { id:'w-pengaturan-pengumuman', label:'Entry Pengumuman' },
                 { id:'w-pengaturan-notifikasi', label:'Pengaturan Notifikasi' },
                 { id:'w-pengaturan-hakakses', label:'Hak Akses Staff' },
+                { id:'w-pengaturan-menu', label:'Kelola Menu' },
             ]},
         ];
+        
+        // Tambahkan menu kustom jika ada
+        if (DB.customMenus && DB.customMenus.length > 0) {
+            DB.customMenus.forEach(menu => {
+                if (menu.active) {
+                    items.push(menu);
+                }
+            });
+        }
     } else {
         // Admin Sekolah - Features synced with Admin Wilayah
         items = [
@@ -1728,7 +1922,7 @@ function navigateTo(page) {
         's-arsip-masuk':'s-arsip','s-arsip-keluar':'s-arsip',
         'w-laporan-siswa':'w-laporan','w-laporan-gtk':'w-laporan','w-laporan-sarpras':'w-laporan','w-laporan-rekap':'w-laporan','w-laporan-leger':'w-laporan',
         'w-pip-usulan':'w-pip','w-pip-verval':'w-pip','w-pip-pemberkasan':'w-pip',
-        'w-pengaturan-profil':'w-pengaturan','w-pengaturan-staf':'w-pengaturan','w-pengaturan-password':'w-pengaturan','w-pengaturan-pengumuman':'w-pengaturan','w-pengaturan-notifikasi':'w-pengaturan','w-pengaturan-hakakses':'w-pengaturan',
+        'w-pengaturan-profil':'w-pengaturan','w-pengaturan-staf':'w-pengaturan','w-pengaturan-tahunajaran':'w-pengaturan','w-pengaturan-password':'w-pengaturan','w-pengaturan-pengumuman':'w-pengaturan','w-pengaturan-notifikasi':'w-pengaturan','w-pengaturan-hakakses':'w-pengaturan','w-pengaturan-menu':'w-pengaturan',
         's-pengajuan-kenaikan':'s-pengajuan','s-pengajuan-kgb':'s-pengajuan','s-pengajuan-pensiun':'s-pengajuan','s-pengajuan-dkp':'s-pengajuan','s-pengajuan-mutasi':'s-pengajuan','s-pengajuan-pengantar':'s-pengajuan','s-pengajuan-haji':'s-pengajuan','s-pengajuan-melahirkan':'s-pengajuan',
         's-laporan-siswa':'s-laporan','s-laporan-gtk':'s-laporan','s-laporan-sarpras':'s-laporan','s-laporan-leger':'s-laporan',
         's-template-download':'s-template','s-template-upload':'s-template',
@@ -1739,6 +1933,16 @@ function navigateTo(page) {
         const parent = document.getElementById('submenu-container-' + pageMapping[page]);
         if (parent) parent.classList.add('open');
     }
+    
+    // Also check custom menus for parent mapping
+    DB.customMenus.forEach(menu => {
+        if (menu.hasSubmenu && menu.submenu) {
+            if (menu.submenu.some(s => s.id === page)) {
+                const parent = document.getElementById('submenu-container-' + menu.id);
+                if (parent) parent.classList.add('open');
+            }
+        }
+    });
 
     const pages = {
         // Wilayah pages
@@ -1769,10 +1973,12 @@ function navigateTo(page) {
         'w-pip-pemberkasan': { title:'Pemberkasan PIP', subtitle:'', render: renderWPipPemberkasan },
         'w-pengaturan-profil': { title:'Profil Wilayah', subtitle:'', render: renderPengaturanProfil },
         'w-pengaturan-staf': { title:'Data Staf Dinas', subtitle:'', render: renderPengaturanStaf },
+        'w-pengaturan-tahunajaran': { title:'Pengaturan Tahun Ajaran', subtitle:'Pilih tahun ajaran aktif', render: renderPengaturanTahunAjaran },
         'w-pengaturan-password': { title:'Kelola Password Sekolah', subtitle:'Lihat dan reset password admin sekolah', render: renderWPengaturanPassword },
         'w-pengaturan-pengumuman': { title:'Entry Pengumuman', subtitle:'', render: renderPengaturanPengumuman },
         'w-pengaturan-notifikasi': { title:'Pengaturan Notifikasi', subtitle:'Atur suara alarm', render: renderPengaturanNotifikasi },
         'w-pengaturan-hakakses': { title:'Hak Akses Staff', subtitle:'Kelola hak akses staf dinas', render: renderHakAksesStaff },
+        'w-pengaturan-menu': { title:'Kelola Menu Sidebar', subtitle:'Tambah, edit, hapus menu', render: renderKelolaMenu },
 
         // Sekolah pages
         's-dashboard': { title:'Dashboard Sekolah', subtitle:'', render: renderSDashboard },
@@ -1811,7 +2017,101 @@ function navigateTo(page) {
         if (pageTitle) pageTitle.textContent = p.title;
         if (pageSubtitle) pageSubtitle.textContent = p.subtitle || DB.wilayah.nama;
         p.render();
+    } else {
+        // Check if it's a custom menu page
+        const customMenu = DB.customMenus.find(m => m.id === page);
+        if (customMenu) {
+            const pageTitle = document.getElementById('pageTitle');
+            const pageSubtitle = document.getElementById('pageSubtitle');
+            if (pageTitle) pageTitle.textContent = customMenu.label;
+            if (pageSubtitle) pageSubtitle.textContent = DB.wilayah.nama;
+            renderCustomMenuPage(customMenu);
+        } else {
+            // Check for custom submenu
+            const parentMenu = DB.customMenus.find(m => m.hasSubmenu && m.submenu && m.submenu.some(s => s.id === page));
+            if (parentMenu) {
+                const subMenuItem = parentMenu.submenu.find(s => s.id === page);
+                if (subMenuItem) {
+                    const pageTitle = document.getElementById('pageTitle');
+                    const pageSubtitle = document.getElementById('pageSubtitle');
+                    if (pageTitle) pageTitle.textContent = subMenuItem.label;
+                    if (pageSubtitle) pageSubtitle.textContent = parentMenu.label;
+                    renderCustomSubmenuPage(parentMenu, subMenuItem);
+                }
+            }
+        }
     }
+}
+
+// Render custom menu page
+function renderCustomMenuPage(menu) {
+    const contentArea = document.getElementById('contentArea');
+    if (!contentArea) return;
+    
+    if (menu.hasSubmenu) {
+        // Show submenu overview
+        contentArea.innerHTML = `
+            <div class="fade-in space-y-6">
+                <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6 border border-indigo-200">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center">
+                            <i class="fas ${menu.icon} text-indigo-600 text-2xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-semibold">${escapeHtml(menu.label)}</h2>
+                            <p class="text-sm text-gray-500">${menu.submenu.length} submenu tersedia</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    ${menu.submenu.map(sub => `
+                        <button onclick="navigateTo('${sub.id}')" class="bg-white rounded-2xl p-5 border shadow-sm hover:shadow-md hover:border-indigo-300 transition text-left">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-folder text-indigo-600"></i>
+                                </div>
+                                <span class="font-medium">${escapeHtml(sub.label)}</span>
+                            </div>
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    } else {
+        // Show HTML content
+        contentArea.innerHTML = `
+            <div class="fade-in">
+                <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                    ${menu.content || '<p class="text-gray-400">Belum ada konten</p>'}
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Render custom submenu page
+function renderCustomSubmenuPage(parentMenu, subMenu) {
+    const contentArea = document.getElementById('contentArea');
+    if (!contentArea) return;
+    
+    contentArea.innerHTML = `
+        <div class="fade-in">
+            <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                        <i class="fas ${parentMenu.icon} text-indigo-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">${escapeHtml(subMenu.label)}</h3>
+                        <p class="text-xs text-gray-500">${escapeHtml(parentMenu.label)}</p>
+                    </div>
+                </div>
+                <div class="border-t pt-4">
+                    <p class="text-gray-400">Halaman submenu ini belum memiliki konten. Edit menu untuk menambahkan konten.</p>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 // ==================== WILAYAH PAGES ====================
@@ -1959,11 +2259,19 @@ function renderWSekolah() {
                     <input type="text" id="searchSekolah" placeholder="Cari sekolah..." class="border rounded-xl px-4 py-2 text-sm w-64" oninput="filterSekolahTable()">
                     <select id="filterJenjang" class="border rounded-xl px-4 py-2 text-sm" onchange="filterSekolahTable()"><option value="">Semua Jenjang</option><option value="PAUD">PAUD</option><option value="TK">TK</option><option value="RA">RA</option><option value="SD">SD</option><option value="MI">MI</option><option value="SMP">SMP</option><option value="MTs">MTs</option><option value="SDLB">SDLB</option><option value="SMPLB">SMPLB</option><option value="PKBM">PKBM</option></select>
                 </div>
-                <button onclick="showTambahSekolahModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-plus mr-2"></i>Tambah Sekolah</button>
+                <div class="flex gap-2">
+                    <button id="btnHapusTerpilih" onclick="showHapusTerpilihModal()" class="hidden bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium">
+                        <i class="fas fa-trash-alt mr-2"></i>Hapus Terpilih (<span id="jumlahTerpilih">0</span>)
+                    </button>
+                    <button onclick="showTambahSekolahModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-plus mr-2"></i>Tambah Sekolah</button>
+                </div>
             </div>
             <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
                 <table class="w-full text-sm">
                     <thead><tr class="bg-gray-50">
+                        <th class="p-4 text-center w-10">
+                            <input type="checkbox" id="checkAllSekolah" onchange="toggleCheckAllSekolah(this)" class="w-4 h-4 rounded border-gray-300">
+                        </th>
                         <th class="p-4 text-left">No</th><th class="p-4 text-left">NPSN</th><th class="p-4 text-left">Nama Sekolah</th><th class="p-4 text-center">Jenjang</th><th class="p-4 text-center">Status</th><th class="p-4 text-center">Siswa</th><th class="p-4 text-center">GTK</th><th class="p-4 text-center">Aksi</th>
                     </tr></thead>
                     <tbody id="sekolahTbody">${renderSekolahRows(DB.sekolahList)}</tbody>
@@ -1973,9 +2281,15 @@ function renderWSekolah() {
     `;
 }
 
+// Selected schools for bulk deletion
+let selectedSekolahIds = [];
+
 function renderSekolahRows(list) {
     return list.map((s,i) => `
-        <tr class="border-b border-gray-100 hover:bg-gray-50">
+        <tr class="border-b border-gray-100 hover:bg-gray-50" data-id="${s.id}">
+            <td class="p-4 text-center">
+                <input type="checkbox" class="check-sekolah w-4 h-4 rounded border-gray-300" value="${s.id}" onchange="updateSelectedSekolah()">
+            </td>
             <td class="p-4">${i+1}</td>
             <td class="p-4 font-mono">${s.npsn}</td>
             <td class="p-4 font-medium">${escapeHtml(s.nama)}</td>
@@ -1989,6 +2303,116 @@ function renderSekolahRows(list) {
             </td>
         </tr>
     `).join('');
+}
+
+function toggleCheckAllSekolah(checkbox) {
+    const checkboxes = document.querySelectorAll('.check-sekolah');
+    checkboxes.forEach(cb => cb.checked = checkbox.checked);
+    updateSelectedSekolah();
+}
+
+function updateSelectedSekolah() {
+    const checkboxes = document.querySelectorAll('.check-sekolah:checked');
+    selectedSekolahIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+    
+    const btnHapus = document.getElementById('btnHapusTerpilih');
+    const jumlahSpan = document.getElementById('jumlahTerpilih');
+    
+    if (selectedSekolahIds.length > 0) {
+        btnHapus.classList.remove('hidden');
+        jumlahSpan.textContent = selectedSekolahIds.length;
+    } else {
+        btnHapus.classList.add('hidden');
+    }
+    
+    // Update check all checkbox state
+    const checkAll = document.getElementById('checkAllSekolah');
+    const allCheckboxes = document.querySelectorAll('.check-sekolah');
+    checkAll.checked = allCheckboxes.length > 0 && selectedSekolahIds.length === allCheckboxes.length;
+}
+
+function showHapusTerpilihModal() {
+    if (selectedSekolahIds.length === 0) {
+        showToast('Pilih sekolah yang akan dihapus!', 'error');
+        return;
+    }
+    
+    const selectedSekolah = DB.sekolahList.filter(s => selectedSekolahIds.includes(s.id));
+    
+    showModal(`
+        <div class="p-6">
+            <div class="text-center mb-4">
+                <div class="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-3"><i class="fas fa-trash text-red-600 text-2xl"></i></div>
+                <h3 class="text-lg font-semibold">Hapus ${selectedSekolahIds.length} Sekolah</h3>
+            </div>
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+                <p class="text-sm text-red-700 font-medium mb-2">Sekolah yang akan dihapus:</p>
+                <div class="max-h-40 overflow-y-auto">
+                    <ul class="text-sm text-red-600 list-disc pl-4">
+                        ${selectedSekolah.map(s => `<li>${escapeHtml(s.nama)} (${s.npsn})</li>`).join('')}
+                    </ul>
+                </div>
+            </div>
+            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-4">
+                <p class="text-xs text-yellow-700"><i class="fas fa-exclamation-triangle mr-1"></i>Data sekolah, siswa, GTK, dan data terkait akan dihapus permanen!</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="doHapusTerpilih()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl text-sm font-medium">Hapus Semua</button>
+                <button onclick="closeModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-medium">Batal</button>
+            </div>
+        </div>
+    `);
+}
+
+function doHapusTerpilih() {
+    let deletedCount = 0;
+    
+    selectedSekolahIds.forEach(id => {
+        const sekolah = DB.sekolahList.find(s => s.id === id);
+        if (sekolah) {
+            const npsn = sekolah.npsn;
+            const idx = DB.sekolahList.findIndex(s => s.id === id);
+            
+            if (idx > -1) {
+                // Hapus data sekolah
+                DB.sekolahList.splice(idx, 1);
+                
+                // Hapus password
+                delete DB.passwords[npsn];
+                
+                // Hapus data terkait
+                delete DB.siswaList[id];
+                delete DB.gtkList[id];
+                delete DB.pipCalon[id];
+                delete DB.pipUsulan[id];
+                delete DB.pipKuota[id];
+                
+                // Hapus dari sarprasList
+                const sarprasIdx = DB.sarprasList.findIndex(s => s.sekolahId === id);
+                if (sarprasIdx > -1) {
+                    DB.sarprasList.splice(sarprasIdx, 1);
+                }
+                
+                // Sync ke Firebase jika tersedia
+                if (firebaseInitialized) {
+                    firebaseDeleteDocument('sekolah', id.toString());
+                    firebaseDeleteDocument('passwords', npsn);
+                }
+                
+                deletedCount++;
+            }
+        }
+    });
+    
+    // Clear selection
+    selectedSekolahIds = [];
+    
+    closeModal();
+    showToast(`${deletedCount} sekolah berhasil dihapus!`);
+    renderWSekolah();
+    
+    // Update login dropdown
+    updateLoginSekolahDropdown();
 }
 
 function filterSekolahTable() {
@@ -2067,6 +2491,9 @@ function doTambahSekolah() {
     closeModal();
     showToast(`Sekolah berhasil ditambahkan! Login: ${npsn} / ${defaultPassword}`);
     renderWSekolah();
+    
+    // Update login dropdown
+    updateLoginSekolahDropdown();
     
     // Sync ke Firebase jika tersedia
     if (firebaseInitialized) {
@@ -2173,6 +2600,9 @@ function doHapusSekolah(id) {
         closeModal();
         showToast(`Sekolah ${sekolah.nama} berhasil dihapus!`);
         renderWSekolah();
+        
+        // Update login dropdown
+        updateLoginSekolahDropdown();
         
         // Sync ke Firebase jika tersedia
         if (firebaseInitialized) {
@@ -2950,7 +3380,7 @@ function showTambahSuratMasukModal() {
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="text-sm text-gray-600 mb-1 block">Nomor Surat</label>
-                        <input type="text" id="addNoSuratMasuk" class="w-full border rounded-xl px-4 py-2.5 text-sm" placeholder="001/DISDIK/I/2026">
+                        <input type="text" id="addNoSuratMasuk" class="w-full border rounded-xl px-4 py-2.5 text-sm" placeholder="001/DISDIK/I/2025">
                     </div>
                     <div>
                         <label class="text-sm text-gray-600 mb-1 block">Tanggal</label>
@@ -3054,7 +3484,7 @@ function showTambahSuratKeluarModal() {
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="text-sm text-gray-600 mb-1 block">Nomor Surat</label>
-                        <input type="text" id="addNoSuratKeluar" class="w-full border rounded-xl px-4 py-2.5 text-sm" placeholder="001/SDN1/I/2026">
+                        <input type="text" id="addNoSuratKeluar" class="w-full border rounded-xl px-4 py-2.5 text-sm" placeholder="001/SDN1/I/2025">
                     </div>
                     <div>
                         <label class="text-sm text-gray-600 mb-1 block">Tanggal</label>
@@ -3492,7 +3922,7 @@ function renderWKeuangan() {
             
             <!-- Rekap Per Bulan -->
             <div class="bg-white rounded-2xl p-6 border shadow-sm">
-                <h3 class="font-semibold mb-4"><i class="fas fa-calendar-alt text-blue-500 mr-2"></i>Rekap Keuangan per Bulan (Tahun 2026)</h3>
+                <h3 class="font-semibold mb-4"><i class="fas fa-calendar-alt text-blue-500 mr-2"></i>Rekap Keuangan per Bulan (Tahun 2025)</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead><tr class="bg-gray-50">
@@ -3688,6 +4118,7 @@ function savePengajuanDraft(jenis) {
     closeModal();
     showToast('Draft pengajuan disimpan!');
     renderPengajuanList(jenis, 'sekolah');
+    syncPengajuanToFirebase();
 }
 
 function submitPengajuanBaru(jenis) {
@@ -3707,6 +4138,7 @@ function submitPengajuanBaru(jenis) {
     closeModal();
     showToast('Pengajuan berhasil diajukan!');
     renderPengajuanList(jenis, 'sekolah');
+    syncPengajuanToFirebase();
 }
 
 function showDetailPengajuan(id) {
@@ -3745,22 +4177,22 @@ function showDetailPengajuan(id) {
 
 function approvePengajuan(id, jenis, role) {
     const p = DB.pengajuanList.find(x => x.id === id);
-    if (p) { p.status = 'disetujui'; showToast('Pengajuan disetujui!'); renderPengajuanList(jenis, role); }
+    if (p) { p.status = 'disetujui'; showToast('Pengajuan disetujui!'); renderPengajuanList(jenis, role); syncPengajuanToFirebase(); }
 }
 
 function rejectPengajuan(id, jenis, role) {
     const p = DB.pengajuanList.find(x => x.id === id);
-    if (p) { p.status = 'ditolak'; showToast('Pengajuan ditolak.', 'warning'); renderPengajuanList(jenis, role); }
+    if (p) { p.status = 'ditolak'; showToast('Pengajuan ditolak.', 'warning'); renderPengajuanList(jenis, role); syncPengajuanToFirebase(); }
 }
 
 function submitPengajuan(id, jenis) {
     const p = DB.pengajuanList.find(x => x.id === id);
-    if (p) { p.status = 'diajukan'; showToast('Pengajuan berhasil diajukan!'); renderPengajuanList(jenis, 'sekolah'); }
+    if (p) { p.status = 'diajukan'; showToast('Pengajuan berhasil diajukan!'); renderPengajuanList(jenis, 'sekolah'); syncPengajuanToFirebase(); }
 }
 
 function deletePengajuan(id, jenis) {
     const idx = DB.pengajuanList.findIndex(x => x.id === id);
-    if (idx > -1) { DB.pengajuanList.splice(idx, 1); showToast('Pengajuan dihapus!'); renderPengajuanList(jenis, 'sekolah'); }
+    if (idx > -1) { DB.pengajuanList.splice(idx, 1); showToast('Pengajuan dihapus!'); renderPengajuanList(jenis, 'sekolah'); syncPengajuanToFirebase(); }
 }
 
 // ==================== LAPORAN ====================
@@ -3774,7 +4206,7 @@ function renderLaporanSiswa() {
                 <h3 class="font-semibold mb-4">Cetak Laporan Siswa Bulanan</h3>
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div><label class="text-sm text-gray-600 mb-1 block">Bulan</label><select class="w-full border rounded-xl px-4 py-2.5 text-sm"><option>Januari</option><option>Februari</option><option>Maret</option></select></div>
-                    <div><label class="text-sm text-gray-600 mb-1 block">Tahun</label><select class="w-full border rounded-xl px-4 py-2.5 text-sm"><option>2026</option><option>2025</option></select></div>
+                    <div><label class="text-sm text-gray-600 mb-1 block">Tahun</label><select class="w-full border rounded-xl px-4 py-2.5 text-sm"><option>2025</option><option>2024</option></select></div>
                 </div>
                 <button onclick="printLaporan('siswa')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-print mr-2"></i>Cetak Laporan</button>
             </div>
@@ -3796,7 +4228,7 @@ function renderLaporanGtk() {
                 <h3 class="font-semibold mb-4">Cetak Laporan GTK Bulanan</h3>
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div><label class="text-sm text-gray-600 mb-1 block">Bulan</label><select class="w-full border rounded-xl px-4 py-2.5 text-sm"><option>Januari</option></select></div>
-                    <div><label class="text-sm text-gray-600 mb-1 block">Tahun</label><select class="w-full border rounded-xl px-4 py-2.5 text-sm"><option>2026</option></select></div>
+                    <div><label class="text-sm text-gray-600 mb-1 block">Tahun</label><select class="w-full border rounded-xl px-4 py-2.5 text-sm"><option>2025</option></select></div>
                 </div>
                 <button onclick="printLaporan('gtk')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-print mr-2"></i>Cetak Laporan</button>
             </div>
@@ -3812,7 +4244,7 @@ function renderLaporanSarpras() {
             <div class="bg-white rounded-2xl p-6 border shadow-sm">
                 <h3 class="font-semibold mb-4">Cetak Laporan Sarpras (BMD)</h3>
                 <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div><label class="text-sm text-gray-600 mb-1 block">Tahun</label><select class="w-full border rounded-xl px-4 py-2.5 text-sm"><option>2026</option></select></div>
+                    <div><label class="text-sm text-gray-600 mb-1 block">Tahun</label><select class="w-full border rounded-xl px-4 py-2.5 text-sm"><option>2025</option></select></div>
                     <div><label class="text-sm text-gray-600 mb-1 block">Sekolah</label><select class="w-full border rounded-xl px-4 py-2.5 text-sm"><option value="">Semua Sekolah</option>${DB.sekolahList.map(s => `<option value="${s.id}">${escapeHtml(s.nama)}</option>`).join('')}</select></div>
                 </div>
                 <button onclick="printLaporan('sarpras')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-print mr-2"></i>Cetak Laporan</button>
@@ -3830,7 +4262,7 @@ function renderLaporanRekap() {
                 <h3 class="font-semibold mb-4">Cetak Rekap Bulanan (Daftar 1)</h3>
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div><label class="text-sm text-gray-600 mb-1 block">Bulan</label><select class="w-full border rounded-xl px-4 py-2.5 text-sm"><option>Januari</option></select></div>
-                    <div><label class="text-sm text-gray-600 mb-1 block">Tahun</label><select class="w-full border rounded-xl px-4 py-2.5 text-sm"><option>2026</option></select></div>
+                    <div><label class="text-sm text-gray-600 mb-1 block">Tahun</label><select class="w-full border rounded-xl px-4 py-2.5 text-sm"><option>2025</option></select></div>
                 </div>
                 <button onclick="printLaporan('rekap')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-print mr-2"></i>Cetak Laporan</button>
             </div>
@@ -3853,7 +4285,7 @@ function printLaporan(type) {
     setTimeout(() => {
         const printWin = window.open('', '', 'width=900,height=700');
         let content = `<html><head><title>Laporan ${type}</title><style>body{font-family:Arial,sans-serif;padding:30px;font-size:12px;}table{width:100%;border-collapse:collapse;margin:15px 0;}th,td{border:1px solid #333;padding:6px 8px;text-align:left;}th{background:#f0f0f0;}.header{text-align:center;border-bottom:3px double #333;padding-bottom:15px;margin-bottom:20px;}.logo{width:60px;height:60px;margin:0 auto 10px;}</style></head><body>`;
-        content += `<div class="header"><img src="https://i.pinimg.com/1200x/76/39/2d/76392d91c9c22d8ec5563b1126cd55b8.jpg" class="logo"><h1>${DB.wilayah.nama.toUpperCase()}</h1><h2>LAPORAN ${type.toUpperCase()} BULANAN</h2><p>Tahun 2026</p></div>`;
+        content += `<div class="header"><img src="https://i.pinimg.com/1200x/76/39/2d/76392d91c9c22d8ec5563b1126cd55b8.jpg" class="logo"><h1>${DB.wilayah.nama.toUpperCase()}</h1><h2>LAPORAN ${type.toUpperCase()} BULANAN</h2><p>Tahun 2025</p></div>`;
         content += `<h3>A. Rekapitulasi Data</h3><table><tr><th>No</th><th>Sekolah</th><th>Siswa</th><th>GTK</th></tr>`;
         DB.sekolahList.forEach((s,i) => { content += `<tr><td>${i+1}</td><td>${s.nama}</td><td>${s.siswa}</td><td>${s.guru}</td></tr>`; });
         content += `<tr><th colspan="2">TOTAL</th><th>${DB.sekolahList.reduce((a,s)=>a+s.siswa,0)}</th><th>${DB.sekolahList.reduce((a,s)=>a+s.guru,0)}</th></tr></table>`;
@@ -4008,6 +4440,7 @@ function doTambahStaf() {
     closeModal();
     showToast('Staf berhasil ditambahkan!');
     renderPengaturanStaf();
+    syncStafDinasToFirebase();
 }
 
 function showEditStafModal(id) {
@@ -4049,6 +4482,7 @@ function doEditStaf(id) {
         closeModal();
         showToast('Staf berhasil diupdate!');
         renderPengaturanStaf();
+        syncStafDinasToFirebase();
     }
 }
 
@@ -4072,7 +4506,13 @@ function showHapusStafModal(id) {
 
 function doHapusStaf(id) {
     const idx = DB.stafDinas.findIndex(x => x.id === id);
-    if (idx > -1) { DB.stafDinas.splice(idx, 1); closeModal(); showToast('Staf berhasil dihapus!'); renderPengaturanStaf(); }
+    if (idx > -1) { 
+        DB.stafDinas.splice(idx, 1); 
+        closeModal(); 
+        showToast('Staf berhasil dihapus!'); 
+        renderPengaturanStaf(); 
+        syncStafDinasToFirebase();
+    }
 }
 
 // ==================== SEKOLAH PAGES ====================
@@ -4596,7 +5036,7 @@ function renderSSarpras() {
                 </div>
             </div>
             <div class="bg-white rounded-2xl p-6 border shadow-sm">
-                <h3 class="font-semibold mb-4">Detail Kondisi Sarpras per Bulan (Tahun 2026)</h3>
+                <h3 class="font-semibold mb-4">Detail Kondisi Sarpras per Bulan (Tahun 2025)</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-xs border-collapse">
                         <thead>
@@ -4699,7 +5139,7 @@ function renderSKeuangan() {
             </div>
             
             <div class="bg-white rounded-2xl p-6 border shadow-sm">
-                <h3 class="font-semibold mb-4">Detail Keuangan per Bulan (Tahun 2026)</h3>
+                <h3 class="font-semibold mb-4">Detail Keuangan per Bulan (Tahun 2025)</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-xs border-collapse">
                         <thead>
@@ -4765,7 +5205,7 @@ function renderSLaporanSiswa() {
             <div class="bg-white rounded-2xl p-6 border shadow-sm">
                 <h3 class="font-semibold mb-4">Cetak Laporan Data Siswa</h3>
                 <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div><label class="text-sm text-gray-600 mb-1 block">Tahun Ajaran</label><select class="w-full border rounded-xl px-4 py-2.5 text-sm"><option>2025/2026</option><option>2023/2025</option></select></div>
+                    <div><label class="text-sm text-gray-600 mb-1 block">Tahun Ajaran</label><select class="w-full border rounded-xl px-4 py-2.5 text-sm"><option>2024/2025</option><option>2023/2024</option></select></div>
                     <div><label class="text-sm text-gray-600 mb-1 block">Semester</label><select class="w-full border rounded-xl px-4 py-2.5 text-sm"><option>Semester 1</option><option>Semester 2</option></select></div>
                 </div>
                 <button onclick="printLaporanSekolah('siswa')" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-sm font-medium"><i class="fas fa-print mr-2"></i>Cetak Laporan</button>
@@ -4818,7 +5258,7 @@ function printLaporanSekolah(type) {
     setTimeout(() => {
         const printWin = window.open('', '', 'width=900,height=700');
         let content = `<html><head><title>Laporan ${type}</title><style>body{font-family:Arial,sans-serif;padding:30px;font-size:12px;}table{width:100%;border-collapse:collapse;margin:15px 0;}th,td{border:1px solid #333;padding:6px 8px;text-align:left;}th{background:#f0f0f0;}.header{text-align:center;border-bottom:3px double #333;padding-bottom:15px;margin-bottom:20px;}.logo{width:60px;height:60px;margin:0 auto 10px;}</style></head><body>`;
-        content += `<div class="header"><img src="https://i.pinimg.com/1200x/76/39/2d/76392d91c9c22d8ec5563b1126cd55b8.jpg" class="logo"><h1>${sekolah.nama.toUpperCase()}</h1><h2>LAPORAN ${type.toUpperCase()}</h2><p>Tahun Ajaran 2025/2026</p></div>`;
+        content += `<div class="header"><img src="https://i.pinimg.com/1200x/76/39/2d/76392d91c9c22d8ec5563b1126cd55b8.jpg" class="logo"><h1>${sekolah.nama.toUpperCase()}</h1><h2>LAPORAN ${type.toUpperCase()}</h2><p>Tahun Ajaran 2024/2025</p></div>`;
         
         if (type === 'siswa') {
             content += `<table><tr><th>No</th><th>NIS</th><th>NISN</th><th>Nama</th><th>Kelas</th><th>JK</th><th>Status</th></tr>`;
@@ -4929,8 +5369,8 @@ function downloadTemplate(type) {
         filename = 'template_sarpras.csv';
     } else if (type === 'keuangan') {
         csvContent = 'Jenis,Uraian,Jumlah,Tanggal,Keterangan\n';
-        csvContent += 'Penerimaan,Dana BOS Reguler,500000000,2026-01-15,Transfer\n';
-        csvContent += 'Pengeluaran,Belanja Pegawai,175000000,2026-01-20,Gaji\n';
+        csvContent += 'Penerimaan,Dana BOS Reguler,500000000,2025-01-15,Transfer\n';
+        csvContent += 'Pengeluaran,Belanja Pegawai,175000000,2025-01-20,Gaji\n';
         filename = 'template_keuangan.csv';
     }
     
@@ -5088,6 +5528,124 @@ function doSyncSekolah() {
         showToast('Sinkronisasi berhasil!', 'success');
         renderSSinkron();
     }, 2000);
+}
+
+// ==================== PENGATURAN TAHUN AJARAN ====================
+function renderPengaturanTahunAjaran() {
+    const contentArea = document.getElementById('contentArea');
+    if (!contentArea) return;
+    
+    const currentTahunAjaran = DB.tahunAjaran || "2025/2026";
+    const tahunAjaranList = DB.tahunAjaranList || [
+        "2025/2026", "2026/2027", "2027/2028", "2028/2029", "2029/2030",
+        "2030/2031", "2031/2032", "2032/2033", "2033/2034", "2034/2035", "2035/2036"
+    ];
+    
+    contentArea.innerHTML = `
+        <div class="fade-in space-y-6">
+            <!-- Info Card -->
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-5 border border-indigo-200">
+                <div class="flex items-start gap-3">
+                    <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-calendar-alt text-indigo-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Pengaturan Tahun Ajaran</h3>
+                        <p class="text-sm text-gray-600 mt-1">
+                            Tahun ajaran aktif akan ditampilkan di seluruh sistem dan mempengaruhi laporan, data siswa, dan pencatatan lainnya.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Current Selection -->
+            <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                <h3 class="font-semibold mb-4"><i class="fas fa-check-circle text-green-500 mr-2"></i>Tahun Ajaran Aktif</h3>
+                
+                <div class="flex items-center gap-4 p-4 bg-green-50 border border-green-200 rounded-xl mb-4">
+                    <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-calendar-check text-green-600 text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-green-600">Tahun Ajaran Saat Ini</p>
+                        <p class="text-2xl font-bold text-green-700">${currentTahunAjaran}</p>
+                    </div>
+                </div>
+                
+                <div class="border-t pt-4">
+                    <label class="text-sm text-gray-600 mb-2 block">Pilih Tahun Ajaran Baru:</label>
+                    <select id="selectTahunAjaran" class="w-full border rounded-xl px-4 py-3 text-sm font-medium">
+                        ${tahunAjaranList.map(ta => `
+                            <option value="${ta}" ${ta === currentTahunAjaran ? 'selected' : ''}>${ta}</option>
+                        `).join('')}
+                    </select>
+                </div>
+                
+                <button onclick="simpanTahunAjaran()" class="mt-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-6 py-2.5 rounded-xl text-sm font-medium">
+                    <i class="fas fa-save mr-2"></i>Simpan Perubahan
+                </button>
+            </div>
+            
+            <!-- Daftar Tahun Ajaran -->
+            <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                <h3 class="font-semibold mb-4"><i class="fas fa-list text-blue-500 mr-2"></i>Daftar Tahun Ajaran Tersedia</h3>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    ${tahunAjaranList.map(ta => `
+                        <div class="p-4 rounded-xl border ${ta === currentTahunAjaran ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-200'} text-center">
+                            <p class="font-semibold ${ta === currentTahunAjaran ? 'text-green-700' : 'text-gray-700'}">${ta}</p>
+                            ${ta === currentTahunAjaran ? '<span class="text-xs text-green-600"><i class="fas fa-check mr-1"></i>Aktif</span>' : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            
+            <!-- Info -->
+            <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-4">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-info-circle text-yellow-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-yellow-800">Catatan Penting</h4>
+                        <p class="text-sm text-yellow-700 mt-1">
+                            Perubahan tahun ajaran akan mempengaruhi seluruh data yang tercatat di sistem. Pastikan untuk melakukan backup data sebelum berganti tahun ajaran baru.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function simpanTahunAjaran() {
+    const selectedTA = document.getElementById('selectTahunAjaran').value;
+    
+    if (!selectedTA) {
+        showToast('Pilih tahun ajaran terlebih dahulu!', 'error');
+        return;
+    }
+    
+    const oldTA = DB.tahunAjaran;
+    DB.tahunAjaran = selectedTA;
+    
+    // Update display
+    updateTahunAjaranDisplay();
+    
+    showToast(`Tahun ajaran berhasil diubah dari ${oldTA} ke ${selectedTA}!`, 'success');
+    renderPengaturanTahunAjaran();
+    
+    // Sync to Firebase
+    if (firebaseInitialized) {
+        firebaseSaveDocument('settings', 'tahunAjaran', { tahunAjaran: selectedTA });
+    }
+}
+
+function updateTahunAjaranDisplay() {
+    const taElement = document.getElementById('tahunAjaranDisplay');
+    if (taElement) {
+        taElement.textContent = DB.tahunAjaran || '2025/2026';
+    }
 }
 
 // ==================== KELOLA PASSWORD SEKOLAH (Admin Wilayah) ====================
@@ -5454,6 +6012,7 @@ function doTambahPengumuman() {
     playAlarmWithAlert('pengumuman', 'Pengumuman Baru', judul);
     
     renderPengaturanPengumuman();
+    syncPengumumanToFirebase();
 }
 
 function showEditPengumumanModal(id) {
@@ -5484,6 +6043,7 @@ function doEditPengumuman(id) {
         closeModal();
         showToast('Pengumuman berhasil diupdate!');
         renderPengaturanPengumuman();
+        syncPengumumanToFirebase();
     }
 }
 
@@ -5493,6 +6053,7 @@ function togglePengumumanStatus(id) {
         p.status = p.status === 'aktif' ? 'nonaktif' : 'aktif';
         showToast(`Pengumuman berhasil di${p.status === 'aktif' ? 'aktifkan' : 'nonaktifkan'}!`);
         renderPengaturanPengumuman();
+        syncPengumumanToFirebase();
     }
 }
 
@@ -5521,6 +6082,7 @@ function doHapusPengumuman(id) {
         closeModal();
         showToast('Pengumuman berhasil dihapus!');
         renderPengaturanPengumuman();
+        syncPengumumanToFirebase();
     }
 }
 
@@ -6366,6 +6928,7 @@ function kirimUsulanPip() {
     
     showToast('Usulan PIP berhasil dikirim ke Admin Wilayah!', 'success');
     renderSPipVerval();
+    syncPIPToFirebase();
 }
 
 function renderSPipPemberkasan() {
@@ -6494,6 +7057,7 @@ function submitPemberkasanPip() {
     buktiInput.value = '';
     document.getElementById('previewBukti').classList.add('hidden');
     renderSPipPemberkasan();
+    syncPIPToFirebase();
 }
 
 function submitAllPemberkasanPip() {
@@ -6546,6 +7110,7 @@ function doSubmitAllPemberkasan() {
     closeModal();
     showToast('Pemberkasan berhasil disubmit!');
     renderSPipPemberkasan();
+    syncPIPToFirebase();
 }
 
 function downloadRekapPemberkasanPip() {
@@ -7593,6 +8158,465 @@ function doHapusStaffAccess(id) {
         if (firebaseInitialized) {
             firebaseDeleteDocument('staffAccess', id.toString());
         }
+    }
+}
+
+// ==================== KELOLA MENU SIDEBAR ====================
+function renderKelolaMenu() {
+    const contentArea = document.getElementById('contentArea');
+    if (!contentArea) return;
+    
+    const iconList = [
+        'fa-home', 'fa-th-large', 'fa-folder', 'fa-file', 'fa-file-alt', 'fa-file-download', 'fa-file-upload',
+        'fa-users', 'fa-user', 'fa-user-graduate', 'fa-user-tie', 'fa-chalkboard-teacher',
+        'fa-school', 'fa-building', 'fa-university', 'fa-graduation-cap',
+        'fa-cogs', 'fa-cog', 'fa-settings', 'fa-tools',
+        'fa-chart-bar', 'fa-chart-line', 'fa-chart-pie',
+        'fa-money-bill', 'fa-money-bill-wave', 'fa-wallet', 'fa-credit-card',
+        'fa-envelope', 'fa-envelope-open', 'fa-inbox', 'fa-paper-plane',
+        'fa-bell', 'fa-bullhorn', 'fa-comment', 'fa-comments',
+        'fa-archive', 'fa-database', 'fa-server', 'fa-cloud',
+        'fa-print', 'fa-download', 'fa-upload', 'fa-sync', 'fa-sync-alt',
+        'fa-star', 'fa-heart', 'fa-bookmark', 'fa-flag',
+        'fa-book', 'fa-book-open', 'fa-graduation-cap', 'fa-award',
+        'fa-calendar', 'fa-calendar-alt', 'fa-clock', 'fa-history',
+        'fa-lock', 'fa-shield-alt', 'fa-key', 'fa-user-shield',
+        'fa-link', 'fa-external-link-alt', 'fa-globe', 'fa-sitemap',
+        'fa-clipboard', 'fa-clipboard-list', 'fa-tasks', 'fa-list',
+        'fa-images', 'fa-image', 'fa-camera', 'fa-video',
+        'fa-hand-holding-heart', 'fa-hand-holding-usd', 'fa-gift', 'fa-donate'
+    ];
+    
+    contentArea.innerHTML = `
+        <div class="fade-in space-y-6">
+            <!-- Header Info -->
+            <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-5 border border-indigo-200">
+                <div class="flex items-start gap-3">
+                    <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-bars text-indigo-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Kelola Menu Sidebar</h3>
+                        <p class="text-sm text-gray-600 mt-1">
+                            Tambah, edit, atau hapus menu pada sidebar Admin Wilayah. Menu yang ditambahkan akan muncul di bagian bawah sidebar setelah menu default.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tambah Menu Baru -->
+            <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-semibold"><i class="fas fa-plus-circle text-green-500 mr-2"></i>Tambah Menu Baru</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">ID Menu (unik)</label>
+                        <input type="text" id="newMenuId" placeholder="contoh: custom-info" class="w-full border rounded-xl px-4 py-2.5 text-sm">
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">Label Menu</label>
+                        <input type="text" id="newMenuLabel" placeholder="contoh: Informasi" class="w-full border rounded-xl px-4 py-2.5 text-sm">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">Icon</label>
+                        <select id="newMenuIcon" class="w-full border rounded-xl px-4 py-2.5 text-sm">
+                            ${iconList.map(icon => `<option value="${icon}"><i class="fas ${icon}"></i> ${icon}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">Tipe Menu</label>
+                        <select id="newMenuType" class="w-full border rounded-xl px-4 py-2.5 text-sm" onchange="toggleMenuTypeOptions()">
+                            <option value="single">Menu Tunggal (tanpa submenu)</option>
+                            <option value="submenu">Menu dengan Submenu</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Konten untuk menu tunggal -->
+                <div id="singleMenuContent" class="mb-4">
+                    <label class="text-sm text-gray-600 mb-1 block">Konten Halaman (HTML)</label>
+                    <textarea id="newMenuContent" rows="4" placeholder="<h1>Judul</h1><p>Konten halaman...</p>" class="w-full border rounded-xl px-4 py-2.5 text-sm font-mono"></textarea>
+                    <p class="text-xs text-gray-400 mt-1">Gunakan HTML untuk konten halaman. Anda bisa menggunakan class Tailwind CSS.</p>
+                </div>
+                
+                <!-- Opsi submenu -->
+                <div id="submenuOptions" class="hidden mb-4">
+                    <label class="text-sm text-gray-600 mb-1 block">Daftar Submenu</label>
+                    <div id="submenuListContainer" class="space-y-2">
+                        <div class="flex gap-2 items-center">
+                            <input type="text" placeholder="ID submenu" class="submenu-id flex-1 border rounded-lg px-3 py-2 text-sm">
+                            <input type="text" placeholder="Label" class="submenu-label flex-1 border rounded-lg px-3 py-2 text-sm">
+                            <button onclick="removeSubmenuRow(this)" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                    <button onclick="addSubmenuRow()" class="mt-2 text-sm text-blue-600 hover:text-blue-700"><i class="fas fa-plus mr-1"></i>Tambah Submenu</button>
+                </div>
+                
+                <div class="flex items-center gap-4 mb-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="newMenuActive" checked class="w-4 h-4 rounded border-gray-300 text-blue-600">
+                        <span class="text-sm text-gray-700">Aktif</span>
+                    </label>
+                </div>
+                
+                <button onclick="addNewMenu()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium">
+                    <i class="fas fa-plus mr-2"></i>Tambah Menu
+                </button>
+            </div>
+            
+            <!-- Daftar Menu Kustom -->
+            <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                <h3 class="font-semibold mb-4"><i class="fas fa-list text-blue-500 mr-2"></i>Daftar Menu Kustom</h3>
+                
+                ${DB.customMenus.length === 0 ? `
+                    <div class="text-center py-8 text-gray-400">
+                        <i class="fas fa-folder-open text-4xl mb-2"></i>
+                        <p>Belum ada menu kustom</p>
+                    </div>
+                ` : `
+                    <div class="space-y-3">
+                        ${DB.customMenus.map((menu, i) => `
+                            <div class="flex items-center justify-between p-4 rounded-xl border ${menu.active ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center border">
+                                        <i class="fas ${menu.icon} text-gray-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium">${escapeHtml(menu.label)}</p>
+                                        <p class="text-xs text-gray-500">ID: ${menu.id} ${menu.hasSubmenu ? `• ${menu.submenu.length} submenu` : ''}</p>
+                                    </div>
+                                    <span class="px-2 py-1 rounded-full text-xs ${menu.active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}">
+                                        ${menu.active ? 'Aktif' : 'Nonaktif'}
+                                    </span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="toggleMenuActive(${i})" class="p-2 rounded-lg ${menu.active ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200' : 'bg-green-100 text-green-600 hover:bg-green-200'}" title="${menu.active ? 'Nonaktifkan' : 'Aktifkan'}">
+                                        <i class="fas ${menu.active ? 'fa-eye-slash' : 'fa-eye'}"></i>
+                                    </button>
+                                    <button onclick="editCustomMenu(${i})" class="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="deleteCustomMenu(${i})" class="p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200" title="Hapus">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `}
+            </div>
+            
+            <!-- Preview Icon -->
+            <div class="bg-white rounded-2xl p-6 border shadow-sm">
+                <h3 class="font-semibold mb-4"><i class="fas fa-icons text-purple-500 mr-2"></i>Daftar Icon Tersedia</h3>
+                <div class="grid grid-cols-8 md:grid-cols-12 gap-2">
+                    ${iconList.map(icon => `
+                        <div class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center border hover:bg-blue-50 hover:border-blue-300 cursor-pointer" onclick="document.getElementById('newMenuIcon').value='${icon}'" title="${icon}">
+                            <i class="fas ${icon} text-gray-600"></i>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function toggleMenuTypeOptions() {
+    const type = document.getElementById('newMenuType').value;
+    const singleContent = document.getElementById('singleMenuContent');
+    const submenuOptions = document.getElementById('submenuOptions');
+    
+    if (type === 'single') {
+        singleContent.classList.remove('hidden');
+        submenuOptions.classList.add('hidden');
+    } else {
+        singleContent.classList.add('hidden');
+        submenuOptions.classList.remove('hidden');
+    }
+}
+
+function addSubmenuRow() {
+    const container = document.getElementById('submenuListContainer');
+    const row = document.createElement('div');
+    row.className = 'flex gap-2 items-center';
+    row.innerHTML = `
+        <input type="text" placeholder="ID submenu" class="submenu-id flex-1 border rounded-lg px-3 py-2 text-sm">
+        <input type="text" placeholder="Label" class="submenu-label flex-1 border rounded-lg px-3 py-2 text-sm">
+        <button onclick="removeSubmenuRow(this)" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-times"></i></button>
+    `;
+    container.appendChild(row);
+}
+
+function removeSubmenuRow(btn) {
+    btn.parentElement.remove();
+}
+
+function addNewMenu() {
+    const id = document.getElementById('newMenuId').value.trim();
+    const label = document.getElementById('newMenuLabel').value.trim();
+    const icon = document.getElementById('newMenuIcon').value;
+    const type = document.getElementById('newMenuType').value;
+    const active = document.getElementById('newMenuActive').checked;
+    
+    if (!id || !label) {
+        showToast('ID dan Label menu harus diisi!', 'error');
+        return;
+    }
+    
+    // Check for duplicate ID
+    if (DB.customMenus.find(m => m.id === id)) {
+        showToast('ID menu sudah digunakan!', 'error');
+        return;
+    }
+    
+    // Validate ID format
+    if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
+        showToast('ID hanya boleh berisi huruf, angka, underscore, dan strip!', 'error');
+        return;
+    }
+    
+    const newMenu = {
+        id: id,
+        icon: icon,
+        label: label,
+        active: active,
+        hasSubmenu: type === 'submenu',
+        submenu: []
+    };
+    
+    if (type === 'single') {
+        newMenu.contentType = 'html';
+        newMenu.content = document.getElementById('newMenuContent').value;
+    } else {
+        // Get submenu items
+        const submenuRows = document.querySelectorAll('#submenuListContainer > div');
+        submenuRows.forEach(row => {
+            const subId = row.querySelector('.submenu-id').value.trim();
+            const subLabel = row.querySelector('.submenu-label').value.trim();
+            if (subId && subLabel) {
+                newMenu.submenu.push({
+                    id: `${id}-${subId}`,
+                    label: subLabel
+                });
+            }
+        });
+        
+        if (newMenu.submenu.length === 0) {
+            showToast('Tambahkan minimal satu submenu!', 'error');
+            return;
+        }
+    }
+    
+    DB.customMenus.push(newMenu);
+    
+    // Clear form
+    document.getElementById('newMenuId').value = '';
+    document.getElementById('newMenuLabel').value = '';
+    document.getElementById('newMenuContent').value = '';
+    document.getElementById('newMenuType').value = 'single';
+    toggleMenuTypeOptions();
+    
+    // Clear submenu rows except first
+    const container = document.getElementById('submenuListContainer');
+    container.innerHTML = `
+        <div class="flex gap-2 items-center">
+            <input type="text" placeholder="ID submenu" class="submenu-id flex-1 border rounded-lg px-3 py-2 text-sm">
+            <input type="text" placeholder="Label" class="submenu-label flex-1 border rounded-lg px-3 py-2 text-sm">
+            <button onclick="removeSubmenuRow(this)" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-times"></i></button>
+        </div>
+    `;
+    
+    showToast('Menu berhasil ditambahkan!');
+    renderKelolaMenu();
+    buildSidebar();
+    
+    // Sync to Firebase
+    if (firebaseInitialized) {
+        firebaseSaveDocument('settings', 'customMenus', { menus: DB.customMenus });
+    }
+}
+
+function toggleMenuActive(index) {
+    if (DB.customMenus[index]) {
+        DB.customMenus[index].active = !DB.customMenus[index].active;
+        renderKelolaMenu();
+        buildSidebar();
+        
+        if (firebaseInitialized) {
+            firebaseSaveDocument('settings', 'customMenus', { menus: DB.customMenus });
+        }
+    }
+}
+
+function editCustomMenu(index) {
+    const menu = DB.customMenus[index];
+    if (!menu) return;
+    
+    const iconList = [
+        'fa-home', 'fa-th-large', 'fa-folder', 'fa-file', 'fa-file-alt', 'fa-file-download', 'fa-file-upload',
+        'fa-users', 'fa-user', 'fa-user-graduate', 'fa-user-tie', 'fa-chalkboard-teacher',
+        'fa-school', 'fa-building', 'fa-university', 'fa-graduation-cap',
+        'fa-cogs', 'fa-cog', 'fa-settings', 'fa-tools',
+        'fa-chart-bar', 'fa-chart-line', 'fa-chart-pie',
+        'fa-money-bill', 'fa-money-bill-wave', 'fa-wallet', 'fa-credit-card',
+        'fa-envelope', 'fa-envelope-open', 'fa-inbox', 'fa-paper-plane',
+        'fa-bell', 'fa-bullhorn', 'fa-comment', 'fa-comments',
+        'fa-archive', 'fa-database', 'fa-server', 'fa-cloud',
+        'fa-print', 'fa-download', 'fa-upload', 'fa-sync', 'fa-sync-alt',
+        'fa-star', 'fa-heart', 'fa-bookmark', 'fa-flag',
+        'fa-book', 'fa-book-open', 'fa-graduation-cap', 'fa-award',
+        'fa-calendar', 'fa-calendar-alt', 'fa-clock', 'fa-history',
+        'fa-lock', 'fa-shield-alt', 'fa-key', 'fa-user-shield',
+        'fa-link', 'fa-external-link-alt', 'fa-globe', 'fa-sitemap',
+        'fa-clipboard', 'fa-clipboard-list', 'fa-tasks', 'fa-list',
+        'fa-images', 'fa-image', 'fa-camera', 'fa-video',
+        'fa-hand-holding-heart', 'fa-hand-holding-usd', 'fa-gift', 'fa-donate'
+    ];
+    
+    const submenuHtml = menu.hasSubmenu && menu.submenu ? menu.submenu.map(sub => `
+        <div class="flex gap-2 items-center mb-2">
+            <input type="text" value="${sub.id.replace(menu.id + '-', '')}" class="edit-submenu-id flex-1 border rounded-lg px-3 py-2 text-sm">
+            <input type="text" value="${escapeHtml(sub.label)}" class="edit-submenu-label flex-1 border rounded-lg px-3 py-2 text-sm">
+            <button onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-times"></i></button>
+        </div>
+    `).join('') : '';
+    
+    showModal(`
+        <div class="p-6">
+            <h3 class="text-lg font-semibold mb-4"><i class="fas fa-edit text-blue-500 mr-2"></i>Edit Menu</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">ID Menu</label>
+                    <input type="text" id="editMenuId" value="${menu.id}" class="w-full border rounded-xl px-4 py-2.5 text-sm bg-gray-100" readonly>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Label Menu</label>
+                    <input type="text" id="editMenuLabel" value="${escapeHtml(menu.label)}" class="w-full border rounded-xl px-4 py-2.5 text-sm">
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600 mb-1 block">Icon</label>
+                    <select id="editMenuIcon" class="w-full border rounded-xl px-4 py-2.5 text-sm">
+                        ${iconList.map(icon => `<option value="${icon}" ${menu.icon === icon ? 'selected' : ''}>${icon}</option>`).join('')}
+                    </select>
+                </div>
+                ${!menu.hasSubmenu ? `
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">Konten Halaman (HTML)</label>
+                        <textarea id="editMenuContent" rows="6" class="w-full border rounded-xl px-4 py-2.5 text-sm font-mono">${escapeHtml(menu.content || '')}</textarea>
+                    </div>
+                ` : `
+                    <div>
+                        <label class="text-sm text-gray-600 mb-1 block">Submenu</label>
+                        <div id="editSubmenuContainer">${submenuHtml}</div>
+                        <button onclick="addEditSubmenuRow()" class="mt-2 text-sm text-blue-600 hover:text-blue-700"><i class="fas fa-plus mr-1"></i>Tambah Submenu</button>
+                    </div>
+                `}
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="editMenuActive" ${menu.active ? 'checked' : ''} class="w-4 h-4 rounded border-gray-300 text-blue-600">
+                    <label class="text-sm text-gray-700">Aktif</label>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="saveEditMenu(${index})" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-medium">Simpan</button>
+                <button onclick="closeModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-medium">Batal</button>
+            </div>
+        </div>
+    `);
+}
+
+function addEditSubmenuRow() {
+    const container = document.getElementById('editSubmenuContainer');
+    const row = document.createElement('div');
+    row.className = 'flex gap-2 items-center mb-2';
+    row.innerHTML = `
+        <input type="text" placeholder="ID" class="edit-submenu-id flex-1 border rounded-lg px-3 py-2 text-sm">
+        <input type="text" placeholder="Label" class="edit-submenu-label flex-1 border rounded-lg px-3 py-2 text-sm">
+        <button onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 p-2"><i class="fas fa-times"></i></button>
+    `;
+    container.appendChild(row);
+}
+
+function saveEditMenu(index) {
+    const menu = DB.customMenus[index];
+    if (!menu) return;
+    
+    const label = document.getElementById('editMenuLabel').value.trim();
+    const icon = document.getElementById('editMenuIcon').value;
+    const active = document.getElementById('editMenuActive').checked;
+    
+    if (!label) {
+        showToast('Label menu harus diisi!', 'error');
+        return;
+    }
+    
+    menu.label = label;
+    menu.icon = icon;
+    menu.active = active;
+    
+    if (!menu.hasSubmenu) {
+        menu.content = document.getElementById('editMenuContent').value;
+    } else {
+        // Update submenu
+        menu.submenu = [];
+        const rows = document.querySelectorAll('#editSubmenuContainer > div');
+        rows.forEach(row => {
+            const subId = row.querySelector('.edit-submenu-id').value.trim();
+            const subLabel = row.querySelector('.edit-submenu-label').value.trim();
+            if (subId && subLabel) {
+                menu.submenu.push({
+                    id: `${menu.id}-${subId}`,
+                    label: subLabel
+                });
+            }
+        });
+    }
+    
+    closeModal();
+    showToast('Menu berhasil diupdate!');
+    renderKelolaMenu();
+    buildSidebar();
+    
+    if (firebaseInitialized) {
+        firebaseSaveDocument('settings', 'customMenus', { menus: DB.customMenus });
+    }
+}
+
+function deleteCustomMenu(index) {
+    const menu = DB.customMenus[index];
+    if (!menu) return;
+    
+    showModal(`
+        <div class="p-6">
+            <div class="text-center mb-4">
+                <div class="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-3"><i class="fas fa-trash text-red-600 text-2xl"></i></div>
+                <h3 class="text-lg font-semibold">Hapus Menu</h3>
+                <p class="text-sm text-gray-500 mt-1">${escapeHtml(menu.label)}</p>
+            </div>
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+                <p class="text-sm text-red-700">Menu akan dihapus permanen dan tidak dapat dikembalikan.</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="doDeleteMenu(${index})" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl text-sm font-medium">Hapus</button>
+                <button onclick="closeModal()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-medium">Batal</button>
+            </div>
+        </div>
+    `);
+}
+
+function doDeleteMenu(index) {
+    DB.customMenus.splice(index, 1);
+    closeModal();
+    showToast('Menu berhasil dihapus!');
+    renderKelolaMenu();
+    buildSidebar();
+    
+    if (firebaseInitialized) {
+        firebaseSaveDocument('settings', 'customMenus', { menus: DB.customMenus });
     }
 }
 

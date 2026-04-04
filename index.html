@@ -5888,8 +5888,8 @@ function showFormSKUMPTK() {
         '<div class="col-md-3"><div class="form-floating"><input class="form-control" id="skumptk_desa" placeholder="Desa"><label>Desa / Kelurahan</label></div></div>' +
         '<div class="col-md-3"><div class="form-floating"><input class="form-control" id="skumptk_kecamatan" placeholder="Kecamatan"><label>Kecamatan</label></div></div>' +
         '<div class="col-md-12"><div class="form-floating"><input class="form-control" id="skumptk_kabupaten" value="Cirebon" placeholder="Kabupaten"><label>Kabupaten / Kodya</label></div></div>' +
-        '<div class="col-md-12"><div class="form-floating"><select class="form-select" id="skumptk_jenis_kepegawaian"><option value="">-- Pilih Jenis Kepegawaian --</option><option value="PPPK" selected>PPPK</option><option value="PNSD.I">PNSD.I</option><option value="PNSD.II">PNSD.II</option><option value="PNSP">PNSP</option><option value="PNSP dpb.I">PNSP dpb.I</option><option value="PNSP dpb.II">PNSP dpb.II</option><option value="PNSP dpk I">PNSP dpk I</option><option value="PNSP dpk II">PNSP dpk II</option><option value="PNSD.I dpb.II">PNSD.I dpb.II</option><option value="PNSD.I dpk.II">PNSD.I dpk.II</option><option value="PNSD. dpb. Inst. Lain (swasta)">PNSD. dpb. Inst. Lain (swasta)</option><option value="PNS. dpk. Pusat">PNS. dpk. Pusat</option><option value="Pejabat Negara">Pejabat Negara</option></select><label>10. Jenis Kepegawaian</label></div></div>' +
-        '<div class="col-md-12"><div class="form-floating"><select class="form-select" id="skumptk_status_kepegawaian"><option value="">-- Pilih Status Kepegawaian --</option><option value="PPPK" selected>PPPK</option><option value="Peg. Tetap">Peg. Tetap</option><option value="Capeg">Capeg</option><option value="MPP">MPP</option><option value="Pen.Uang Tunggu">Pen.Uang Tunggu</option><option value="Peg. Scorsing Cuti">Peg. Scorsing Cuti luar tanggungan negara</option><option value="Peg. Sementara">Peg. Sementara (Perusahaan Daerah)</option><option value="Peg.Bulanan">Peg.Bulanan (Pens.Peg. Negeri dpk. Jabatan semula)</option></select><label>11. Status Kepegawaian</label></div></div>' +
+        '<div class="col-md-12"><div class="form-floating"><select class="form-select" id="skumptk_jenis_kepegawaian" onchange="skumptkSyncKepegawaian()"><option value="">-- Pilih Jenis Kepegawaian --</option><option value="PPPK" selected>PPPK</option><option value="PNSD.I">PNSD.I</option><option value="PNSD.II">PNSD.II</option><option value="PNSP">PNSP</option><option value="PNSP dpb.I">PNSP dpb.I</option><option value="PNSP dpb.II">PNSP dpb.II</option><option value="PNSP dpk I">PNSP dpk I</option><option value="PNSP dpk II">PNSP dpk II</option><option value="PNSD.I dpb.II">PNSD.I dpb.II</option><option value="PNSD.I dpk.II">PNSD.I dpk.II</option><option value="PNSD. dpb. Inst. Lain (swasta)">PNSD. dpb. Inst. Lain (swasta)</option><option value="PNS. dpk. Pusat">PNS. dpk. Pusat</option><option value="Pejabat Negara">Pejabat Negara</option></select><label>10. Jenis Kepegawaian</label></div></div>' +
+        '<div class="col-md-12"><div class="form-floating"><select class="form-select" id="skumptk_status_kepegawaian" onchange="skumptkSyncKepegawaian()"><option value="">-- Pilih Status Kepegawaian --</option><option value="PPPK" selected>PPPK</option><option value="Peg. Tetap">Peg. Tetap</option><option value="Capeg">Capeg</option><option value="MPP">MPP</option><option value="Pen.Uang Tunggu">Pen.Uang Tunggu</option><option value="Peg. Scorsing Cuti">Peg. Scorsing Cuti luar tanggungan negara</option><option value="Peg. Sementara">Peg. Sementara (Perusahaan Daerah)</option><option value="Peg.Bulanan">Peg.Bulanan (Pens.Peg. Negeri dpk. Jabatan semula)</option></select><label>11. Status Kepegawaian</label></div></div>' +
       '</div>' +
       '<hr style="margin:12px 0;border-color:var(--border-color);">' +
       '<h6 style="font-weight:700;color:var(--primary);margin-bottom:12px;"><i class="bi bi-cash-coin me-1"></i>12. Digaji menurut PP 11/2024 dengan</h6>' +
@@ -5976,6 +5976,7 @@ function showFormSKUMPTK() {
 
   document.getElementById('suratFormBody').innerHTML = html;
   skumptkCheckAnakButton();
+  skumptkSyncKepegawaian();
 }
 
 function skumptkSwitchTab(tab) {
@@ -5985,6 +5986,56 @@ function skumptkSwitchTab(tab) {
   tabs.forEach(function(t) { t.classList.remove('active'); });
   if (tab === 'depan') tabs[0].classList.add('active');
   else tabs[1].classList.add('active');
+}
+
+function skumptkSyncKepegawaian() {
+  var jenisEl = document.getElementById('skumptk_jenis_kepegawaian');
+  var statusEl = document.getElementById('skumptk_status_kepegawaian');
+  if (!jenisEl || !statusEl) return;
+
+  var jenisVal = jenisEl.value;
+  var statusVal = statusEl.value;
+  var keduaDipilih = jenisVal && statusVal;
+
+  // Reset semua option di kedua dropdown
+  function resetOptions(el) {
+    var opts = el.querySelectorAll('option');
+    opts.forEach(function(opt) {
+      opt.style.textDecoration = 'none';
+      opt.style.color = '';
+      opt.style.opacity = '';
+      opt.disabled = false;
+    });
+  }
+  resetOptions(jenisEl);
+  resetOptions(statusEl);
+
+  // Hanya coret jika kedua dropdown sudah memilih
+  if (!keduaDipilih) return;
+
+  // Di Jenis: coret semua kecuali yang dipilih
+  var jenisOpts = jenisEl.querySelectorAll('option');
+  jenisOpts.forEach(function(opt) {
+    if (opt.value !== '' && opt.value !== jenisVal) {
+      opt.style.textDecoration = 'line-through';
+      opt.style.textDecorationColor = '#e53e3e';
+      opt.style.color = '#a0aec0';
+      opt.style.opacity = '0.6';
+      opt.disabled = true;
+    }
+  });
+
+  // Di Status: coret semua kecuali yang dipilih
+  var statusOpts = statusEl.querySelectorAll('option');
+  statusOpts.forEach(function(opt) {
+    if (opt.value !== '' && opt.value !== statusVal) {
+      opt.style.textDecoration = 'line-through';
+      opt.style.textDecorationColor = '#e53e3e';
+      opt.style.color = '#a0aec0';
+      opt.style.opacity = '0.6';
+      opt.disabled = true;
+    }
+  });
 }
 
 function skumptkBuildAnakRow(no) {

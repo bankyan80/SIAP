@@ -278,6 +278,10 @@
     .pengumuman-meta { font-size: 11px; color: #999; margin-top: 10px; }
     .pengumuman-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
     .pengumuman-actions { float: right; }
+    .pengumuman-lampiran { margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px; }
+    .pengumuman-lampiran img { max-width: 100%; max-height: 350px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; }
+    .pengumuman-lampiran .btn-download { display: inline-flex; align-items: center; gap: 6px; background: #f0f4f8; border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 14px; font-size: 13px; color: var(--primary); text-decoration: none; transition: all 0.2s; }
+    .pengumuman-lampiran .btn-download:hover { background: #e2e8f0; }
 
     /* SCROLLBAR */
     .sidebar::-webkit-scrollbar { width: 4px; }
@@ -520,17 +524,7 @@
             </div>
           </div>
         </div>
-        <div class="card">
-          <div class="card-header"><h5><i class="bi bi-building me-2"></i>Daftar Sekolah Terdaftar</h5></div>
-          <div class="card-body">
-            <div class="table-container max-h-table">
-              <table class="table table-hover">
-                <thead><tr><th>No</th><th>Nama Sekolah</th><th>NPSN</th><th>Jenjang</th><th>Kepala Sekolah</th></tr></thead>
-                <tbody id="dashSekolahTable"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+
       </div>
 
       <!-- ======== SEKOLAH DASHBOARD ======== -->
@@ -1090,6 +1084,13 @@
           <div class="col-12"><div class="form-floating"><input class="form-control" id="f_pengumuman_judul" placeholder="Judul"><label>Judul Pengumuman</label></div></div>
           <div class="col-12"><div class="form-floating"><textarea class="form-control" id="f_pengumuman_isi" style="height:250px;" placeholder="Isi pengumuman..."></textarea><label>Isi Pengumuman</label></div></div>
           <div class="col-md-6"><div class="form-floating"><select class="form-select" id="f_pengumuman_prioritas"><option value="Biasa">Biasa</option><option value="Penting">Penting</option><option value="Sangat Penting">Sangat Penting</option></select><label>Prioritas</label></div></div>
+          <div class="col-12">
+            <label style="font-size:13px;font-weight:600;color:var(--text);"><i class="bi bi-paperclip me-1"></i>Lampiran (Dokumen/Gambar)</label>
+            <input type="file" class="form-control mt-1" id="f_pengumuman_lampiran" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx">
+            <div id="pengumumanLampiranInfo" style="font-size:12px;color:var(--success);margin-top:4px;display:none;"><i class="bi bi-check-circle me-1"></i><span id="pengumumanLampiranName"></span> <a href="javascript:void(0)" onclick="removePengumumanLampiran()" style="color:var(--danger);font-weight:600;">Hapus</a></div>
+            <div id="pengumumanLampiranPreview" style="margin-top:8px;display:none;"></div>
+            <small style="font-size:11px;color:#999;">Maks. 5MB. Gambar akan ditampilkan, dokumen bisa diunduh.</small>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -1676,23 +1677,7 @@ function loadAdminDashboard() {
   var btnEl = document.getElementById('pengumumanBtnAdmin');
   if (btnEl && currentUser.role === 'admin') btnEl.style.display = 'inline-block';
 
-  const tbody = document.getElementById('dashSekolahTable');
-  if (sekolahs.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Belum ada data sekolah</td></tr>';
-  } else {
-    tbody.innerHTML = sekolahs.map((s, i) => {
-      var kepsek = pegawais.find(p => p.school_id === s.id && p.jabatan && p.jabatan.toLowerCase().includes('kepala sekolah'));
-      var kepName = kepsek ? kepsek.nama : (s.kepala_sekolah || '-');
-      return `
-      <tr>
-        <td class="center">${i + 1}</td>
-        <td><strong>${escapeHtml(s.nama_sekolah)}</strong></td>
-        <td>${escapeHtml(s.npsn)}</td>
-        <td><span class="badge-jenjang" style="background:${s.jenjang==='SD'?'#ebf8ff;color:#2b6cb0':s.jenjang==='SMP'?'#f0fff4;color:#276749':'#fffff0;color:#975a16'}">${escapeHtml(s.jenjang)}</span></td>
-        <td>${escapeHtml(kepName)}</td>
-      </tr>`;
-    }).join('');
-  }
+
 }
 
 function loadSekolahDashboard() {
@@ -4418,6 +4403,58 @@ function generateSekolahLaporan() {
 
 // ============ PENGUMUMAN ============
 var editPengumumanId = null;
+var pengumumanLampiranData = null; // { nama, data (base64), tipe (mime), ukuran }
+
+function isImageType(tipe) {
+  return tipe && tipe.indexOf('image/') === 0;
+}
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function handlePengumumanLampiran(inputEl) {
+  var file = inputEl.files[0];
+  if (!file) return;
+  var maxSize = 5 * 1024 * 1024;
+  if (file.size > maxSize) {
+    alert('Ukuran file maksimal 5MB!');
+    inputEl.value = '';
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    pengumumanLampiranData = { nama: file.name, data: e.target.result, tipe: file.type, ukuran: file.size };
+    document.getElementById('pengumumanLampiranName').textContent = file.name + ' (' + formatFileSize(file.size) + ')';
+    document.getElementById('pengumumanLampiranInfo').style.display = 'block';
+    var previewEl = document.getElementById('pengumumanLampiranPreview');
+    if (isImageType(file.type)) {
+      previewEl.innerHTML = '<img src="' + e.target.result + '" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border-color);">';
+      previewEl.style.display = 'block';
+    } else {
+      previewEl.style.display = 'none';
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function removePengumumanLampiran() {
+  pengumumanLampiranData = null;
+  document.getElementById('f_pengumuman_lampiran').value = '';
+  document.getElementById('pengumumanLampiranInfo').style.display = 'none';
+  document.getElementById('pengumumanLampiranPreview').style.display = 'none';
+}
+
+function downloadLampiran(base64Data, nama, tipe) {
+  var link = document.createElement('a');
+  link.href = base64Data;
+  link.download = nama || 'lampiran';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
 
 function loadPengumuman(containerId) {
   var container = document.getElementById(containerId);
@@ -4434,31 +4471,76 @@ function loadPengumuman(containerId) {
     var badgeColor = r.prioritas === 'Sangat Penting' ? 'bg-danger text-white' : r.prioritas === 'Penting' ? 'bg-warning text-dark' : 'bg-secondary';
     var tanggal = r.created_at ? new Date(r.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
     var actions = isAdminKorwil ? '<div class="pengumuman-actions"><button class="btn btn-warning btn-sm me-1" onclick="editPengumuman(\'' + r.id + '\')" title="Edit"><i class="bi bi-pencil"></i></button><button class="btn btn-danger btn-sm" onclick="deletePengumuman(\'' + r.id + '\')" title="Hapus"><i class="bi bi-trash"></i></button></div>' : '';
+
+    // Lampiran: gambar ditampilkan, dokumen bisa diunduh
+    var lampiranHtml = '';
+    if (r.lampiran_data && r.lampiran_tipe) {
+      lampiranHtml = '<div class="pengumuman-lampiran">';
+      if (isImageType(r.lampiran_tipe)) {
+        lampiranHtml += '<img src="' + r.lampiran_data + '" onclick="window.open(this.src,\'_blank\')" title="Klik untuk memperbesar">';
+      } else {
+        var icon = r.lampiran_tipe.indexOf('pdf') > -1 ? 'bi-file-earmark-pdf' : 'bi-file-earmark';
+        lampiranHtml += '<a class="btn-download" href="javascript:void(0)" onclick="downloadLampiran(\'' + r.id + '\',\'' + escapeHtml(r.lampiran_nama || 'lampiran') + '\')"><i class="bi ' + icon + '"></i>' + escapeHtml(r.lampiran_nama || 'lampiran') + '</a>';
+      }
+      lampiranHtml += '</div>';
+    }
+
     html += '<div class="pengumuman-item ' + prioritasClass + '">' +
       actions +
       '<div class="d-flex align-items-center gap-2 mb-1"><span class="pengumuman-badge ' + badgeColor + '">' + escapeHtml(r.prioritas || 'Biasa') + '</span><span class="pengumuman-judul mb-0">' + escapeHtml(r.judul) + '</span></div>' +
       '<div class="pengumuman-isi">' + escapeHtml(r.isi) + '</div>' +
+      lampiranHtml +
       '<div class="pengumuman-meta"><i class="bi bi-clock me-1"></i>' + tanggal + '</div>' +
       '</div>';
   });
   container.innerHTML = html;
 }
 
+// Override downloadLampiran to use record lookup (since we pass record id, not raw base64 in onclick)
+(function() {
+  var origDownload = downloadLampiran;
+  window.downloadLampiran = function(recordId, nama) {
+    var rec = getRecord('pengumuman', recordId);
+    if (rec && rec.lampiran_data) {
+      origDownload(rec.lampiran_data, nama, rec.lampiran_tipe);
+    } else {
+      alert('File lampiran tidak ditemukan.');
+    }
+  };
+})();
+
 function openPengumumanModal(id) {
   editPengumumanId = id || null;
+  pengumumanLampiranData = null;
   var titleEl = document.getElementById('pengumumanModalTitle');
+  document.getElementById('f_pengumuman_lampiran').value = '';
+  document.getElementById('pengumumanLampiranInfo').style.display = 'none';
+  document.getElementById('pengumumanLampiranPreview').style.display = 'none';
+
   if (id) {
     titleEl.innerHTML = '<i class="bi bi-pencil me-2"></i>Edit Pengumuman';
     var rec = getRecord('pengumuman', id);
     document.getElementById('f_pengumuman_judul').value = rec.judul || '';
     document.getElementById('f_pengumuman_isi').value = rec.isi || '';
     document.getElementById('f_pengumuman_prioritas').value = rec.prioritas || 'Biasa';
+    // Load existing lampiran
+    if (rec.lampiran_data) {
+      pengumumanLampiranData = { nama: rec.lampiran_nama, data: rec.lampiran_data, tipe: rec.lampiran_tipe, ukuran: rec.lampiran_ukuran || 0 };
+      document.getElementById('pengumumanLampiranName').textContent = (rec.lampiran_nama || 'lampiran') + (rec.lampiran_ukuran ? ' (' + formatFileSize(rec.lampiran_ukuran) + ')' : '');
+      document.getElementById('pengumumanLampiranInfo').style.display = 'block';
+      if (isImageType(rec.lampiran_tipe)) {
+        document.getElementById('pengumumanLampiranPreview').innerHTML = '<img src="' + rec.lampiran_data + '" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border-color);">';
+        document.getElementById('pengumumanLampiranPreview').style.display = 'block';
+      }
+    }
   } else {
     titleEl.innerHTML = '<i class="bi bi-megaphone me-2"></i>Buat Pengumuman';
     document.getElementById('f_pengumuman_judul').value = '';
     document.getElementById('f_pengumuman_isi').value = '';
     document.getElementById('f_pengumuman_prioritas').value = 'Biasa';
   }
+  // Bind file input change
+  document.getElementById('f_pengumuman_lampiran').onchange = function() { handlePengumumanLampiran(this); };
   new bootstrap.Modal(document.getElementById('pengumumanModal')).show();
 }
 
@@ -4470,11 +4552,39 @@ function savePengumuman() {
   var prioritas = document.getElementById('f_pengumuman_prioritas').value;
   if (!judul) { alert('Judul harus diisi!'); return; }
   if (!isi) { alert('Isi pengumuman harus diisi!'); return; }
-  if (editPengumumanId) {
-    updateRecord('pengumuman', editPengumumanId, { judul: judul, isi: isi, prioritas: prioritas });
-  } else {
-    addRecord('pengumuman', { judul: judul, isi: isi, prioritas: prioritas });
+
+  var data = { judul: judul, isi: isi, prioritas: prioritas };
+
+  // Include lampiran if exists
+  if (pengumumanLampiranData) {
+    data.lampiran_nama = pengumumanLampiranData.nama;
+    data.lampiran_data = pengumumanLampiranData.data;
+    data.lampiran_tipe = pengumumanLampiranData.tipe;
+    data.lampiran_ukuran = pengumumanLampiranData.ukuran;
   }
+
+  if (editPengumumanId) {
+    var existing = getRecord('pengumuman', editPengumumanId);
+    // If editing and no new lampiran selected, keep old lampiran
+    if (!pengumumanLampiranData && existing) {
+      if (existing.lampiran_data) {
+        data.lampiran_nama = existing.lampiran_nama;
+        data.lampiran_data = existing.lampiran_data;
+        data.lampiran_tipe = existing.lampiran_tipe;
+        data.lampiran_ukuran = existing.lampiran_ukuran;
+      }
+    } else if (!pengumumanLampiranData && existing && existing.lampiran_data) {
+      // User explicitly removed lampiran via "Hapus" button
+      data.lampiran_nama = null;
+      data.lampiran_data = null;
+      data.lampiran_tipe = null;
+      data.lampiran_ukuran = null;
+    }
+    updateRecord('pengumuman', editPengumumanId, data);
+  } else {
+    addRecord('pengumuman', data);
+  }
+  pengumumanLampiranData = null;
   editPengumumanId = null;
   bootstrap.Modal.getInstance(document.getElementById('pengumumanModal')).hide();
   loadPengumuman('pengumumanContainer');

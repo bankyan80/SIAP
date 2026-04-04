@@ -7,8 +7,6 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
   <style>
     :root {
@@ -278,10 +276,6 @@
     .pengumuman-meta { font-size: 11px; color: #999; margin-top: 10px; }
     .pengumuman-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
     .pengumuman-actions { float: right; }
-    .pengumuman-lampiran { margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px; }
-    .pengumuman-lampiran img { max-width: 100%; max-height: 350px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; }
-    .pengumuman-lampiran .btn-download { display: inline-flex; align-items: center; gap: 6px; background: #f0f4f8; border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 14px; font-size: 13px; color: var(--primary); text-decoration: none; transition: all 0.2s; }
-    .pengumuman-lampiran .btn-download:hover { background: #e2e8f0; }
 
     /* SCROLLBAR */
     .sidebar::-webkit-scrollbar { width: 4px; }
@@ -524,7 +518,17 @@
             </div>
           </div>
         </div>
-
+        <div class="card">
+          <div class="card-header"><h5><i class="bi bi-building me-2"></i>Daftar Sekolah Terdaftar</h5></div>
+          <div class="card-body">
+            <div class="table-container max-h-table">
+              <table class="table table-hover">
+                <thead><tr><th>No</th><th>Nama Sekolah</th><th>NPSN</th><th>Jenjang</th><th>Kepala Sekolah</th></tr></thead>
+                <tbody id="dashSekolahTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- ======== SEKOLAH DASHBOARD ======== -->
@@ -569,7 +573,7 @@
             <div class="search-bar"><i class="bi bi-search"></i><input type="text" placeholder="Cari sekolah..." oninput="renderTable('sekolah', this.value)"></div>
             <div class="table-container max-h-table">
               <table class="table table-hover">
-                <thead><tr><th>No</th><th>Nama Sekolah</th><th>NPSN</th><th>Alamat</th><th>Kepala Sekolah</th><th>Telepon Kepsek</th><th>Jenjang</th><th>Email</th><th>Aksi</th></tr></thead>
+                <thead><tr><th>No</th><th>Nama Sekolah</th><th>NPSN</th><th>Alamat</th><th>Kepala Sekolah</th><th>Jenjang</th><th>Telepon</th><th>Email</th><th>Aksi</th></tr></thead>
                 <tbody id="table-sekolah"></tbody>
               </table>
             </div>
@@ -638,38 +642,6 @@
               <table class="table table-hover">
                 <thead><tr><th>No</th><th>Sekolah</th><th>Nama Barang</th><th>Kategori</th><th>Jumlah</th><th>Kondisi</th><th>Tahun Perolehan</th><th>Keterangan</th><th>Aksi</th></tr></thead>
                 <tbody id="table-sarpras"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ======== DATA SISWA (Admin - semua sekolah) ======== -->
-      <div id="page-admin-siswa" class="page-section">
-        <div class="card">
-          <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <h5><i class="bi bi-people me-2"></i>Data Siswa</h5>
-            <div class="d-flex gap-2 flex-wrap">
-              <select class="form-select form-select-sm" id="filterSiswaSekolah" onchange="renderAdminSiswa()" style="width:220px;border-radius:8px;">
-                <option value="">Semua Sekolah</option>
-              </select>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="d-flex gap-2 mb-3 flex-wrap">
-              <button class="btn btn-sm btn-outline-secondary aktif-filter" onclick="filterAdminSiswaKelas('semua', this)">Semua</button>
-              <button class="btn btn-sm btn-outline-secondary" onclick="filterAdminSiswaKelas('1', this)">Kelas 1</button>
-              <button class="btn btn-sm btn-outline-secondary" onclick="filterAdminSiswaKelas('2', this)">Kelas 2</button>
-              <button class="btn btn-sm btn-outline-secondary" onclick="filterAdminSiswaKelas('3', this)">Kelas 3</button>
-              <button class="btn btn-sm btn-outline-secondary" onclick="filterAdminSiswaKelas('4', this)">Kelas 4</button>
-              <button class="btn btn-sm btn-outline-secondary" onclick="filterAdminSiswaKelas('5', this)">Kelas 5</button>
-              <button class="btn btn-sm btn-outline-secondary" onclick="filterAdminSiswaKelas('6', this)">Kelas 6</button>
-            </div>
-            <div class="search-bar"><i class="bi bi-search"></i><input type="text" placeholder="Cari siswa..." oninput="renderAdminSiswa(this.value)"></div>
-            <div class="table-container max-h-table">
-              <table class="table table-hover">
-                <thead><tr><th>No</th><th>Sekolah</th><th>NIS/NISN</th><th>Nama Siswa</th><th>JK</th><th>Tempat Lahir</th><th>Tanggal Lahir</th><th>Kelas</th><th>Alamat</th><th>Aksi</th></tr></thead>
-                <tbody id="table-siswa"></tbody>
               </table>
             </div>
           </div>
@@ -818,7 +790,33 @@
 
       <!-- ======== SURAT MENYURAT (Sekolah: Kategori Surat) ======== -->
       <div id="page-surat" class="page-section">
+        <!-- TABEL SURAT (Admin) -->
+        <div id="suratTableView" style="display:none;">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5><i class="bi bi-envelope-paper me-2"></i>Data Surat</h5>
+              <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary btn-sm" onclick="suratShowKategori()"><i class="bi bi-grid me-1"></i>Buat Dokumen</button>
+                <button class="btn btn-accent btn-sm" onclick="openModal('surat')"><i class="bi bi-plus-circle me-1"></i>Tambah Surat</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="search-bar"><i class="bi bi-search"></i><input type="text" placeholder="Cari surat..." oninput="renderTable('surat', this.value)"></div>
+              <div class="table-container max-h-table">
+                <table class="table table-hover">
+                  <thead><tr><th>No</th><th>No. Surat</th><th>Tanggal</th><th>Jenis Surat</th><th>Tujuan</th><th>Perihal</th><th>Aksi</th></tr></thead>
+                  <tbody id="table-surat"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KATEGORI GRID -->
         <div id="suratKategoriView">
+          <div class="d-flex align-items-center gap-2 mb-3 no-print" id="suratBackToTable" style="display:none;">
+            <button class="btn btn-outline-secondary btn-sm" onclick="suratShowTable()"><i class="bi bi-arrow-left me-1"></i>Kembali ke Data Surat</button>
+          </div>
           <div class="card">
             <div class="card-header"><h5><i class="bi bi-envelope-paper me-2"></i>Surat Menyurat</h5></div>
             <div class="card-body">
@@ -828,7 +826,7 @@
         </div>
         <div id="suratFormView" style="display:none;">
           <div class="d-flex align-items-center gap-2 mb-3 no-print">
-            <button class="btn btn-outline-secondary btn-sm" onclick="showSuratKategori()"><i class="bi bi-arrow-left me-1"></i>Kembali ke Daftar Kategori</button>
+            <button class="btn btn-outline-secondary btn-sm" onclick="suratFormBack()"><i class="bi bi-arrow-left me-1"></i>Kembali</button>
           </div>
           <div class="card">
             <div class="card-header"><h5 id="suratFormTitle"><i class="bi bi-file-earmark-text me-2"></i>Form Surat</h5></div>
@@ -1011,11 +1009,6 @@
         <div id="databaseBody"></div>
       </div>
 
-      <!-- ======== KONFIGURASI DATABASE (Firebase + Google Sheets) ======== -->
-      <div id="page-konfigurasi-db" class="page-section">
-        <div id="konfigurasiDbBody"></div>
-      </div>
-
       <!-- ============ MODAL TANDA TERIMA ============ -->
       <div class="modal fade" id="tandaTerimaModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -1084,13 +1077,6 @@
           <div class="col-12"><div class="form-floating"><input class="form-control" id="f_pengumuman_judul" placeholder="Judul"><label>Judul Pengumuman</label></div></div>
           <div class="col-12"><div class="form-floating"><textarea class="form-control" id="f_pengumuman_isi" style="height:250px;" placeholder="Isi pengumuman..."></textarea><label>Isi Pengumuman</label></div></div>
           <div class="col-md-6"><div class="form-floating"><select class="form-select" id="f_pengumuman_prioritas"><option value="Biasa">Biasa</option><option value="Penting">Penting</option><option value="Sangat Penting">Sangat Penting</option></select><label>Prioritas</label></div></div>
-          <div class="col-12">
-            <label style="font-size:13px;font-weight:600;color:var(--text);"><i class="bi bi-paperclip me-1"></i>Lampiran (Dokumen/Gambar)</label>
-            <input type="file" class="form-control mt-1" id="f_pengumuman_lampiran" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx">
-            <div id="pengumumanLampiranInfo" style="font-size:12px;color:var(--success);margin-top:4px;display:none;"><i class="bi bi-check-circle me-1"></i><span id="pengumumanLampiranName"></span> <a href="javascript:void(0)" onclick="removePengumumanLampiran()" style="color:var(--danger);font-weight:600;">Hapus</a></div>
-            <div id="pengumumanLampiranPreview" style="margin-top:8px;display:none;"></div>
-            <small style="font-size:11px;color:#999;">Maks. 5MB. Gambar akan ditampilkan, dokumen bisa diunduh.</small>
-          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -1245,40 +1231,10 @@ function getKepalaSekolah(schoolId) {
 }
 
 function getAdminProfile() {
-  var key = 'siap_admin1_profile';
-  if (currentUser) {
-    if (currentUser.role === 'admin' && currentUser.adminLevel === 'limited') key = 'siap_admin2_profile';
-    else if (currentUser.role === 'admin') key = 'siap_admin1_profile';
-    else key = 'siap_sekolah_profile_' + currentUser.schoolId;
-  }
-  // Migrasi data lama dari siap_admin_profile ke key yang benar
-  var oldData = localStorage.getItem('siap_admin_profile');
-  if (oldData && key !== 'siap_admin_profile') {
-    try {
-      var parsed = JSON.parse(oldData);
-      if (parsed && parsed.nama) {
-        if (!localStorage.getItem(key)) {
-          localStorage.setItem(key, oldData);
-        }
-      }
-      localStorage.removeItem('siap_admin_profile');
-    } catch(e) {}
-  }
-  try { return JSON.parse(localStorage.getItem(key) || '{}'); }
+  try { return JSON.parse(localStorage.getItem('siap_admin_profile') || '{}'); }
   catch { return {}; }
 }
-function saveAdminProfile(p) {
-  var key = 'siap_admin1_profile';
-  if (currentUser) {
-    if (currentUser.role === 'admin' && currentUser.adminLevel === 'limited') key = 'siap_admin2_profile';
-    else if (currentUser.role === 'admin') key = 'siap_admin1_profile';
-    else key = 'siap_sekolah_profile_' + currentUser.schoolId;
-  }
-  localStorage.setItem(key, JSON.stringify(p));
-  if (firebaseReady) {
-    firebaseDb.ref('settings/' + key).set(p);
-  }
-}
+function saveAdminProfile(p) { localStorage.setItem('siap_admin_profile', JSON.stringify(p)); }
 
 
 function escapeHtml(str) {
@@ -1511,7 +1467,6 @@ function buildSidebarMenu() {
       <li><a href="#" data-page="pegawai-korwil" onclick="navigateTo('pegawai-korwil')"><i class="bi bi-person-gear"></i>Pegawai Korwil</a></li>
       <li><a href="#" data-page="manajemen-pegawai" onclick="navigateTo('manajemen-pegawai')"><i class="bi bi-person-badge"></i>Manajemen Pegawai</a></li>
       <li><a href="#" data-page="admin-sarpras" onclick="navigateTo('admin-sarpras')"><i class="bi bi-house-door"></i>Data Sarpras</a></li>
-      <li><a href="#" data-page="admin-siswa" onclick="navigateTo('admin-siswa')"><i class="bi bi-people"></i>Data Siswa</a></li>
       <li class="menu-parent" onclick="toggleSubmenu(this)">
         <a><i class="bi bi-cash-coin"></i>Data PIP<i class="bi bi-chevron-right menu-arrow"></i></a>
         <ul class="submenu">
@@ -1533,7 +1488,6 @@ function buildSidebarMenu() {
       (isFullAdmin ? '<li><a href="#" data-page="manajemen-user" onclick="navigateTo(\'manajemen-user\')"><i class="bi bi-people-fill"></i>Manajemen User</a></li>' : '') +
       `<li><a href="#" data-page="ubah-sandi" onclick="navigateTo('ubah-sandi')"><i class="bi bi-key-fill"></i>Ubah Kata Sandi</a></li>` +
       (isFullAdmin ? '<li><a href="#" data-page="database" onclick="navigateTo(\'database\')"><i class="bi bi-database"></i>Export/Import Database</a></li>' : '') +
-      (isFullAdmin ? '<li><a href="#" data-page="konfigurasi-db" onclick="navigateTo(\'konfigurasi-db\')"><i class="bi bi-cloud"></i>Konfigurasi Database</a></li>' : '') +
       `<li><a href="#" onclick="logout()"><i class="bi bi-box-arrow-left"></i>Logout</a></li>
     `;
   } else {
@@ -1584,7 +1538,6 @@ function navigateTo(page) {
     'pegawai-korwil': 'Pegawai Korwil',
     'manajemen-pegawai': 'Manajemen Pegawai',
     'admin-sarpras': 'Data Sarana & Prasarana',
-    'admin-siswa': 'Data Siswa',
     'data-siswa': 'Data Siswa',
     'siswa-lulusan': 'Siswa Lulusan',
     'data-pegawai': 'Data Pegawai',
@@ -1593,6 +1546,7 @@ function navigateTo(page) {
     'laporan-sekolah': 'Laporan Sekolah',
     'surat': 'Surat Menyurat',
     'cetak-surat': 'Cetak Surat',
+    'skumptk': 'Pembuatan SKUMPTK',
     'verval-pip': 'Verval PIP',
     'aktivasi-pip': 'Aktivasi PIP',
     'arsip-masuk': 'Arsip Surat Masuk',
@@ -1602,8 +1556,7 @@ function navigateTo(page) {
     'pengaturan': 'Pengaturan Cetak',
     'ubah-sandi': 'Ubah Kata Sandi',
     'manajemen-user': 'Manajemen User',
-    'database': 'Export/Import Database',
-    'konfigurasi-db': 'Konfigurasi Database'
+    'database': 'Export/Import Database'
   };
   document.getElementById('pageTitle').textContent = titles[page] || 'SIAP';
 
@@ -1614,7 +1567,6 @@ function navigateTo(page) {
   if (page === 'pegawai-korwil') renderTable('pegawai_korwil');
   if (page === 'manajemen-pegawai') { populateSekolahFilter('filterPegawaiSekolah'); renderTable('pegawai'); }
   if (page === 'admin-sarpras') { populateSekolahFilter('filterSarprasSekolah'); renderTable('sarpras'); }
-  if (page === 'admin-siswa') { populateSiswaSekolahFilter(); adminSiswaKelasFilter = 'semua'; document.querySelectorAll('#page-admin-siswa .d-flex.gap-2.mb-3 button').forEach(function(b) { b.classList.remove('aktif-filter'); }); var semBtn2 = document.querySelector('#page-admin-siswa .d-flex.gap-2.mb-3 button'); if (semBtn2) semBtn2.classList.add('aktif-filter'); renderAdminSiswa(); }
   if (page === 'data-siswa') { activeKelasFilter = 'semua'; document.querySelectorAll('#page-data-siswa .d-flex.gap-2.mb-3 button').forEach(function(b) { b.classList.remove('aktif-filter'); }); var semBtn = document.querySelector('#page-data-siswa .d-flex.gap-2.mb-3 button'); if (semBtn) semBtn.classList.add('aktif-filter'); renderTable('siswa'); }
   if (page === 'siswa-lulusan') renderTable('siswa_lulusan');
   if (page === 'data-pegawai') renderTable('pegawai');
@@ -1625,14 +1577,27 @@ function navigateTo(page) {
   if (page === 'aktivasi-pip') { populateSekolahFilter('filterAktivasiSekolah'); renderTable('pip_aktivasi'); if (currentUser.role === 'sekolah') document.getElementById('unduhTandaTerimaCard').style.display = 'block'; }
   if (page === 'arsip-masuk') renderTable('arsip_masuk');
   if (page === 'arsip-keluar') renderTable('arsip_keluar');
-  if (page === 'surat') { if (currentUser.role === 'sekolah') { showSuratKategori(); } else { renderTable('surat'); } }
+  if (page === 'surat') {
+    if (currentUser && currentUser.role === 'admin') {
+      // Admin: show surat table by default
+      document.getElementById('suratTableView').style.display = 'block';
+      document.getElementById('suratKategoriView').style.display = 'none';
+      document.getElementById('suratFormView').style.display = 'none';
+      var backBtn = document.getElementById('suratBackToTable');
+      if (backBtn) backBtn.style.display = 'none';
+      renderTable('surat');
+    } else {
+      // Sekolah: show category grid
+      document.getElementById('suratTableView').style.display = 'none';
+      showSuratKategori();
+    }
+  }
   if (page === 'profile') loadProfile();
   if (page === 'profil-sekolah') loadProfilSekolah();
   if (page === 'pengaturan') loadPengaturan();
   if (page === 'ubah-sandi') loadUbahSandi();
   if (page === 'manajemen-user') loadManajemenUser();
   if (page === 'database') loadDatabasePage();
-  if (page === 'konfigurasi-db') loadKonfigurasiDb();
 
   // Close sidebar on mobile
   closeSidebar();
@@ -1677,7 +1642,20 @@ function loadAdminDashboard() {
   var btnEl = document.getElementById('pengumumanBtnAdmin');
   if (btnEl && currentUser.role === 'admin') btnEl.style.display = 'inline-block';
 
-
+  const tbody = document.getElementById('dashSekolahTable');
+  if (sekolahs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Belum ada data sekolah</td></tr>';
+  } else {
+    tbody.innerHTML = sekolahs.map((s, i) => `
+      <tr>
+        <td class="center">${i + 1}</td>
+        <td><strong>${escapeHtml(s.nama_sekolah)}</strong></td>
+        <td>${escapeHtml(s.npsn)}</td>
+        <td><span class="badge-jenjang" style="background:${s.jenjang==='SD'?'#ebf8ff;color:#2b6cb0':s.jenjang==='SMP'?'#f0fff4;color:#276749':'#fffff0;color:#975a16'}">${escapeHtml(s.jenjang)}</span></td>
+        <td>${escapeHtml(s.kepala_sekolah)}</td>
+      </tr>
+    `).join('');
+  }
 }
 
 function loadSekolahDashboard() {
@@ -1750,27 +1728,22 @@ function renderTable(type, searchTerm = '') {
   let html = '';
   switch(type) {
     case 'sekolah':
-      var allPegawai = getRecords('pegawai');
-      html = records.map((r, i) => {
-        var kepsek = allPegawai.find(p => p.school_id === r.id && p.jabatan && p.jabatan.toLowerCase().includes('kepala sekolah'));
-        var kepName = kepsek ? kepsek.nama : (r.kepala_sekolah || '-');
-        var kepTelp = kepsek ? (kepsek.telepon || '-') : '-';
-        return `
+      html = records.map((r, i) => `
         <tr>
           <td class="center">${i+1}</td>
           <td><strong>${escapeHtml(r.nama_sekolah)}</strong></td>
           <td>${escapeHtml(r.npsn)}</td>
           <td>${escapeHtml(r.alamat)}</td>
-          <td>${escapeHtml(kepName)}</td>
-          <td>${escapeHtml(kepTelp)}</td>
+          <td>${escapeHtml(r.kepala_sekolah)}</td>
           <td><span class="badge-jenjang" style="background:${r.jenjang==='SD'?'#ebf8ff;color:#2b6cb0':r.jenjang==='SMP'?'#f0fff4;color:#276749':'#fffff0;color:#975a16'}">${escapeHtml(r.jenjang)}</span></td>
+          <td>${escapeHtml(r.telepon)}</td>
           <td>${escapeHtml(r.email)}</td>
           <td class="action-btns">
             <button class="btn btn-warning btn-sm" onclick="editRecord('${type}','${r.id}')"><i class="bi bi-pencil"></i></button>
             <button class="btn btn-danger btn-sm" onclick="confirmDelete('${type}','${r.id}')"><i class="bi bi-trash"></i></button>
           </td>
-        </tr>`;
-      }).join('');
+        </tr>
+      `).join('');
       break;
 
     case 'pegawai_korwil':
@@ -2180,7 +2153,7 @@ function openModal(type, editId = null) {
       title.textContent = record ? 'Edit Pegawai Korwil' : 'Tambah Pegawai Korwil';
       formHtml = `
         <div class="row g-3">
-          <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_nama" value="${record ? escapeHtml(record.nama) : ''}"><label>Nama Lengkap & Gelar</label></div></div>
+          <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_nama" value="${record ? escapeHtml(record.nama) : ''}"><label>Nama Lengkap</label></div></div>
           <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_nip" value="${record ? escapeHtml(record.nip) : ''}"><label>NIP</label></div></div>
           <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_jabatan" value="${record ? escapeHtml(record.jabatan) : ''}"><label>Jabatan</label></div></div>
           <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_pangkat_golongan" value="${record ? escapeHtml(record.pangkat_golongan) : ''}"><label>Pangkat/Golongan</label></div></div>
@@ -2203,7 +2176,7 @@ function openModal(type, editId = null) {
       formHtml = `
         <div class="row g-3">
           ${currentUser.role === 'admin' ? `<div class="col-md-6"><div class="form-floating"><select class="form-select" id="f_school_id"><option value="">Pilih Sekolah</option>${sekolahOptions}</select><label>Sekolah</label></div></div>` : ''}
-          <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_nama" value="${record ? escapeHtml(record.nama) : ''}"><label>Nama Lengkap & Gelar</label></div></div>
+          <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_nama" value="${record ? escapeHtml(record.nama) : ''}"><label>Nama Lengkap</label></div></div>
           <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_nip" value="${record ? escapeHtml(record.nip) : ''}"><label>NIP</label></div></div>
           <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_jabatan" value="${record ? escapeHtml(record.jabatan) : ''}"><label>Jabatan</label></div></div>
           <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_pangkat_golongan" value="${record ? escapeHtml(record.pangkat_golongan) : ''}"><label>Pangkat/Golongan</label></div></div>
@@ -2517,16 +2490,6 @@ function saveCrudData() {
     addRecord(currentCrudType, data);
   }
 
-  // Sinkronisasi: jika pegawai sekolah disimpan/diedit dan jabatan = Kepala Sekolah, update tabel sekolah
-  if (currentCrudType === 'pegawai' && data.school_id && data.jabatan) {
-    if (data.jabatan.toLowerCase().includes('kepala sekolah')) {
-      var school = getRecord('sekolah', data.school_id);
-      if (school) {
-        updateRecord('sekolah', school.id, { kepala_sekolah: data.nama, nip_kepala: data.nip || '' });
-      }
-    }
-  }
-
   currentDokumenData = null;
   bootstrap.Modal.getInstance(document.getElementById('crudModal')).hide();
   if (currentCrudType === 'pip_verval') { renderVervalPipPage(); } else { renderTable(currentCrudType); }
@@ -2601,30 +2564,13 @@ function confirmDelete(type, id) {
 
 // ============ PROFILE ============
 function loadProfile() {
-  var isAdmin = currentUser.role === 'admin';
-  var profile = getAdminProfile();
+  const profile = getAdminProfile();
+  document.getElementById('profileNama').value = profile.nama || '';
+  document.getElementById('profileNIP').value = profile.nip || '';
+  document.getElementById('profileJabatan').value = profile.jabatan || '';
 
-  // Update card header
-  var headerEl = document.querySelector('#page-profile .card-header h5');
-  if (headerEl) {
-    if (isAdmin) {
-      var label = currentUser.adminLevel === 'full' ? 'Admin Korwil (Admin_01)' : 'Admin Operator (Admin_02)';
-      headerEl.innerHTML = '<i class="bi bi-person-circle me-2"></i>Profil ' + label;
-    } else {
-      headerEl.innerHTML = '<i class="bi bi-person-circle me-2"></i>Profil ' + escapeHtml(currentUser.name);
-    }
-  }
-
-  if (isAdmin) {
-    // Admin Korwil / Admin Operator - tampilkan profil admin
-    document.getElementById('profileNama').value = profile.nama || '';
-    document.getElementById('profileNIP').value = profile.nip || '';
-    document.getElementById('profileJabatan').value = profile.jabatan || '';
-  } else {
-    // Admin Sekolah - tampilkan nama sekolah
+  if (currentUser && currentUser.role !== 'admin') {
     document.getElementById('profileNama').value = currentUser.name || '';
-    document.getElementById('profileNIP').value = profile.nip || '';
-    document.getElementById('profileJabatan').value = profile.jabatan || '';
   }
 }
 
@@ -2902,492 +2848,6 @@ function getAdmin2Password() {
 }
 function setAdmin2Password(pw) {
   localStorage.setItem('siap_admin2_password', pw);
-  syncSettingToFirebase('admin2_password', pw);
-}
-
-// ============ FIREBASE ENGINE ============
-var firebaseDb = null;
-var firebaseReady = false;
-var firebaseSyncing = false;
-var sheetsSyncUrl = '';
-var firebaseConfig = {};
-
-function getFirebaseConfig() {
-  var defaultCfg = {
-    apiKey: "AIzaSyDFadEnVo9fX64tw7uDTzT0ESoE5JAcx6c",
-    authDomain: "aplikasi-siap-ef85e.firebaseapp.com",
-    databaseURL: "https://aplikasi-siap-ef85e-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "aplikasi-siap-ef85e",
-    storageBucket: "aplikasi-siap-ef85e.firebasestorage.app",
-    messagingSenderId: "209198927274",
-    appId: "1:209198927274:web:2145b0e6803d5ff98b6fd3"
-  };
-  try {
-    var saved = JSON.parse(localStorage.getItem('siap_firebase_config') || '{}');
-    return (saved && saved.databaseURL) ? saved : defaultCfg;
-  } catch(e) { return defaultCfg; }
-}
-function saveFirebaseConfig(cfg) {
-  localStorage.setItem('siap_firebase_config', JSON.stringify(cfg));
-}
-function getSheetsUrl() {
-  return localStorage.getItem('siap_sheets_url') || '';
-}
-function saveSheetsUrl(url) {
-  localStorage.setItem('siap_sheets_url', url);
-  sheetsSyncUrl = url;
-}
-
-function initFirebaseFromStorage() {
-  var cfg = getFirebaseConfig();
-  if (cfg && cfg.databaseURL) {
-    initFirebase(cfg);
-  }
-  sheetsSyncUrl = getSheetsUrl();
-}
-
-function initFirebase(cfg) {
-  try {
-    if (firebase.apps.length) {
-      firebase.app().delete().then(function() {
-        doInitFirebase(cfg);
-      });
-    } else {
-      doInitFirebase(cfg);
-    }
-  } catch(e) {
-    console.error('Firebase init error:', e);
-    firebaseReady = false;
-  }
-}
-
-function doInitFirebase(cfg) {
-  try {
-    firebase.initializeApp(cfg);
-    firebaseDb = firebase.database();
-    firebaseReady = true;
-    firebaseConfig = cfg;
-    console.log('Firebase connected!');
-    // Sync dari Firebase ke localStorage saat pertama kali
-    syncAllFromFirebase();
-    // Setup real-time listeners
-    setupFirebaseListeners();
-  } catch(e) {
-    console.error('Firebase doInit error:', e);
-    firebaseReady = false;
-  }
-}
-
-function disconnectFirebase() {
-  if (firebase.apps.length) {
-    firebase.app().delete();
-    firebaseDb = null;
-    firebaseReady = false;
-    console.log('Firebase disconnected.');
-  }
-}
-
-function testFirebaseConnection(cfg, callback) {
-  try {
-    var testApp = null;
-    if (firebase.apps.length) {
-      testApp = firebase.app();
-    } else {
-      testApp = firebase.initializeApp(cfg, 'testConnection');
-    }
-    var testDb = testApp.database();
-    var connRef = testDb.ref('.info/connected');
-    var timeout = setTimeout(function() {
-      if (testApp.name !== '[DEFAULT]') testApp.delete();
-      callback(false, 'Timeout - periksa koneksi internet dan Database URL');
-    }, 5000);
-    connRef.on('value', function(snap) {
-      clearTimeout(timeout);
-      if (snap.val() === true) {
-        connRef.off();
-        if (testApp.name !== '[DEFAULT]') testApp.delete();
-        callback(true, 'Koneksi berhasil!');
-      }
-    });
-  } catch(e) {
-    callback(false, 'Error: ' + e.message);
-  }
-}
-
-function syncAllFromFirebase() {
-  if (!firebaseReady) return;
-  firebaseSyncing = true;
-  var types = ['sekolah','siswa','siswa_lulusan','pegawai','pegawai_korwil','sarpras','pip_aktivasi','arsip_masuk','arsip_keluar','surat','pengumuman'];
-  var pending = types.length;
-
-  types.forEach(function(type) {
-    firebaseDb.ref('records/' + type).once('value').then(function(snapshot) {
-      var data = snapshot.val();
-      if (data) {
-        var records = [];
-        if (Array.isArray(data)) {
-          records = data;
-        } else {
-          records = Object.values(data);
-        }
-        localStorage.setItem('siap_records_' + type, JSON.stringify(records));
-      }
-      pending--;
-      if (pending === 0) {
-        firebaseSyncing = false;
-        console.log('Firebase sync complete!');
-        // Refresh UI if dashboard is shown
-        if (currentUser) {
-          if (currentUser.role === 'admin') loadAdminDashboard();
-          else loadSekolahDashboard();
-        }
-      }
-    }).catch(function(err) {
-      console.error('Sync error for ' + type + ':', err);
-      pending--;
-      if (pending === 0) firebaseSyncing = false;
-    });
-  });
-
-  // Sync settings
-  firebaseDb.ref('settings').once('value').then(function(snapshot) {
-    var settings = snapshot.val();
-    if (settings) {
-      if (settings.admin_password) localStorage.setItem('siap_admin_password', settings.admin_password);
-      if (settings.admin2_password) localStorage.setItem('siap_admin2_password', settings.admin2_password);
-      if (settings.siap_admin1_profile) localStorage.setItem('siap_admin1_profile', JSON.stringify(settings.siap_admin1_profile));
-      if (settings.siap_admin2_profile) localStorage.setItem('siap_admin2_profile', JSON.stringify(settings.siap_admin2_profile));
-    }
-  });
-}
-
-function setupFirebaseListeners() {
-  if (!firebaseReady) return;
-  var types = ['sekolah','siswa','siswa_lulusan','pegawai','pegawai_korwil','sarpras','pip_aktivasi','arsip_masuk','arsip_keluar','surat','pengumuman'];
-  types.forEach(function(type) {
-    firebaseDb.ref('records/' + type).on('value', function(snapshot) {
-      if (firebaseSyncing) return;
-      var data = snapshot.val();
-      if (data) {
-        var records = Array.isArray(data) ? data : Object.values(data);
-        localStorage.setItem('siap_records_' + type, JSON.stringify(records));
-      }
-    });
-  });
-  // Listener for settings
-  firebaseDb.ref('settings').on('value', function(snapshot) {
-    if (firebaseSyncing) return;
-    var settings = snapshot.val();
-    if (settings) {
-      if (settings.admin_password) localStorage.setItem('siap_admin_password', settings.admin_password);
-      if (settings.admin2_password) localStorage.setItem('siap_admin2_password', settings.admin2_password);
-      if (settings.siap_admin1_profile) localStorage.setItem('siap_admin1_profile', JSON.stringify(settings.siap_admin1_profile));
-      if (settings.siap_admin2_profile) localStorage.setItem('siap_admin2_profile', JSON.stringify(settings.siap_admin2_profile));
-    }
-  });
-}
-
-// Fungsi push data ke Firebase (dipanggil setiap kali data berubah)
-function pushRecordsToFirebase(type, records) {
-  if (!firebaseReady) return;
-  try {
-    firebaseDb.ref('records/' + type).set(records);
-    // Trigger Google Sheets sync
-    syncToGoogleSheets(type, records);
-  } catch(e) {
-    console.error('Firebase push error:', e);
-  }
-}
-
-function syncSettingToFirebase(key, value) {
-  if (!firebaseReady) return;
-  try {
-    firebaseDb.ref('settings/' + key).set(value);
-  } catch(e) {
-    console.error('Firebase settings sync error:', e);
-  }
-}
-
-// ============ GOOGLE SHEETS SYNC ============
-function syncToGoogleSheets(type, records) {
-  if (!sheetsSyncUrl) return;
-  try {
-    var payload = { type: type, records: records, action: 'sync', timestamp: new Date().toISOString() };
-    var blob = new Blob([JSON.stringify(payload)], { type: 'text/plain' });
-    navigator.sendBeacon(sheetsSyncUrl, blob);
-  } catch(e) {
-    console.error('Sheets sync error:', e);
-  }
-}
-
-function syncAllToGoogleSheets() {
-  if (!sheetsSyncUrl) { alert('URL Google Sheets belum dikonfigurasi!'); return; }
-  var types = ['sekolah','siswa','siswa_lulusan','pegawai','pegawai_korwil','sarpras','pip_aktivasi','arsip_masuk','arsip_keluar','surat','pengumuman'];
-  var synced = 0;
-  types.forEach(function(type) {
-    var records = getRecords(type);
-    syncToGoogleSheets(type, records);
-    synced++;
-  });
-  alert('Sinkronisasi ke Google Sheets dimulai!\n\n' + synced + ' kategori data akan dikirim.\n\nCatatan: Pastikan Google Apps Script sudah di-deploy dan aktif.');
-}
-
-// ============ MODIFIED CRUD FUNCTIONS (Firebase Sync) ============
-// Override saveRecords
-var _originalSaveRecords = saveRecords;
-saveRecords = function(type, records) {
-  localStorage.setItem('siap_records_' + type, JSON.stringify(records));
-  pushRecordsToFirebase(type, records);
-};
-
-// Override addRecord
-var _originalAddRecord = addRecord;
-addRecord = function(type, data) {
-  var records = getRecords(type);
-  var rec = { id: generateId() };
-  for (var k in data) rec[k] = data[k];
-  rec.created_at = now();
-  rec.updated_at = now();
-  records.push(rec);
-  saveRecords(type, records);
-  return rec;
-};
-
-// Override updateRecord
-var _originalUpdateRecord = updateRecord;
-updateRecord = function(type, id, data) {
-  var records = getRecords(type);
-  var idx = -1;
-  for (var i = 0; i < records.length; i++) {
-    if (records[i].id === id) { idx = i; break; }
-  }
-  if (idx >= 0) {
-    for (var k in data) records[idx][k] = data[k];
-    records[idx].updated_at = now();
-    saveRecords(type, records);
-  }
-};
-
-// Override deleteRecord
-var _originalDeleteRecord = deleteRecord;
-deleteRecord = function(type, id) {
-  var records = getRecords(type).filter(function(r) { return r.id !== id; });
-  saveRecords(type, records);
-};
-
-// Override setAdminPassword
-var _originalSetAdminPassword = setAdminPassword;
-setAdminPassword = function(pw) {
-  localStorage.setItem('siap_admin_password', pw);
-  syncSettingToFirebase('admin_password', pw);
-};
-
-// ============ KONFIGURASI DATABASE PAGE ============
-function loadKonfigurasiDb() {
-  var cfg = getFirebaseConfig();
-  var sheetsUrl = getSheetsUrl();
-  var connStatus = firebaseReady ?
-    '<span style="color:#16a34a;font-weight:600;"><i class="bi bi-check-circle-fill me-1"></i>Terhubung</span>' :
-    '<span style="color:#dc2626;font-weight:600;"><i class="bi bi-x-circle-fill me-1"></i>Tidak Terhubung</span>';
-
-  document.getElementById('konfigurasiDbBody').innerHTML =
-    '<div class="row g-4">' +
-    // FIREBASE CONFIG CARD
-    '<div class="col-lg-7">' +
-      '<div class="card h-100" style="border-left:4px solid #f59e0b;">' +
-        '<div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">' +
-          '<div class="d-flex align-items-center gap-2">' +
-            '<div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#d97706,#f59e0b);display:flex;align-items:center;justify-content:center;"><i class="bi bi-cloud-fill" style="color:#fff;font-size:20px;"></i></div>' +
-            '<div><h5 class="mb-0">Firebase Realtime Database</h5><small style="color:#64748b;font-size:12px;">Database cloud utama aplikasi</small></div>' +
-          '</div>' +
-          '<div>' + connStatus + '</div>' +
-        '</div>' +
-        '<div class="card-body">' +
-          '<div class="alert" style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:12px;color:#92400e;">' +
-            '<i class="bi bi-info-circle me-1"></i>Buat project Firebase di <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a>, aktifkan <b>Realtime Database</b> dengan aturan <code>{"rules":{".read":true,".write":true}}</code>, lalu salin konfigurasi ke bawah ini.' +
-          '</div>' +
-          '<div class="mb-3"><div class="form-floating"><input class="form-control" id="fb_apiKey" value="' + escapeHtml(cfg.apiKey || '') + '" placeholder="API Key"><label>API Key</label></div></div>' +
-          '<div class="mb-3"><div class="form-floating"><input class="form-control" id="fb_authDomain" value="' + escapeHtml(cfg.authDomain || '') + '" placeholder="Auth Domain"><label>Auth Domain</label></div></div>' +
-          '<div class="mb-3"><div class="form-floating"><input class="form-control" id="fb_databaseURL" value="' + escapeHtml(cfg.databaseURL || '') + '" placeholder="Database URL" style="font-weight:600;border:2px solid #e2e8f0;"><label>Database URL <span style="color:#dc2626;">*</span></label></div></div>' +
-          '<div class="mb-3"><div class="form-floating"><input class="form-control" id="fb_projectId" value="' + escapeHtml(cfg.projectId || '') + '" placeholder="Project ID"><label>Project ID</label></div></div>' +
-          '<div class="mb-3"><div class="form-floating"><input class="form-control" id="fb_storageBucket" value="' + escapeHtml(cfg.storageBucket || '') + '" placeholder="Storage Bucket"><label>Storage Bucket</label></div></div>' +
-          '<div class="mb-3"><div class="form-floating"><input class="form-control" id="fb_messagingSenderId" value="' + escapeHtml(cfg.messagingSenderId || '') + '" placeholder="Messaging Sender ID"><label>Messaging Sender ID</label></div></div>' +
-          '<div class="mb-3"><div class="form-floating"><input class="form-control" id="fb_appId" value="' + escapeHtml(cfg.appId || '') + '" placeholder="App ID"><label>App ID</label></div></div>' +
-          '<div class="d-flex gap-2 flex-wrap">' +
-            '<button class="btn" style="background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;border-radius:8px;padding:10px 20px;font-weight:600;border:none;" onclick="saveFirebaseSettings()"><i class="bi bi-save me-2"></i>Simpan & Hubungkan</button>' +
-            '<button class="btn btn-outline-secondary" onclick="testFirebaseConn()"><i class="bi bi-wifi me-2"></i>Test Koneksi</button>' +
-            (firebaseReady ? '<button class="btn btn-outline-danger" onclick="doDisconnectFirebase()"><i class="bi bi-x-circle me-2"></i>Putuskan</button>' : '') +
-          '</div>' +
-          '<div id="fbTestResult" style="margin-top:12px;display:none;"></div>' +
-        '</div>' +
-      '</div>' +
-    '</div>' +
-    // GOOGLE SHEETS CARD
-    '<div class="col-lg-5">' +
-      '<div class="card h-100" style="border-left:4px solid #16a34a;">' +
-        '<div class="card-header d-flex align-items-center gap-2">' +
-          '<div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#15803d,#16a34a);display:flex;align-items:center;justify-content:center;"><i class="bi bi-table" style="color:#fff;font-size:20px;"></i></div>' +
-          '<div><h5 class="mb-0">Google Sheets Sync</h5><small style="color:#64748b;font-size:12px;">Otomatis simpan ke spreadsheet</small></div>' +
-        '</div>' +
-        '<div class="card-body">' +
-          '<div class="alert" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 14px;font-size:12px;color:#166534;">' +
-            '<i class="bi bi-info-circle me-1"></i>Gunakan <b>Google Apps Script</b> sebagai web app. Deploy script yang disediakan, lalu salin URL-nya di bawah ini. Setiap data yang berubah akan otomatis dikirim ke Google Sheets.' +
-          '</div>' +
-          '<div class="mb-3"><div class="form-floating"><input class="form-control" id="sheets_url" value="' + escapeHtml(sheetsUrl) + '" placeholder="URL Apps Script Web App"><label>URL Apps Script Web App</label></div></div>' +
-          '<div class="mb-3">' +
-            '<button class="btn w-100" style="background:linear-gradient(135deg,#15803d,#16a34a);color:#fff;border-radius:8px;padding:10px;font-weight:600;border:none;" onclick="saveSheetsSettings()"><i class="bi bi-save me-2"></i>Simpan URL Sheets</button>' +
-          '</div>' +
-          '<div class="mb-3">' +
-            '<button class="btn w-100 btn-outline-success" onclick="syncAllToGoogleSheets()"><i class="bi bi-arrow-repeat me-2"></i>Sinkronkan Semua Data Sekarang</button>' +
-          '</div>' +
-          '<div id="sheetsTestResult" style="display:none;margin-top:8px;"></div>' +
-          '<hr style="margin:16px 0;">' +
-          '<h6 style="font-size:13px;font-weight:600;margin-bottom:8px;"><i class="bi bi-code-slash me-1"></i>Cara Setup Google Apps Script:</h6>' +
-          '<ol style="font-size:11px;color:#475569;padding-left:18px;margin:0;line-height:1.8;">' +
-            '<li>Buka <a href="https://sheets.new" target="_blank" style="color:#2563eb;">Google Sheets baru</a></li>' +
-            '<li>Klik menu <b>Extensions → Apps Script</b></li>' +
-            '<li>Hapus kode default, tempel kode script yang tersedia</li>' +
-            '<li>Klik <b>Deploy → New deployment</b></li>' +
-            '<li>Pilih <b>Web app</b>, akses: <b>Anyone</b></li>' +
-            '<li>Salin URL web app, tempel di atas</li>' +
-          '</ol>' +
-          '<button class="btn btn-sm btn-outline-primary w-100 mt-2" onclick="showAppsScriptCode()"><i class="bi bi-code-square me-1"></i>Lihat Kode Apps Script</button>' +
-        '</div>' +
-      '</div>' +
-    '</div>' +
-    '</div>';
-}
-
-function saveFirebaseSettings() {
-  var dbUrl = document.getElementById('fb_databaseURL').value.trim();
-  if (!dbUrl) { alert('Database URL wajib diisi!'); return; }
-
-  var cfg = {
-    apiKey: document.getElementById('fb_apiKey').value.trim(),
-    authDomain: document.getElementById('fb_authDomain').value.trim(),
-    databaseURL: dbUrl,
-    projectId: document.getElementById('fb_projectId').value.trim(),
-    storageBucket: document.getElementById('fb_storageBucket').value.trim(),
-    messagingSenderId: document.getElementById('fb_messagingSenderId').value.trim(),
-    appId: document.getElementById('fb_appId').value.trim()
-  };
-
-  if (!confirm('Simpan konfigurasi Firebase dan hubungkan?\n\nData lokal akan di-upload ke Firebase.')) return;
-
-  saveFirebaseConfig(cfg);
-  initFirebase(cfg);
-
-  // Tunggu sebentar lalu refresh halaman
-  setTimeout(function() {
-    loadKonfigurasiDb();
-    if (firebaseReady) {
-      alert('Firebase berhasil terhubung! Data akan tersinkronisasi secara otomatis.');
-    } else {
-      alert('Gagal terhubung ke Firebase. Periksa konfigurasi Anda.');
-    }
-  }, 2000);
-}
-
-function testFirebaseConn() {
-  var dbUrl = document.getElementById('fb_databaseURL').value.trim();
-  if (!dbUrl) { alert('Database URL wajib diisi!'); return; }
-
-  var cfg = {
-    apiKey: document.getElementById('fb_apiKey').value.trim(),
-    authDomain: document.getElementById('fb_authDomain').value.trim(),
-    databaseURL: dbUrl,
-    projectId: document.getElementById('fb_projectId').value.trim(),
-    storageBucket: document.getElementById('fb_storageBucket').value.trim(),
-    messagingSenderId: document.getElementById('fb_messagingSenderId').value.trim(),
-    appId: document.getElementById('fb_appId').value.trim()
-  };
-
-  var el = document.getElementById('fbTestResult');
-  el.style.display = 'block';
-  el.innerHTML = '<div class="alert" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:12px;color:#1e40af;"><i class="bi bi-hourglass-split me-1"></i>Menguji koneksi...</div>';
-
-  testFirebaseConnection(cfg, function(success, message) {
-    if (success) {
-      el.innerHTML = '<div class="alert" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 14px;font-size:12px;color:#166534;"><i class="bi bi-check-circle-fill me-1"></i>' + escapeHtml(message) + '</div>';
-    } else {
-      el.innerHTML = '<div class="alert" style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:12px;color:#991b1b;"><i class="bi bi-exclamation-triangle-fill me-1"></i>' + escapeHtml(message) + '</div>';
-    }
-  });
-}
-
-function doDisconnectFirebase() {
-  if (!confirm('Putuskan koneksi Firebase?\n\nData akan tetap tersimpan di localStorage secara lokal.')) return;
-  disconnectFirebase();
-  loadKonfigurasiDb();
-  alert('Koneksi Firebase telah diputus.');
-}
-
-function saveSheetsSettings() {
-  var url = document.getElementById('sheets_url').value.trim();
-  if (!url) { alert('URL belum diisi!'); return; }
-  saveSheetsUrl(url);
-
-  // Test koneksi
-  var el = document.getElementById('sheetsTestResult');
-  el.style.display = 'block';
-  el.innerHTML = '<div class="alert" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:12px;color:#1e40af;"><i class="bi bi-hourglass-split me-1"></i>Menguji koneksi...</div>';
-
-  fetch(url, { method: 'GET', mode: 'no-cors' })
-    .then(function() {
-      el.innerHTML = '<div class="alert" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 14px;font-size:12px;color:#166534;"><i class="bi bi-check-circle-fill me-1"></i>URL tersimpan! Script web app aktif. Sinkronisasi akan berjalan otomatis saat data berubah.</div>';
-    })
-    .catch(function(err) {
-      el.innerHTML = '<div class="alert" style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:12px;color:#991b1b;"><i class="bi bi-exclamation-triangle-fill me-1"></i>Gagal menghubungi URL. Pastikan Apps Script sudah di-deploy sebagai web app.</div>';
-    });
-}
-
-function showAppsScriptCode() {
-  var code = 'function doPost(e) {\n' +
-    '  try {\n' +
-    '    var data = JSON.parse(e.postData.contents);\n' +
-    '    var type = data.type;\n' +
-    '    var records = data.records;\n' +
-    '    var ss = SpreadsheetApp.getActiveSpreadsheet();\n' +
-    '    var sheet = ss.getSheetByName(type);\n' +
-    '    if (!sheet) sheet = ss.insertSheet(type);\n' +
-    '    sheet.clear();\n' +
-    '    if (records && records.length > 0) {\n' +
-    '      var headers = Object.keys(records[0]);\n' +
-    '      sheet.appendRow(headers);\n' +
-    '      records.forEach(function(record) {\n' +
-    '        var row = headers.map(function(h) {\n' +
-    '          var val = record[h];\n' +
-    '          if (val === null || val === undefined) return \'\';\n' +
-    '          if (typeof val === \'object\') return JSON.stringify(val);\n' +
-    '          return String(val);\n' +
-    '        });\n' +
-    '        sheet.appendRow(row);\n' +
-    '      });\n' +
-    '      // Auto resize columns\n' +
-    '      for (var i = 1; i <= headers.length; i++) {\n' +
-    '        sheet.autoResizeColumn(i);\n' +
-    '      }\n' +
-    '    }\n' +
-    '    return ContentService.createTextOutput(JSON.stringify({status: \'success\'}))\n' +
-    '      .setMimeType(ContentService.MimeType.JSON);\n' +
-    '  } catch(err) {\n' +
-    '    return ContentService.createTextOutput(JSON.stringify({status: \'error\', message: err.message}))\n' +
-    '      .setMimeType(ContentService.MimeType.JSON);\n' +
-    '  }\n' +
-    '}\n\n' +
-    'function doGet(e) {\n' +
-    '  return ContentService.createTextOutput(JSON.stringify({status: \'active\'}))\n' +
-    '    .setMimeType(ContentService.MimeType.JSON);\n' +
-    '}';
-
-  var w = window.open('', '_blank', 'width=700,height=600');
-  if (w) {
-    w.document.write('<!DOCTYPE html><html><head><title>Google Apps Script - SIAP</title>' +
-      '<style>body{font-family:monospace;padding:20px;background:#1e1e1e;color:#d4d4d4;}pre{white-space:pre-wrap;word-wrap:break-word;line-height:1.6;font-size:13px;}</style></head>' +
-      '<body><pre>' + code.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre>' +
-      '<div style="margin-top:12px;color:#888;font-size:12px;font-family:sans-serif;">Salin kode ini ke Google Apps Script (Extensions → Apps Script di Google Sheets)</div></body></html>');
-    w.document.close();
-  }
 }
 
 // ============ UBAH KATA SANDI ============
@@ -4027,8 +3487,6 @@ function getCetakBodyWidth(s) {
 
 // Margin slider event listeners
 document.addEventListener('DOMContentLoaded', function() {
-  // Initialize Firebase from saved config
-  initFirebaseFromStorage();
   ['cetakMarginTop','cetakMarginBottom','cetakMarginLeft','cetakMarginRight','cetakPaperSize','cetakOrientasi'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.addEventListener('input', updateCetakPreview);
@@ -4403,58 +3861,6 @@ function generateSekolahLaporan() {
 
 // ============ PENGUMUMAN ============
 var editPengumumanId = null;
-var pengumumanLampiranData = null; // { nama, data (base64), tipe (mime), ukuran }
-
-function isImageType(tipe) {
-  return tipe && tipe.indexOf('image/') === 0;
-}
-
-function formatFileSize(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-}
-
-function handlePengumumanLampiran(inputEl) {
-  var file = inputEl.files[0];
-  if (!file) return;
-  var maxSize = 5 * 1024 * 1024;
-  if (file.size > maxSize) {
-    alert('Ukuran file maksimal 5MB!');
-    inputEl.value = '';
-    return;
-  }
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    pengumumanLampiranData = { nama: file.name, data: e.target.result, tipe: file.type, ukuran: file.size };
-    document.getElementById('pengumumanLampiranName').textContent = file.name + ' (' + formatFileSize(file.size) + ')';
-    document.getElementById('pengumumanLampiranInfo').style.display = 'block';
-    var previewEl = document.getElementById('pengumumanLampiranPreview');
-    if (isImageType(file.type)) {
-      previewEl.innerHTML = '<img src="' + e.target.result + '" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border-color);">';
-      previewEl.style.display = 'block';
-    } else {
-      previewEl.style.display = 'none';
-    }
-  };
-  reader.readAsDataURL(file);
-}
-
-function removePengumumanLampiran() {
-  pengumumanLampiranData = null;
-  document.getElementById('f_pengumuman_lampiran').value = '';
-  document.getElementById('pengumumanLampiranInfo').style.display = 'none';
-  document.getElementById('pengumumanLampiranPreview').style.display = 'none';
-}
-
-function downloadLampiran(base64Data, nama, tipe) {
-  var link = document.createElement('a');
-  link.href = base64Data;
-  link.download = nama || 'lampiran';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
 
 function loadPengumuman(containerId) {
   var container = document.getElementById(containerId);
@@ -4471,76 +3877,31 @@ function loadPengumuman(containerId) {
     var badgeColor = r.prioritas === 'Sangat Penting' ? 'bg-danger text-white' : r.prioritas === 'Penting' ? 'bg-warning text-dark' : 'bg-secondary';
     var tanggal = r.created_at ? new Date(r.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
     var actions = isAdminKorwil ? '<div class="pengumuman-actions"><button class="btn btn-warning btn-sm me-1" onclick="editPengumuman(\'' + r.id + '\')" title="Edit"><i class="bi bi-pencil"></i></button><button class="btn btn-danger btn-sm" onclick="deletePengumuman(\'' + r.id + '\')" title="Hapus"><i class="bi bi-trash"></i></button></div>' : '';
-
-    // Lampiran: gambar ditampilkan, dokumen bisa diunduh
-    var lampiranHtml = '';
-    if (r.lampiran_data && r.lampiran_tipe) {
-      lampiranHtml = '<div class="pengumuman-lampiran">';
-      if (isImageType(r.lampiran_tipe)) {
-        lampiranHtml += '<img src="' + r.lampiran_data + '" onclick="window.open(this.src,\'_blank\')" title="Klik untuk memperbesar">';
-      } else {
-        var icon = r.lampiran_tipe.indexOf('pdf') > -1 ? 'bi-file-earmark-pdf' : 'bi-file-earmark';
-        lampiranHtml += '<a class="btn-download" href="javascript:void(0)" onclick="downloadLampiran(\'' + r.id + '\',\'' + escapeHtml(r.lampiran_nama || 'lampiran') + '\')"><i class="bi ' + icon + '"></i>' + escapeHtml(r.lampiran_nama || 'lampiran') + '</a>';
-      }
-      lampiranHtml += '</div>';
-    }
-
     html += '<div class="pengumuman-item ' + prioritasClass + '">' +
       actions +
       '<div class="d-flex align-items-center gap-2 mb-1"><span class="pengumuman-badge ' + badgeColor + '">' + escapeHtml(r.prioritas || 'Biasa') + '</span><span class="pengumuman-judul mb-0">' + escapeHtml(r.judul) + '</span></div>' +
       '<div class="pengumuman-isi">' + escapeHtml(r.isi) + '</div>' +
-      lampiranHtml +
       '<div class="pengumuman-meta"><i class="bi bi-clock me-1"></i>' + tanggal + '</div>' +
       '</div>';
   });
   container.innerHTML = html;
 }
 
-// Override downloadLampiran to use record lookup (since we pass record id, not raw base64 in onclick)
-(function() {
-  var origDownload = downloadLampiran;
-  window.downloadLampiran = function(recordId, nama) {
-    var rec = getRecord('pengumuman', recordId);
-    if (rec && rec.lampiran_data) {
-      origDownload(rec.lampiran_data, nama, rec.lampiran_tipe);
-    } else {
-      alert('File lampiran tidak ditemukan.');
-    }
-  };
-})();
-
 function openPengumumanModal(id) {
   editPengumumanId = id || null;
-  pengumumanLampiranData = null;
   var titleEl = document.getElementById('pengumumanModalTitle');
-  document.getElementById('f_pengumuman_lampiran').value = '';
-  document.getElementById('pengumumanLampiranInfo').style.display = 'none';
-  document.getElementById('pengumumanLampiranPreview').style.display = 'none';
-
   if (id) {
     titleEl.innerHTML = '<i class="bi bi-pencil me-2"></i>Edit Pengumuman';
     var rec = getRecord('pengumuman', id);
     document.getElementById('f_pengumuman_judul').value = rec.judul || '';
     document.getElementById('f_pengumuman_isi').value = rec.isi || '';
     document.getElementById('f_pengumuman_prioritas').value = rec.prioritas || 'Biasa';
-    // Load existing lampiran
-    if (rec.lampiran_data) {
-      pengumumanLampiranData = { nama: rec.lampiran_nama, data: rec.lampiran_data, tipe: rec.lampiran_tipe, ukuran: rec.lampiran_ukuran || 0 };
-      document.getElementById('pengumumanLampiranName').textContent = (rec.lampiran_nama || 'lampiran') + (rec.lampiran_ukuran ? ' (' + formatFileSize(rec.lampiran_ukuran) + ')' : '');
-      document.getElementById('pengumumanLampiranInfo').style.display = 'block';
-      if (isImageType(rec.lampiran_tipe)) {
-        document.getElementById('pengumumanLampiranPreview').innerHTML = '<img src="' + rec.lampiran_data + '" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border-color);">';
-        document.getElementById('pengumumanLampiranPreview').style.display = 'block';
-      }
-    }
   } else {
     titleEl.innerHTML = '<i class="bi bi-megaphone me-2"></i>Buat Pengumuman';
     document.getElementById('f_pengumuman_judul').value = '';
     document.getElementById('f_pengumuman_isi').value = '';
     document.getElementById('f_pengumuman_prioritas').value = 'Biasa';
   }
-  // Bind file input change
-  document.getElementById('f_pengumuman_lampiran').onchange = function() { handlePengumumanLampiran(this); };
   new bootstrap.Modal(document.getElementById('pengumumanModal')).show();
 }
 
@@ -4552,39 +3913,11 @@ function savePengumuman() {
   var prioritas = document.getElementById('f_pengumuman_prioritas').value;
   if (!judul) { alert('Judul harus diisi!'); return; }
   if (!isi) { alert('Isi pengumuman harus diisi!'); return; }
-
-  var data = { judul: judul, isi: isi, prioritas: prioritas };
-
-  // Include lampiran if exists
-  if (pengumumanLampiranData) {
-    data.lampiran_nama = pengumumanLampiranData.nama;
-    data.lampiran_data = pengumumanLampiranData.data;
-    data.lampiran_tipe = pengumumanLampiranData.tipe;
-    data.lampiran_ukuran = pengumumanLampiranData.ukuran;
-  }
-
   if (editPengumumanId) {
-    var existing = getRecord('pengumuman', editPengumumanId);
-    // If editing and no new lampiran selected, keep old lampiran
-    if (!pengumumanLampiranData && existing) {
-      if (existing.lampiran_data) {
-        data.lampiran_nama = existing.lampiran_nama;
-        data.lampiran_data = existing.lampiran_data;
-        data.lampiran_tipe = existing.lampiran_tipe;
-        data.lampiran_ukuran = existing.lampiran_ukuran;
-      }
-    } else if (!pengumumanLampiranData && existing && existing.lampiran_data) {
-      // User explicitly removed lampiran via "Hapus" button
-      data.lampiran_nama = null;
-      data.lampiran_data = null;
-      data.lampiran_tipe = null;
-      data.lampiran_ukuran = null;
-    }
-    updateRecord('pengumuman', editPengumumanId, data);
+    updateRecord('pengumuman', editPengumumanId, { judul: judul, isi: isi, prioritas: prioritas });
   } else {
-    addRecord('pengumuman', data);
+    addRecord('pengumuman', { judul: judul, isi: isi, prioritas: prioritas });
   }
-  pengumumanLampiranData = null;
   editPengumumanId = null;
   bootstrap.Modal.getInstance(document.getElementById('pengumumanModal')).hide();
   loadPengumuman('pengumumanContainer');
@@ -5290,13 +4623,11 @@ function renderTableFiltered(type, searchTerm) {
     records = records.filter(function(r) { return r.school_id === schoolId; });
   }
 
-  // Filter by kelas — ekstrak angka pertama dari nilai kelas
-  // Mendukung format: "1", "1A", "1 A", "Kelas 1", "Kelas 1 A", dll.
+  // Filter by kelas (membaca rombel, misal filter '6' akan menampilkan 6, 6A, 6B, dll)
   if (type === 'siswa' && activeKelasFilter !== 'semua') {
     records = records.filter(function(r) {
       var k = String(r.kelas || '').trim();
-      var m = k.match(/(\d+)/);
-      return m && m[1] === activeKelasFilter;
+      return k === activeKelasFilter || k.startsWith(activeKelasFilter);
     });
   }
 
@@ -5318,88 +4649,6 @@ function renderTableFiltered(type, searchTerm) {
   var html = records.map(function(r, i) {
     return '<tr>' +
       '<td class="center">' + (i+1) + '</td>' +
-      '<td>' + escapeHtml(r.nis_nisn) + '</td>' +
-      '<td><strong>' + escapeHtml(r.nama) + '</strong></td>' +
-      '<td>' + escapeHtml(r.jenis_kelamin) + '</td>' +
-      '<td>' + escapeHtml(r.tempat_lahir) + '</td>' +
-      '<td>' + escapeHtml(r.tanggal_lahir) + '</td>' +
-      '<td><span style="background:#ebf8ff;color:#2b6cb0;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;">' + escapeHtml(r.kelas) + '</span></td>' +
-      '<td>' + escapeHtml(r.alamat) + '</td>' +
-      '<td class="action-btns">' +
-      '<button class="btn btn-warning btn-sm" onclick="editRecord(\'siswa\',\'' + r.id + '\')"><i class="bi bi-pencil"></i></button>' +
-      '<button class="btn btn-danger btn-sm" onclick="confirmDelete(\'siswa\',\'' + r.id + '\')"><i class="bi bi-trash"></i></button>' +
-      '</td></tr>';
-  }).join('');
-  tbody.innerHTML = html;
-}
-
-// ============ DATA SISWA ADMIN (Semua Sekolah) ============
-var adminSiswaKelasFilter = 'semua';
-
-function filterAdminSiswaKelas(kelas, btn) {
-  adminSiswaKelasFilter = kelas;
-  // Update active button
-  var container = btn.parentElement;
-  container.querySelectorAll('.btn').forEach(function(b) { b.classList.remove('aktif-filter'); });
-  btn.classList.add('aktif-filter');
-  renderAdminSiswa();
-}
-
-function populateSiswaSekolahFilter() {
-  var select = document.getElementById('filterSiswaSekolah');
-  if (!select) return;
-  var schools = getRecords('sekolah');
-  var current = select.value;
-  select.innerHTML = '<option value="">Semua Sekolah</option>';
-  schools.sort(function(a,b) { return (a.nama_sekolah||'').localeCompare(b.nama_sekolah||''); });
-  schools.forEach(function(s) {
-    var opt = document.createElement('option');
-    opt.value = s.id;
-    opt.textContent = s.nama_sekolah + (s.jenjang ? ' (' + s.jenjang + ')' : '');
-    select.appendChild(opt);
-  });
-  select.value = current;
-}
-
-function renderAdminSiswa(searchTerm) {
-  var records = getRecords('siswa');
-
-  // Filter by school
-  var filterSchool = document.getElementById('filterSiswaSekolah');
-  if (filterSchool && filterSchool.value) {
-    records = records.filter(function(r) { return r.school_id === filterSchool.value; });
-  }
-
-  // Filter by kelas — ekstrak angka pertama dari nilai kelas
-  // Mendukung format: "1", "1A", "1 A", "Kelas 1", "Kelas 1 A", dll.
-  if (adminSiswaKelasFilter !== 'semua') {
-    records = records.filter(function(r) {
-      var k = String(r.kelas || '').trim();
-      var m = k.match(/(\d+)/);
-      return m && m[1] === adminSiswaKelasFilter;
-    });
-  }
-
-  // Search filter
-  if (searchTerm) {
-    var term = searchTerm.toLowerCase();
-    records = records.filter(function(r) { return Object.values(r).some(function(v) { return String(v).toLowerCase().includes(term); }); });
-  }
-
-  var tbody = document.getElementById('table-siswa');
-  if (!tbody) return;
-
-  if (records.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="20" class="text-center text-muted py-4">Tidak ada data</td></tr>';
-    return;
-  }
-
-  var html = records.map(function(r, i) {
-    var school = getRecord('sekolah', r.school_id);
-    var schoolName = school ? school.nama_sekolah : '-';
-    return '<tr>' +
-      '<td class="center">' + (i+1) + '</td>' +
-      '<td><span style="font-size:12px;color:#64748b;">' + escapeHtml(schoolName) + '</span></td>' +
       '<td>' + escapeHtml(r.nis_nisn) + '</td>' +
       '<td><strong>' + escapeHtml(r.nama) + '</strong></td>' +
       '<td>' + escapeHtml(r.jenis_kelamin) + '</td>' +
@@ -5548,16 +4797,27 @@ function kopUploadHtml() {
 
 // ============ SURAT KATEGORI (Admin Sekolah) ============
 var suratKategoriList = [
-  { id: 'stnk', icon: 'bi-bicycle', title: 'Surat Pengantar Perpanjang STNK', desc: 'Surat pengantar untuk perpanjangan STNK kendaraan dinas', color: '#1a365d' },
-  { id: 'pindah', icon: 'bi-mortarboard', title: 'Surat Permohonan Pindah Sekolah', desc: 'Surat permohonan rekomendasi pindah sekolah siswa', color: '#742a2a' },
-  { id: 'gaji', icon: 'bi-cash-stack', title: 'Surat Rincian Gaji Pegawai', desc: 'Surat keterangan perincian pembayaran gaji pegawai', color: '#276749' }
+  { id: 'stnk', icon: 'bi-bicycle', title: 'Surat Pengantar Perpanjang STNK', desc: 'Surat pengantar untuk perpanjangan STNK kendaraan dinas', color: '#1a365d', roles: ['sekolah'] },
+  { id: 'pindah', icon: 'bi-mortarboard', title: 'Surat Permohonan Pindah Sekolah', desc: 'Surat permohonan rekomendasi pindah sekolah siswa', color: '#742a2a', roles: ['sekolah'] },
+  { id: 'gaji', icon: 'bi-cash-stack', title: 'Surat Rincian Gaji Pegawai', desc: 'Surat keterangan perincian pembayaran gaji pegawai', color: '#276749', roles: ['sekolah'] },
+  { id: 'skumptk', icon: 'bi-file-earmark-text', title: 'Pembuatan SKUMPTK', desc: 'Surat Keterangan Untuk Mendapatkan Pembayaran Tunjangan Keluarga Tahun 2026', color: '#44337a', roles: ['admin'] }
 ];
 
 function showSuratKategori() {
+  // For admin: hide table, show category grid + back button
+  if (currentUser && currentUser.role === 'admin') {
+    document.getElementById('suratTableView').style.display = 'none';
+    var backBtn = document.getElementById('suratBackToTable');
+    if (backBtn) backBtn.style.display = 'flex';
+  } else {
+    var backBtn = document.getElementById('suratBackToTable');
+    if (backBtn) backBtn.style.display = 'none';
+  }
   document.getElementById('suratKategoriView').style.display = 'block';
   document.getElementById('suratFormView').style.display = 'none';
   var grid = document.getElementById('suratKategoriGrid');
-  grid.innerHTML = suratKategoriList.map(function(k) {
+  var filtered = suratKategoriList.filter(function(k) { return !k.roles || k.roles.indexOf(currentUser.role) !== -1; });
+  grid.innerHTML = filtered.map(function(k) {
     return '<div class="col-md-6 col-lg-4">' +
       '<div class="card h-100" style="cursor:pointer;border:2px solid transparent;transition:all 0.2s;" ' +
       'onmouseover="this.style.borderColor=\'' + k.color + '\';this.style.boxShadow=\'0 4px 20px rgba(0,0,0,0.1)\'" ' +
@@ -5571,12 +4831,36 @@ function showSuratKategori() {
   }).join('');
 }
 
+function suratShowTable() {
+  document.getElementById('suratTableView').style.display = 'block';
+  document.getElementById('suratKategoriView').style.display = 'none';
+  document.getElementById('suratFormView').style.display = 'none';
+  var backBtn = document.getElementById('suratBackToTable');
+  if (backBtn) backBtn.style.display = 'none';
+  renderTable('surat');
+}
+
+function suratShowKategori() {
+  document.getElementById('suratTableView').style.display = 'none';
+  showSuratKategori();
+}
+
+function suratFormBack() {
+  document.getElementById('suratFormView').style.display = 'none';
+  if (currentUser && currentUser.role === 'admin') {
+    suratShowTable();
+  } else {
+    showSuratKategori();
+  }
+}
+
 function pilihKategoriSurat(kategoriId) {
   document.getElementById('suratKategoriView').style.display = 'none';
   document.getElementById('suratFormView').style.display = 'block';
   if (kategoriId === 'stnk') showFormSTNK();
   else if (kategoriId === 'pindah') showFormPindahSekolah();
   else if (kategoriId === 'gaji') showFormRincianGaji();
+  else if (kategoriId === 'skumptk') showFormSKUMPTK();
 }
 
 function showFormPindahSekolah() {
@@ -5882,7 +5166,7 @@ function showFormRincianGaji() {
     '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="gaji_tanggal" type="date" value="' + yyyy + '-' + mm + '-' + dd + '"></div><label>Tanggal</label></div>' +
     '<div class="col-12"><div class="form-floating"><select class="form-select" id="gaji_pegawai" onchange="autoFillGaji()">' + pegawaiOptions + '</select><label>Pilih Pegawai</label></div></div>' +
     '<hr class="my-1"><h6 class="mt-2" style="color:var(--primary);font-weight:700;">Data Pegawai</h6>' +
-    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="gaji_nama" placeholder="Nama"></div><label>Nama Lengkap & Gelar</label></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="gaji_nama" placeholder="Nama"></div><label>Nama Lengkap</label></div>' +
     '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="gaji_nip" placeholder="NIP"></div><label>NIP</label></div>' +
     '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="gaji_pangkat" placeholder="Pangkat/Golongan"></div><label>Pangkat / Golongan / Ruang</label></div>' +
     '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="gaji_jabatan" placeholder="Jabatan"></div><label>Jabatan</label></div>' +
@@ -6434,6 +5718,524 @@ function unduhDocsSTNK() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+// ============ SKUMPTK ============
+var skumptkAnakCount = 1;
+var skumptkFotoBase64 = '';
+
+function showFormSKUMPTK() {
+  document.getElementById('suratFormTitle').innerHTML = '<i class="bi bi-file-earmark-text me-2"></i>Pembuatan SKUMPTK Tahun 2026';
+  skumptkAnakCount = 1;
+  skumptkFotoBase64 = '';
+
+  var pegawaiList = getRecords('pegawai');
+  var pegawaiOptions = '<option value="">-- Pilih Pegawai --</option>';
+  pegawaiList.forEach(function(p) {
+    pegawaiOptions += '<option value="' + p.id + '">' + escapeHtml(p.nama || '') + ' - ' + escapeHtml(p.nip || '') + '</option>';
+  });
+
+  var today = new Date();
+  var dd = String(today.getDate()).padStart(2, '0');
+  var mm = String(today.getMonth() + 1).padStart(2, '0');
+  var yyyy = today.getFullYear();
+
+  var html = '' +
+    '<ul class="nav nav-pills mb-3" id="skumptkTabs">' +
+      '<li class="nav-item"><a class="nav-link active" href="javascript:void(0)" onclick="skumptkSwitchTab(\'depan\')">SKUMPTK Depan</a></li>' +
+      '<li class="nav-item"><a class="nav-link" href="javascript:void(0)" onclick="skumptkSwitchTab(\'belakang\')">SKUMPTK Belakang</a></li>' +
+    '</ul>' +
+
+    '<!-- TAB DEPAN -->' +
+    '<div id="skumptkTabDepan">' +
+      '<div class="alert alert-info" style="font-size:13px;"><i class="bi bi-info-circle me-1"></i>Pilih pegawai untuk mengisi otomatis data. Lengkapi sisa data sesuai dokumen asli.</div>' +
+      '<div class="row g-3 mb-3">' +
+        '<div class="col-md-12"><div class="form-floating"><select class="form-select" id="skumptk_pegawai" onchange="skumptkAutoFill()">' + pegawaiOptions + '</select><label>Pilih Pegawai (Auto-fill)</label></div></div>' +
+      '</div>' +
+      '<hr style="margin:12px 0;border-color:var(--border-color);">' +
+      '<h6 style="font-weight:700;color:var(--primary);margin-bottom:12px;"><i class="bi bi-building me-1"></i>Data Instansi</h6>' +
+      '<div class="row g-3 mb-3">' +
+        '<div class="col-md-12"><div class="form-floating"><input class="form-control" id="skumptk_nama_instansi" value="DINAS PENDIDIKAN KABUPATEN CIREBON" readonly><label>Nama Instansi</label></div></div>' +
+        '<div class="col-md-12"><div class="form-floating"><input class="form-control" id="skumptk_alamat_instansi" value="JL. Sunan Drajat No.10 Sumber" readonly><label>Alamat Lengkap Instansi</label></div></div>' +
+        '<div class="col-md-12"><div class="form-floating"><input class="form-control" id="skumptk_instansi_induk" value="Pemerintah Daerah Kabupaten Cirebon" readonly><label>Instansi Induk</label></div></div>' +
+        '<div class="col-md-12"><div class="form-floating"><input class="form-control" id="skumptk_pembuat_gaji" value="Badan Keuangan dan Aset Daerah Kabupaten Cirebon" readonly><label>Pembuat Daftar Gaji</label></div></div>' +
+      '</div>' +
+      '<hr style="margin:12px 0;border-color:var(--border-color);">' +
+      '<h6 style="font-weight:700;color:var(--primary);margin-bottom:12px;"><i class="bi bi-person me-1"></i>I. Data Pegawai</h6>' +
+      '<div class="row g-3">' +
+        '<div class="col-md-12"><div class="form-floating"><input class="form-control" id="skumptk_nama" placeholder="Nama Lengkap"><label>1. Nama Lengkap</label></div></div>' +
+        '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="skumptk_nip" placeholder="NIP"><label>2. NIP</label></div></div>' +
+        '<div class="col-md-3"><div class="form-floating"><input class="form-control" id="skumptk_tempat_lahir" placeholder="Tempat Lahir"><label>3. Tempat Lahir</label></div></div>' +
+        '<div class="col-md-3"><div class="form-floating"><input class="form-control" id="skumptk_tanggal_lahir" type="date"><label>Tanggal Lahir</label></div></div>' +
+        '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="skumptk_pangkat" placeholder="Pangkat/Golongan/Ruang"><label>4. Pangkat / Golongan / Ruang</label></div></div>' +
+        '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="skumptk_jabatan" placeholder="Jabatan"><label>5. Jabatan</label></div></div>' +
+        '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="skumptk_sk_dari" placeholder="SK Dari"><label>6. SK. Dari</label></div></div>' +
+        '<div class="col-md-3"><div class="form-floating"><input class="form-control" id="skumptk_sk_tanggal" type="date"><label>SK Tanggal</label></div></div>' +
+        '<div class="col-md-3"><div class="form-floating"><input class="form-control" id="skumptk_sk_nomor" placeholder="SK Nomor"><label>SK Nomor</label></div></div>' +
+        '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_tmt" type="date"><label>Terhitung Mulai (TMT)</label></div></div>' +
+        '<div class="col-md-4"><div class="form-floating"><select class="form-select" id="skumptk_jk"><option value="">-- Pilih --</option><option value="Laki-laki">Laki-laki</option><option value="Wanita">Wanita</option></select><label>7. Jenis Kelamin</label></div></div>' +
+        '<div class="col-md-4"><div class="form-floating"><select class="form-select" id="skumptk_agama"><option value="">-- Pilih --</option><option value="Islam">Islam</option><option value="Kristen">Kristen</option><option value="Katolik">Katolik</option><option value="Hindu">Hindu</option><option value="Buddha">Buddha</option><option value="Konghucu">Konghucu</option></select><label>8. Agama</label></div></div>' +
+        '<div class="col-md-12"><div class="form-floating"><input class="form-control" id="skumptk_alamat" placeholder="Alamat Lengkap"><label>9. Alamat Lengkap</label></div></div>' +
+        '<div class="col-md-3"><div class="form-floating"><input class="form-control" id="skumptk_rt" placeholder="RT"><label>RT</label></div></div>' +
+        '<div class="col-md-3"><div class="form-floating"><input class="form-control" id="skumptk_rw" placeholder="RW"><label>RW</label></div></div>' +
+        '<div class="col-md-3"><div class="form-floating"><input class="form-control" id="skumptk_desa" placeholder="Desa"><label>Desa / Kelurahan</label></div></div>' +
+        '<div class="col-md-3"><div class="form-floating"><input class="form-control" id="skumptk_kecamatan" placeholder="Kecamatan"><label>Kecamatan</label></div></div>' +
+        '<div class="col-md-12"><div class="form-floating"><input class="form-control" id="skumptk_kabupaten" value="Cirebon" placeholder="Kabupaten"><label>Kabupaten / Kodya</label></div></div>' +
+        '<div class="col-md-12"><div class="form-floating"><select class="form-select" id="skumptk_jenis_kepegawaian"><option value="">-- Pilih Jenis Kepegawaian --</option><option value="PPPK" selected>PPPK</option><option value="PNSD.I">PNSD.I</option><option value="PNSD.II">PNSD.II</option><option value="PNSP">PNSP</option><option value="PNSP dpb.I">PNSP dpb.I</option><option value="PNSP dpb.II">PNSP dpb.II</option><option value="PNSP dpk I">PNSP dpk I</option><option value="PNSP dpk II">PNSP dpk II</option><option value="PNSD.I dpb.II">PNSD.I dpb.II</option><option value="PNSD.I dpk.II">PNSD.I dpk.II</option><option value="PNSD. dpb. Inst. Lain (swasta)">PNSD. dpb. Inst. Lain (swasta)</option><option value="PNS. dpk. Pusat">PNS. dpk. Pusat</option><option value="Pejabat Negara">Pejabat Negara</option></select><label>10. Jenis Kepegawaian</label></div></div>' +
+        '<div class="col-md-12"><div class="form-floating"><select class="form-select" id="skumptk_status_kepegawaian"><option value="">-- Pilih Status Kepegawaian --</option><option value="PPPK" selected>PPPK</option><option value="Peg. Tetap">Peg. Tetap</option><option value="Capeg">Capeg</option><option value="MPP">MPP</option><option value="Pen.Uang Tunggu">Pen.Uang Tunggu</option><option value="Peg. Scorsing Cuti">Peg. Scorsing Cuti luar tanggungan negara</option><option value="Peg. Sementara">Peg. Sementara (Perusahaan Daerah)</option><option value="Peg.Bulanan">Peg.Bulanan (Pens.Peg. Negeri dpk. Jabatan semula)</option></select><label>11. Status Kepegawaian</label></div></div>' +
+      '</div>' +
+      '<hr style="margin:12px 0;border-color:var(--border-color);">' +
+      '<h6 style="font-weight:700;color:var(--primary);margin-bottom:12px;"><i class="bi bi-cash-coin me-1"></i>12. Digaji menurut PP 11/2024 dengan</h6>' +
+      '<div class="row g-3 mb-3">' +
+        '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_gaji_sk_dari" placeholder="SK Dari"><label>SK Dari</label></div></div>' +
+        '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_gaji_sk_tgl" type="date"><label>SK Tanggal</label></div></div>' +
+        '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_gaji_sk_nomor" placeholder="SK Nomor"><label>SK Nomor</label></div></div>' +
+        '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="skumptk_gaji_pokok" placeholder="Gaji Pokok" oninput="this.value=formatRupiahInput(this.value)"><label>Gaji Pokok (Rp)</label></div></div>' +
+        '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="skumptk_gaji_tmt" type="date"><label>Terhitung Mulai Berlaku</label></div></div>' +
+      '</div>' +
+      '<hr style="margin:12px 0;border-color:var(--border-color);">' +
+      '<div class="row g-3 mb-3">' +
+        '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="skumptk_penghasilan" placeholder="Penghasilan" oninput="this.value=formatRupiahInput(this.value)"><label>13. Besarnya Penghasilan (Rp)</label></div></div>' +
+        '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="skumptk_jabatan_struktural" placeholder="Jabatan Struktural/Fungsional"><label>14. Jabatan Struktural / Fungsional</label></div></div>' +
+        '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_jml_keluarga" type="number" value="0" min="0"><label>15. Jumlah Keluarga Tertanggung</label></div></div>' +
+        '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_mkg_tahun" type="number" value="0" min="0" placeholder="Tahun"><label>16. Masa Kerja Golongan (Tahun)</label></div></div>' +
+        '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_mkg_bulan" type="number" value="0" min="0" max="11" placeholder="Bulan"><label>16. Masa Kerja Golongan (Bulan)</label></div></div>' +
+        '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_mkk_tahun" type="number" value="0" min="0" placeholder="Tahun"><label>17. Masa Kerja Keseluruhan (Tahun)</label></div></div>' +
+        '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_mkk_bulan" type="number" value="0" min="0" max="11" placeholder="Bulan"><label>17. Masa Kerja Keseluruhan (Bulan)</label></div></div>' +
+      '</div>' +
+    '</div>' +
+
+    '<!-- TAB BELAKANG -->' +
+    '<div id="skumptkTabBelakang" style="display:none;">' +
+      '<h6 style="font-weight:700;color:var(--primary);margin-bottom:12px;"><i class="bi bi-people me-1"></i>II. Data Keluarga (Yang Menjadi Tanggungan Pegawai)</h6>' +
+
+      '<!-- A. ISTERI/SUAMI -->' +
+      '<div class="card mb-3">' +
+        '<div class="card-header" style="background:#f8f9fa;"><h6 style="margin:0;font-weight:700;">A. Kawin Syah dengan Isteri / Suami</h6></div>' +
+        '<div class="card-body">' +
+          '<div class="row g-3">' +
+            '<div class="col-md-12"><div class="form-floating"><input class="form-control" id="skumptk_istri_nama" placeholder="Nama Isteri/Suami"><label>Nama Isteri / Suami</label></div></div>' +
+            '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_istri_ttl" placeholder="Tempat/Tgl Lahir"><label>Tempat / Tanggal Lahir</label></div></div>' +
+            '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_istri_pekerjaan" placeholder="Pekerjaan"><label>Pekerjaan</label></div></div>' +
+            '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_istri_nip" placeholder="NIP"><label>NIP</label></div></div>' +
+            '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_istri_tgl_kawin" type="date"><label>Tanggal Kawin</label></div></div>' +
+            '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_istri_ke" type="number" value="1" min="1"><label>Isteri / Suami Ke</label></div></div>' +
+            '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_istri_penghasilan" placeholder="Penghasilan" oninput="this.value=formatRupiahInput(this.value)"><label>Penghasilan (Rp)</label></div></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<!-- B. ANAK-ANAK -->' +
+      '<div class="card mb-3">' +
+        '<div class="card-header d-flex justify-content-between align-items-center" style="background:#f8f9fa;">' +
+          '<h6 style="margin:0;font-weight:700;">B. Anak-anak yang Menjadi Tanggungan</h6>' +
+          '<button class="btn btn-outline-primary btn-sm" onclick="skumptkTambahAnak()" id="skumptkBtnTambahAnak" style="display:none;"><i class="bi bi-plus-circle me-1"></i>Tambah Anak</button>' +
+        '</div>' +
+        '<div class="card-body" id="skumptkAnakContainer">' +
+          skumptkBuildAnakRow(1) +
+        '</div>' +
+      '</div>' +
+
+      '<!-- C. SPESIMEN PEGAWAI -->' +
+      '<div class="card mb-3">' +
+        '<div class="card-header" style="background:#f8f9fa;"><h6 style="margin:0;font-weight:700;">C. Spesimen Pegawai</h6></div>' +
+        '<div class="card-body">' +
+          '<div class="row g-3">' +
+            '<div class="col-md-4 text-center">' +
+              '<label class="form-label" style="font-size:13px;font-weight:600;">Foto 2x3</label>' +
+              '<div style="width:80px;height:110px;border:2px dashed #ccc;border-radius:8px;display:flex;align-items:center;justify-content:center;margin:0 auto;overflow:hidden;background:#f8f9fa;" id="skumptk_foto_preview">' +
+                '<small class="text-muted" style="font-size:11px;">Upload Foto</small>' +
+              '</div>' +
+              '<input type="file" accept="image/*" onchange="skumptkUploadFoto(event)" style="display:none;" id="skumptk_foto_input">' +
+              '<button class="btn btn-sm btn-outline-secondary mt-2" onclick="document.getElementById(\'skumptk_foto_input\').click()"><i class="bi bi-upload me-1"></i>Upload</button>' +
+              '<button class="btn btn-sm btn-outline-danger mt-2 ms-1" onclick="skumptkHapusFoto()"><i class="bi bi-trash"></i></button>' +
+            '</div>' +
+            '<div class="col-md-8">' +
+              '<div class="row g-3">' +
+                '<div class="col-md-12"><div class="form-floating"><input class="form-control" id="skumptk_tanggal_surat" type="date" value="' + yyyy + '-' + mm + '-' + dd + '"><label>Tanggal Surat</label></div></div>' +
+                '<div class="col-md-12"><div class="form-floating"><input class="form-control" id="skumptk_kepala" placeholder="Kepala ..."><label>Mengetahui / Mengesahkan - Kepala (Unit)</label></div></div>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    '<!-- BUTTONS -->' +
+    '<div class="d-flex gap-2 flex-wrap mt-3">' +
+      '<button class="btn btn-accent" onclick="cetakSKUMPTK()"><i class="bi bi-printer me-1"></i>Cetak SKUMPTK</button>' +
+      '<button class="btn btn-outline-success" onclick="unduhDocsSKUMPTK()"><i class="bi bi-file-earmark-word me-1"></i>Unduh Docs</button>' +
+    '</div>';
+
+  document.getElementById('suratFormBody').innerHTML = html;
+  skumptkCheckAnakButton();
+}
+
+function skumptkSwitchTab(tab) {
+  document.getElementById('skumptkTabDepan').style.display = tab === 'depan' ? 'block' : 'none';
+  document.getElementById('skumptkTabBelakang').style.display = tab === 'belakang' ? 'block' : 'none';
+  var tabs = document.querySelectorAll('#skumptkTabs .nav-link');
+  tabs.forEach(function(t) { t.classList.remove('active'); });
+  if (tab === 'depan') tabs[0].classList.add('active');
+  else tabs[1].classList.add('active');
+}
+
+function skumptkBuildAnakRow(no) {
+  return '<div class="skumptk-anak-row mb-3 p-3 border rounded" id="skumptk_anak_' + no + '" style="background:#fafbfc;">' +
+    '<div class="d-flex justify-content-between align-items-center mb-2">' +
+      '<strong style="font-size:13px;color:var(--primary);">Anak ke-' + no + '</strong>' +
+      (no > 1 ? '<button class="btn btn-sm btn-outline-danger" onclick="skumptkHapusAnak(' + no + ')"><i class="bi bi-trash"></i></button>' : '') +
+    '</div>' +
+    '<div class="row g-2">' +
+      '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_anak_nama_' + no + '" placeholder="Nama"><label>Nama Anak</label></div></div>' +
+      '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_anak_ttl_' + no + '" placeholder="Tempat/Tgl Lahir"><label>Tempat / Tanggal Lahir</label></div></div>' +
+      '<div class="col-md-2"><div class="form-floating"><select class="form-select" id="skumptk_anak_status_' + no + '"><option value="">-- Pilih --</option><option value="ak">Anak Kandung (ak)</option><option value="at">Anak Tiri (at)</option><option value="aa">Anak Angkat (aa)</option></select><label>Status Anak</label></div></div>' +
+      '<div class="col-md-2"><div class="form-floating"><input class="form-control" id="skumptk_anak_jk_' + no + '" placeholder="L/P"><label>Jenis Kelamin</label></div></div>' +
+      '<div class="col-md-4"><div class="form-floating"><select class="form-select" id="skumptk_anak_tunjangan_' + no + '"><option value="">-- Pilih --</option><option value="Dapat Tunjangan">Dapat Tunjangan</option><option value="Tidak Dapat Tunjangan">Tidak Dapat Tunjangan</option></select><label>Tunjangan</label></div></div>' +
+      '<div class="col-md-4"><div class="form-floating"><select class="form-select" id="skumptk_anak_sekolah_' + no + '"><option value="">-- Pilih --</option><option value="Masih Sekolah">Masih Sekolah</option><option value="Masih Kuliah">Masih Kuliah</option><option value="Tidak Sekolah">Tidak Sekolah</option></select><label>Status Sekolah</label></div></div>' +
+      '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_anak_putusan_' + no + '" placeholder="Putusan Pengadilan"><label>Putusan Pengadilan</label></div></div>' +
+    '</div>' +
+  '</div>';
+}
+
+function skumptkTambahAnak() {
+  skumptkAnakCount++;
+  var container = document.getElementById('skumptkAnakContainer');
+  container.insertAdjacentHTML('beforeend', skumptkBuildAnakRow(skumptkAnakCount));
+  skumptkCheckAnakButton();
+}
+
+function skumptkHapusAnak(no) {
+  var el = document.getElementById('skumptk_anak_' + no);
+  if (el) el.remove();
+  skumptkCheckAnakButton();
+}
+
+function skumptkCheckAnakButton() {
+  var rows = document.querySelectorAll('.skumptk-anak-row');
+  var btn = document.getElementById('skumptkBtnTambahAnak');
+  if (btn) btn.style.display = rows.length >= 3 ? 'none' : 'inline-block';
+}
+
+function skumptkUploadFoto(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { alert('Ukuran foto maksimal 2MB'); return; }
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    skumptkFotoBase64 = ev.target.result;
+    document.getElementById('skumptk_foto_preview').innerHTML = '<img src="' + skumptkFotoBase64 + '" style="width:100%;height:100%;object-fit:cover;">';
+  };
+  reader.readAsDataURL(file);
+}
+
+function skumptkHapusFoto() {
+  skumptkFotoBase64 = '';
+  document.getElementById('skumptk_foto_preview').innerHTML = '<small class="text-muted" style="font-size:11px;">Upload Foto</small>';
+  document.getElementById('skumptk_foto_input').value = '';
+}
+
+function formatRupiahInput(val) {
+  var num = val.replace(/[^0-9]/g, '');
+  if (!num) return '';
+  return parseInt(num).toLocaleString('id-ID');
+}
+
+function skumptkAutoFill() {
+  var pegId = document.getElementById('skumptk_pegawai').value;
+  if (!pegId) return;
+  var p = getRecord('pegawai', pegId);
+  if (!p) return;
+
+  document.getElementById('skumptk_nama').value = p.nama || '';
+  document.getElementById('skumptk_nip').value = p.nip || '';
+  document.getElementById('skumptk_tempat_lahir').value = p.tempat_lahir || '';
+  if (p.tanggal_lahir) document.getElementById('skumptk_tanggal_lahir').value = p.tanggal_lahir;
+  document.getElementById('skumptk_pangkat').value = p.pangkat_golongan || '';
+  document.getElementById('skumptk_jabatan').value = p.jabatan || '';
+  document.getElementById('skumptk_jk').value = p.jenis_kelamin || '';
+  document.getElementById('skumptk_agama').value = p.agama || '';
+  document.getElementById('skumptk_alamat').value = p.alamat || '';
+}
+
+function skumptkGetField(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
+function skumptkParseRupiah(val) { return val.replace(/[^0-9]/g, ''); }
+
+function skumptkFormatDate(dateStr) {
+  if (!dateStr) return '………';
+  var d = new Date(dateStr);
+  var bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  return d.getDate() + ' ' + bulan[d.getMonth()] + ' ' + d.getFullYear();
+}
+
+function cetakSKUMPTK() {
+  var nama = skumptkGetField('skumptk_nama');
+  if (!nama) { alert('Nama Pegawai harus diisi!'); return; }
+
+  var nip = skumptkGetField('skumptk_nip');
+  var tempatLahir = skumptkGetField('skumptk_tempat_lahir');
+  var tglLahir = skumptkGetField('skumptk_tanggal_lahir');
+  var pangkat = skumptkGetField('skumptk_pangkat');
+  var jabatan = skumptkGetField('skumptk_jabatan');
+  var skDari = skumptkGetField('skumptk_sk_dari');
+  var skTgl = skumptkGetField('skumptk_sk_tanggal');
+  var skNomor = skumptkGetField('skumptk_sk_nomor');
+  var tmt = skumptkGetField('skumptk_tmt');
+  var jk = skumptkGetField('skumptk_jk');
+  var agama = skumptkGetField('skumptk_agama');
+  var alamat = skumptkGetField('skumptk_alamat');
+  var rt = skumptkGetField('skumptk_rt');
+  var rw = skumptkGetField('skumptk_rw');
+  var desa = skumptkGetField('skumptk_desa');
+  var kecamatan = skumptkGetField('skumptk_kecamatan');
+  var kabupaten = skumptkGetField('skumptk_kabupaten') || 'Cirebon';
+  var jenisKepeg = skumptkGetField('skumptk_jenis_kepegawaian');
+  var statusKepeg = skumptkGetField('skumptk_status_kepegawaian');
+  var gajiSkDari = skumptkGetField('skumptk_gaji_sk_dari');
+  var gajiSkTgl = skumptkGetField('skumptk_gaji_sk_tgl');
+  var gajiSkNomor = skumptkGetField('skumptk_gaji_sk_nomor');
+  var gajiPokok = skumptkParseRupiah(skumptkGetField('skumptk_gaji_pokok'));
+  var gajiTmt = skumptkGetField('skumptk_gaji_tmt');
+  var penghasilan = skumptkParseRupiah(skumptkGetField('skumptk_penghasilan'));
+  var jabatanStruktural = skumptkGetField('skumptk_jabatan_struktural');
+  var jmlKeluarga = skumptkGetField('skumptk_jml_keluarga') || '0';
+  var mkgTahun = skumptkGetField('skumptk_mkg_tahun') || '0';
+  var mkgBulan = skumptkGetField('skumptk_mkg_bulan') || '0';
+  var mkkTahun = skumptkGetField('skumptk_mkk_tahun') || '0';
+  var mkkBulan = skumptkGetField('skumptk_mkk_bulan') || '0';
+
+  var istriNama = skumptkGetField('skumptk_istri_nama');
+  var istriTtl = skumptkGetField('skumptk_istri_ttl');
+  var istriPekerjaan = skumptkGetField('skumptk_istri_pekerjaan');
+  var istriNip = skumptkGetField('skumptk_istri_nip');
+  var istriTglKawin = skumptkGetField('skumptk_istri_tgl_kawin');
+  var istriKe = skumptkGetField('skumptk_istri_ke') || '1';
+  var istriPenghasilan = skumptkParseRupiah(skumptkGetField('skumptk_istri_penghasilan'));
+  var tanggalSurat = skumptkGetField('skumptk_tanggal_surat');
+  var kepala = skumptkGetField('skumptk_kepala');
+
+  var ttlText = (tempatLahir || '………') + ', ' + (tglLahir ? skumptkFormatDate(tglLahir) : '………');
+  var skText = (skDari || '………') + ' / ' + (skTgl ? skumptkFormatDate(skTgl) : '………') + ' / ' + (skNomor || '………');
+  var tmtText = tmt ? skumptkFormatDate(tmt) : '………';
+  var gajiPokokText = gajiPokok ? 'Rp. ' + parseInt(gajiPokok).toLocaleString('id-ID') : 'Rp. ……………………………………';
+  var penghasilanText = penghasilan ? 'Rp ' + parseInt(penghasilan).toLocaleString('id-ID') : 'Rp -';
+  var gajiSkText = (gajiSkDari || '………') + ' / ' + (gajiSkTgl ? skumptkFormatDate(gajiSkTgl) : '………') + ' / ' + (gajiSkNomor || '………');
+
+  var fotoImg = skumptkFotoBase64 ? '<img src="' + skumptkFotoBase64 + '" style="width:100%;height:100%;object-fit:cover;">' : '';
+
+  // Build anak rows
+  var anakRows = '';
+  for (var i = 1; i <= skumptkAnakCount; i++) {
+    var aNama = skumptkGetField('skumptk_anak_nama_' + i);
+    if (!aNama && i > 1) continue;
+    anakRows += '<tr>' +
+      '<td>' + i + '</td>' +
+      '<td style="text-align:left;">' + (aNama || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
+      '<td>' + (skumptkGetField('skumptk_anak_ttl_' + i) || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
+      '<td>' + (skumptkGetField('skumptk_anak_status_' + i) || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
+      '<td>' + (nama || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
+      '<td>' + (skumptkGetField('skumptk_anak_jk_' + i) || '&hellip;&hellip;&hellip;&hellip;') + '</td>' +
+      '<td>' + (skumptkGetField('skumptk_anak_tunjangan_' + i) || '&hellip;&hellip;&hellip;&hellip;') + '</td>' +
+      '<td>' + (skumptkGetField('skumptk_anak_sekolah_' + i) || '&hellip;&hellip;&hellip;&hellip;') + '</td>' +
+      '<td>' + (skumptkGetField('skumptk_anak_putusan_' + i) || '-') + '</td>' +
+    '</tr>';
+  }
+  while (anakRows.split('</tr>').length - 1 < 3) {
+    var nextNo = anakRows.split('</tr>').length;
+    anakRows += '<tr><td>' + nextNo + '</td><td style="text-align:left;">&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;</td><td>&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;</td><td>&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;</td><td>&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;</td><td>&hellip;&hellip;&hellip;&hellip;</td><td>&hellip;&hellip;&hellip;&hellip;</td><td>&hellip;&hellip;&hellip;&hellip;</td><td>-</td></tr>';
+  }
+
+  var tanggalFormatted = tanggalSurat ? skumptkFormatDate(tanggalSurat) : '………';
+
+  var html = '<div class="report-container" style="padding:0;">' +
+
+    // ===== PAGE DEPAN =====
+    '<div style="width:215mm;min-height:330mm;padding:24mm 23mm 18mm 24mm;background:#fff;margin:0 auto;font-family:Times New Roman,Times,serif;font-size:12pt;color:#000;line-height:1.15;">' +
+      '<!-- KOP -->' +
+      '<div style="border-bottom:3px double #000;padding-bottom:10px;margin-bottom:16px;display:flex;align-items:center;gap:16px;">' +
+        '<img src="https://i.pinimg.com/736x/56/aa/a0/56aaa0081307f40c09204c5edd934253.jpg" style="max-width:85px;max-height:85px;object-fit:contain;">' +
+        '<div style="flex:1;text-align:center;">' +
+          '<div style="font-size:16pt;font-weight:bold;text-transform:uppercase;letter-spacing:1px;">PEMERINTAH KABUPATEN CIREBON</div>' +
+          '<div style="font-size:22pt;font-weight:bold;text-transform:uppercase;letter-spacing:2px;">DINAS PENDIDIKAN</div>' +
+          '<div style="font-family:Arial,sans-serif;font-size:11pt;line-height:1.5;">Jl. Sunan Drajat No. 10 Telp (0231) 321266</div>' +
+          '<div style="font-weight:bold;letter-spacing:3px;font-size:12pt;">S U M B E R</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<!-- JUDUL -->' +
+      '<div style="text-align:center;margin:12px 0 8px;"><h2 style="font-size:12pt;font-weight:bold;letter-spacing:2px;">SURAT KETERANGAN</h2><h2 style="font-size:12pt;font-weight:bold;letter-spacing:2px;">UNTUK MENDAPATKAN PEMBAYARAN TUNJANGAN KELUARGA TAHUN 2026</h2></div>' +
+
+      '<!-- FORM DATA INSTANSI -->' +
+      '<table style="width:100%;border-collapse:collapse;font-size:12pt;line-height:1.45;">' +
+        '<tr><td style="white-space:nowrap;padding-right:4px;">NAMA INSTANSI</td><td style="padding-right:6px;">:</td><td style="font-weight:bold;">DINAS PENDIDIKAN KABUPATEN CIREBON</td></tr>' +
+        '<tr><td style="white-space:nowrap;padding-right:4px;">ALAMAT LENGKAP INSTANSI</td><td style="padding-right:6px;">:</td><td style="font-weight:bold;">JL. Sunan Drajat No.10 Sumber</td></tr>' +
+        '<tr><td style="white-space:nowrap;padding-right:4px;">INSTANSI INDUK&nbsp;&nbsp;<sup>*) 1</sup></td><td style="padding-right:6px;">:</td><td>Pemerintah Daerah Kabupaten Cirebon</td></tr>' +
+        '<tr><td style="white-space:nowrap;padding-right:4px;">PEMBUAT&nbsp;&nbsp;DAFTAR&nbsp;&nbsp;GAJI</td><td style="padding-right:6px;">:</td><td style="font-weight:bold;white-space:nowrap;">Badan Keuangan dan Aset Daerah Kabupaten Cirebon</td></tr>' +
+      '</table>' +
+      '<div style="height:8px;"></div>' +
+
+      '<!-- SECTION I -->' +
+      '<div style="font-weight:bold;padding-left:0;">I.&nbsp;&nbsp;&nbsp;&nbsp;DATA PEGAWAI</div>' +
+      '<table style="width:100%;border-collapse:collapse;font-size:12pt;line-height:1.45;">' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">1. Nama Lengkap</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (nama || '') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">2. NIP <sup>*) 2</sup></td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (nip || '') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">3. Tempat / Tanggal Lahir</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + ttlText + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">4. Pangkat / Golongan / Ruang</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (pangkat || '') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">5. Jabatan</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (jabatan || '') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">6. SK. Dari / Tanggal / Nomor</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + skText + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:3.2em;white-space:nowrap;padding-right:4px;">Terhitung Mulai <sup>*) 3</sup></td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + tmtText + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">7. Jenis Kelamin</td><td style="padding-right:6px;">:</td><td>' + (jk || 'Laki-laki / Wanita') + '</td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">8. Agama / Kebangsaan</td><td style="padding-right:6px;">:</td><td>' + (agama || '………') + ' / Indonesia</td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">9. Alamat Lengkap</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (alamat || '') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:5.8em;white-space:nowrap;padding-right:4px;">RT / RW</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (rt || '') + ' / ' + (rw || '') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:5.8em;white-space:nowrap;padding-right:4px;">Desa / <strike>Kelurahan</strike></td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (desa || '') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:5.8em;white-space:nowrap;padding-right:4px;">Kecamatan</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (kecamatan || '') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:5.8em;white-space:nowrap;padding-right:4px;">Kabupaten / Kodya</td><td style="padding-right:6px;">:</td><td>' + kabupaten + '</td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">10. Jenis Kepegawaian</td><td style="padding-right:6px;">:</td><td style="text-align:justify;"><b>' + (jenisKepeg || 'PPPK') + '</b> / Pejabat Negara / PNSP / PNSP dpb.I. / PNSP dpb.II. / PNSP dpk I / PNSP dpk.II / PNSD.I / PNSD.I dpb.II / PNSD.I dpk.II / PNSD.II / PNSD. dpb. Inst. Lain (swasta) / PNS. dpk. Pusat **)</td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">11. Status Kepegawaian</td><td style="padding-right:6px;">:</td><td style="text-align:justify;"><b>' + (statusKepeg || 'PPPK') + '</b> / Capeg / Peg. Tetap / MPP / Pen.Uang Tunggu / Peg. Scorsing Cuti luar tanggungan negara (Perusahaan Daerah) Peg. Sementara (Perusahaan Daerah) / Peg.Bulanan (Pens.Peg. Negeri dpk. Jabatan semula) *** )</td></tr>' +
+      '</table>' +
+      '<div style="height:8px;"></div>' +
+      '<table style="width:100%;border-collapse:collapse;font-size:12pt;line-height:1.45;">' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">12. Digaji menurut PP 11/2024 dengan :</td><td></td><td></td></tr>' +
+        '<tr><td style="padding-left:2.8em;white-space:nowrap;padding-right:4px;">- SK dari / Tgl Nomor <sup>*) 4</sup></td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + gajiSkText + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:2.8em;white-space:nowrap;padding-right:4px;">- Gaji Pokok</td><td style="padding-right:6px;">:</td><td>' + gajiPokokText + '</td></tr>' +
+        '<tr><td style="padding-left:2.8em;white-space:nowrap;padding-right:4px;">- Terhitung Mulai Berlaku</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (gajiTmt ? skumptkFormatDate(gajiTmt) : '………') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">13. Besarnya Penghasilan</td><td style="padding-right:6px;">:</td><td>' + penghasilanText + '</td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">14. Jabatan Struktural / Fungsional</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (jabatanStruktural || '') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">15. Jumlah Keluarga Tertanggung</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (jmlKeluarga || '') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">16. Masa Kerja Golongan</td><td style="padding-right:6px;">:</td><td>' + mkgTahun + ' Tahun ' + mkgBulan + ' Bulan</td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">17. Masa Kerja Keseluruhan</td><td style="padding-right:6px;">:</td><td>' + mkkTahun + ' Tahun ' + mkkBulan + ' Bulan</td></tr>' +
+      '</table>' +
+      '<hr style="border:none;border-top:1px solid #000;margin:10px 0 8px;">' +
+      '<div style="margin-top:8px;">' +
+        '<div style="font-weight:bold;text-decoration:underline;text-transform:uppercase;line-height:1.5;margin-bottom:4px;">Keterangan</div>' +
+        '<p style="font-size:10pt;line-height:1.4;text-align:justify;margin-bottom:1px;">*) 1. Instansi Induk ialah instansi asal dari mana Pegawai Ybs. Mendapat pembinaan kepegawaian secara langsung maupun tidak langsung</p>' +
+        '<p style="font-size:10pt;line-height:1.4;text-align:justify;margin-bottom:1px;">*) 2. Istilah NIP. Yang sesuai dengan KARPEG / SK. Pengangkatan pegawai yang bersangkutan</p>' +
+        '<p style="font-size:10pt;line-height:1.4;text-align:justify;margin-bottom:1px;">*) 3. Surat Keputusan yang menunjuk pangkat / golongan (Ruang)</p>' +
+        '<p style="font-size:10pt;line-height:1.4;text-align:justify;margin-bottom:1px;">*) 4 &nbsp;Surat Keputusan yang menunjuk gaji pokok yang sesuai dengan pembayaran gaji yang sedang berjalan</p>' +
+        '<p style="font-size:10pt;line-height:1.4;margin-bottom:1px;margin-left:24px;">- dpb. Prop / Kab. = diperbantukan pada Propinsi / Kabupaten</p>' +
+        '<p style="font-size:10pt;line-height:1.4;margin-bottom:1px;margin-left:24px;">- dpk. Prop./ Kab. = dipekerjakan pada Propinsi / Kabupaten</p>' +
+        '<p style="font-size:10pt;line-height:1.4;margin-bottom:1px;margin-left:24px;">- dpb. = diperbantukan ; dpk = dipekerjakan</p>' +
+        '<p style="font-size:10pt;line-height:1.4;text-align:justify;margin-bottom:1px;">***) 5 coret yang tidak perlu</p>' +
+      '</div>' +
+    '</div>' +
+
+    '<!-- PAGE BREAK -->' +
+    '<div style="page-break-after:always;"></div>' +
+
+    // ===== PAGE BELAKANG =====
+    '<div style="width:330mm;min-height:215mm;padding:12mm 16mm;background:#fff;margin:0 auto;font-family:Times New Roman,Times,serif;font-size:11pt;color:#000;line-height:1.5;">' +
+      '<div style="font-size:11pt;font-weight:bold;line-height:1.5;margin-bottom:2px;"><b>II.&nbsp;&nbsp;DATA KELUARGA ( YANG MENJADI TANGGUNGAN PEGAWAI )</b></div>' +
+      '<div style="font-size:11pt;font-weight:bold;line-height:1.4;margin-bottom:2px;margin-left:1em;">A. KAWIN SYAH DENGAN ISTERI / SUAMI</div>' +
+
+      '<table style="width:100%;border-collapse:collapse;margin-bottom:4px;">' +
+        '<thead><tr>' +
+          '<th style="width:3%;border:1px solid #000;padding:3px 5px;font-size:9pt;">NO</th>' +
+          '<th style="width:14%;border:1px solid #000;padding:3px 5px;font-size:9pt;">NAMA ISTERI/SUAMI</th>' +
+          '<th style="width:14%;border:1px solid #000;padding:3px 5px;font-size:9pt;">TEMPAT/TGL. LAHIR</th>' +
+          '<th style="width:9%;border:1px solid #000;padding:3px 5px;font-size:9pt;">PEKERJAAN</th>' +
+          '<th style="width:7%;border:1px solid #000;padding:3px 5px;font-size:9pt;">NIP</th>' +
+          '<th style="width:8%;border:1px solid #000;padding:3px 5px;font-size:9pt;">TGL. KAWIN</th>' +
+          '<th style="width:10%;border:1px solid #000;padding:3px 5px;font-size:9pt;">ISTERI / SUAMI KE</th>' +
+          '<th style="width:11%;border:1px solid #000;padding:3px 5px;font-size:9pt;">PENGHASILAN</th>' +
+          '<th style="width:24%;border:1px solid #000;padding:3px 5px;font-size:9pt;">TANDA TANGAN ISTERI / SUAMI</th>' +
+        '</tr></thead>' +
+        '<tbody><tr>' +
+          '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">1</td>' +
+          '<td style="border:1px solid #000;padding:3px 5px;text-align:left;font-size:9pt;">' + (istriNama || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
+          '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (istriTtl || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
+          '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (istriPekerjaan || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
+          '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (istriNip || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
+          '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (istriTglKawin ? skumptkFormatDate(istriTglKawin) : '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
+          '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (istriKe || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
+          '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (istriPenghasilan ? 'Rp. ' + parseInt(istriPenghasilan).toLocaleString('id-ID') : '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
+          '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;"><br><br></td>' +
+        '</tr></tbody>' +
+      '</table>' +
+
+      '<div style="font-size:11pt;font-weight:bold;line-height:1.4;margin-bottom:2px;margin-left:1em;">B. ANAK-ANAK YANG MENJADI TANGGUNGAN PEGAWAI (YANG BELUM DEWASA)</div>' +
+      '<div style="font-size:11pt;line-height:1.4;margin-bottom:1px;margin-left:1em;text-align:justify;">Mempunyai anak-anak seperti dalam daftar di bawah ini, yaitu :</div>' +
+      '<div style="font-size:11pt;line-height:1.4;margin-bottom:1px;margin-left:1em;text-align:justify;">- Anak Kandung (ak), Anak Tiri (at), Anak Angkat (aa) yang masih menjadi tanggungan, belum mempunyai pekerjaan sendiri dan masuk dalam daftar gaji.</div>' +
+      '<div style="font-size:11pt;line-height:1.4;margin-bottom:1px;margin-left:1em;text-align:justify;">- Anak Kandung (ak), Anak Tiri (at), Anak Angkat (aa) yang masih menjadi tanggungan tetapi tidak masuk dalam daftar gaji</div>' +
+
+      '<table style="width:100%;border-collapse:collapse;margin-bottom:4px;">' +
+        '<thead><tr>' +
+          '<th style="width:3%;border:1px solid #000;padding:3px 5px;font-size:9pt;">NO</th>' +
+          '<th style="width:20%;border:1px solid #000;padding:3px 5px;font-size:9pt;">NAMA ANAK</th>' +
+          '<th style="width:10%;border:1px solid #000;padding:3px 5px;font-size:9pt;">TEMPAT/TGL. LAHIR</th>' +
+          '<th style="width:5%;border:1px solid #000;padding:3px 5px;font-size:9pt;">STATUS ANAK</th>' +
+          '<th style="width:15%;border:1px solid #000;padding:3px 5px;font-size:9pt;">NAMA AYAH/IBU</th>' +
+          '<th style="width:6%;border:1px solid #000;padding:3px 5px;font-size:9pt;">JENIS KELAMIN</th>' +
+          '<th style="width:7%;border:1px solid #000;padding:3px 5px;font-size:9pt;">DAPAT / TIDAK TUNJANGAN</th>' +
+          '<th style="width:8%;border:1px solid #000;padding:3px 5px;font-size:9pt;">MASUK / TIDAK SEKOLAH / KULIAH</th>' +
+          '<th style="width:12%;border:1px solid #000;padding:3px 5px;font-size:9pt;">PUTUSAN PENGADILAN</th>' +
+        '</tr></thead>' +
+        '<tbody>' + anakRows + '</tbody>' +
+      '</table>' +
+
+      '<!-- C. SPESIMEN -->' +
+      '<div style="display:flex;align-items:flex-start;gap:12px;margin:4px 0;">' +
+        '<div style="flex-shrink:0;font-size:11pt;font-weight:bold;white-space:nowrap;">C. SPESIMEN PEGAWAI</div>' +
+        '<div style="display:flex;gap:8px;align-items:flex-start;flex:1;">' +
+          '<div style="border:1px solid #000;width:22mm;height:30mm;display:flex;align-items:center;justify-content:center;background:#fff;overflow:hidden;">' + (fotoImg || '<span style="font-size:10pt;text-align:center;line-height:1.3;">Foto<br>2x3</span>') + '</div>' +
+          '<div style="border:1px solid #000;width:25mm;height:22mm;display:flex;align-items:center;justify-content:center;"><span style="font-size:10pt;">PARAF</span></div>' +
+          '<div style="border:1px solid #000;width:75mm;height:22mm;display:flex;align-items:center;justify-content:center;"><span style="font-size:11pt;font-weight:bold;">T A N D A &nbsp; T A N G A N</span></div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div style="font-size:11pt;text-align:justify;line-height:1.35;margin:2px 0;">Keterangan ini saya buat dengan sesungguhnya dan apabila keterangan ini tidak benar (palsu), saya bersedia dituntut di muka pengadilan berdasarkan undang-undang yang berlaku dan bersedia mengembalikan semua uang tunjangan yang telah saya terima yang seharusnya bukan menjadi hak saya.</div>' +
+
+      '<!-- TANDA TANGAN -->' +
+      '<div style="display:flex;width:100%;margin-top:2px;">' +
+        '<div style="width:50%;text-align:center;vertical-align:top;padding-top:4px;">' +
+          '<div style="height:30px;"></div>' +
+          '<div>Mengetahui / Mengesahkan</div>' +
+          '<div>Kepala ' + (kepala || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</div>' +
+          '<div style="height:30px;"></div>' +
+          '<div style="height:30px;"></div>' +
+          '<div style="height:30px;"></div>' +
+          '<div style="border-top:1px solid #000;display:inline-block;padding-top:2px;"><u>&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;</u></div>' +
+          '<div style="font-size:10pt;">NIP. &hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;</div>' +
+        '</div>' +
+        '<div style="width:50%;text-align:center;vertical-align:top;padding-top:4px;">' +
+          '<div>Cirebon, ' + tanggalFormatted + '</div>' +
+          '<div style="height:30px;"></div>' +
+          '<div>Pegawai yang bersangkutan,</div>' +
+          '<div style="height:30px;"></div>' +
+          '<div style="height:30px;"></div>' +
+          '<div style="height:30px;"></div>' +
+          '<div style="height:30px;"></div>' +
+          '<div style="border-top:1px solid #000;display:inline-block;padding-top:2px;"><u>' + (nama || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</u></div>' +
+          '<div style="font-size:10pt;">NIP. ' + (nip || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+
+  document.getElementById('cetakSuratContent').innerHTML = html;
+  navigateTo('cetak-surat');
+}
+
+function unduhDocsSKUMPTK() {
+  var nama = skumptkGetField('skumptk_nama');
+  if (!nama) { alert('Nama Pegawai harus diisi!'); return; }
+  // Reuse cetakSKUMPTK content
+  cetakSKUMPTK();
+  setTimeout(function() {
+    var content = document.getElementById('cetakSuratContent').innerHTML;
+    var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+      '<style>@page{size:215mm 330mm;margin:0;} body{margin:0;padding:0;}</style>' +
+      '</head><body>' + content + '</body></html>';
+    var blob = new Blob([html], { type: 'application/msword' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'SKUMPTK_' + nama.replace(/\s+/g, '_') + '_2026.doc';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 500);
 }
 
 // ============ CETAK TANDA TERIMA AKTIVASI PIP ============

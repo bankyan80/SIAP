@@ -650,6 +650,38 @@
         </div>
       </div>
 
+      <!-- ======== DATA SISWA (Admin - semua sekolah) ======== -->
+      <div id="page-admin-siswa" class="page-section">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h5><i class="bi bi-people me-2"></i>Data Siswa</h5>
+            <div class="d-flex gap-2 flex-wrap">
+              <select class="form-select form-select-sm" id="filterSiswaSekolah" onchange="renderAdminSiswa()" style="width:220px;border-radius:8px;">
+                <option value="">Semua Sekolah</option>
+              </select>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="d-flex gap-2 mb-3 flex-wrap">
+              <button class="btn btn-sm btn-outline-secondary aktif-filter" onclick="filterAdminSiswaKelas('semua', this)">Semua</button>
+              <button class="btn btn-sm btn-outline-secondary" onclick="filterAdminSiswaKelas('1', this)">Kelas 1</button>
+              <button class="btn btn-sm btn-outline-secondary" onclick="filterAdminSiswaKelas('2', this)">Kelas 2</button>
+              <button class="btn btn-sm btn-outline-secondary" onclick="filterAdminSiswaKelas('3', this)">Kelas 3</button>
+              <button class="btn btn-sm btn-outline-secondary" onclick="filterAdminSiswaKelas('4', this)">Kelas 4</button>
+              <button class="btn btn-sm btn-outline-secondary" onclick="filterAdminSiswaKelas('5', this)">Kelas 5</button>
+              <button class="btn btn-sm btn-outline-secondary" onclick="filterAdminSiswaKelas('6', this)">Kelas 6</button>
+            </div>
+            <div class="search-bar"><i class="bi bi-search"></i><input type="text" placeholder="Cari siswa..." oninput="renderAdminSiswa(this.value)"></div>
+            <div class="table-container max-h-table">
+              <table class="table table-hover">
+                <thead><tr><th>No</th><th>Sekolah</th><th>NIS/NISN</th><th>Nama Siswa</th><th>JK</th><th>Tempat Lahir</th><th>Tanggal Lahir</th><th>Kelas</th><th>Alamat</th><th>Aksi</th></tr></thead>
+                <tbody id="table-siswa"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ======== DATA SISWA (Sekolah) ======== -->
       <div id="page-data-siswa" class="page-section">
         <div class="card">
@@ -1212,10 +1244,24 @@ function getKepalaSekolah(schoolId) {
 }
 
 function getAdminProfile() {
-  var key = 'siap_admin_profile';
+  var key = 'siap_admin1_profile';
   if (currentUser) {
-    if (currentUser.adminLevel === 'limited') key = 'siap_admin2_profile';
+    if (currentUser.role === 'admin' && currentUser.adminLevel === 'limited') key = 'siap_admin2_profile';
     else if (currentUser.role === 'admin') key = 'siap_admin1_profile';
+    else key = 'siap_sekolah_profile_' + currentUser.schoolId;
+  }
+  // Migrasi data lama dari siap_admin_profile ke key yang benar
+  var oldData = localStorage.getItem('siap_admin_profile');
+  if (oldData && key !== 'siap_admin_profile') {
+    try {
+      var parsed = JSON.parse(oldData);
+      if (parsed && parsed.nama) {
+        if (!localStorage.getItem(key)) {
+          localStorage.setItem(key, oldData);
+        }
+      }
+      localStorage.removeItem('siap_admin_profile');
+    } catch(e) {}
   }
   try { return JSON.parse(localStorage.getItem(key) || '{}'); }
   catch { return {}; }
@@ -1223,8 +1269,9 @@ function getAdminProfile() {
 function saveAdminProfile(p) {
   var key = 'siap_admin1_profile';
   if (currentUser) {
-    if (currentUser.adminLevel === 'limited') key = 'siap_admin2_profile';
+    if (currentUser.role === 'admin' && currentUser.adminLevel === 'limited') key = 'siap_admin2_profile';
     else if (currentUser.role === 'admin') key = 'siap_admin1_profile';
+    else key = 'siap_sekolah_profile_' + currentUser.schoolId;
   }
   localStorage.setItem(key, JSON.stringify(p));
   if (firebaseReady) {
@@ -1463,6 +1510,7 @@ function buildSidebarMenu() {
       <li><a href="#" data-page="pegawai-korwil" onclick="navigateTo('pegawai-korwil')"><i class="bi bi-person-gear"></i>Pegawai Korwil</a></li>
       <li><a href="#" data-page="manajemen-pegawai" onclick="navigateTo('manajemen-pegawai')"><i class="bi bi-person-badge"></i>Manajemen Pegawai</a></li>
       <li><a href="#" data-page="admin-sarpras" onclick="navigateTo('admin-sarpras')"><i class="bi bi-house-door"></i>Data Sarpras</a></li>
+      <li><a href="#" data-page="admin-siswa" onclick="navigateTo('admin-siswa')"><i class="bi bi-people"></i>Data Siswa</a></li>
       <li class="menu-parent" onclick="toggleSubmenu(this)">
         <a><i class="bi bi-cash-coin"></i>Data PIP<i class="bi bi-chevron-right menu-arrow"></i></a>
         <ul class="submenu">
@@ -1535,6 +1583,7 @@ function navigateTo(page) {
     'pegawai-korwil': 'Pegawai Korwil',
     'manajemen-pegawai': 'Manajemen Pegawai',
     'admin-sarpras': 'Data Sarana & Prasarana',
+    'admin-siswa': 'Data Siswa',
     'data-siswa': 'Data Siswa',
     'siswa-lulusan': 'Siswa Lulusan',
     'data-pegawai': 'Data Pegawai',
@@ -1564,6 +1613,7 @@ function navigateTo(page) {
   if (page === 'pegawai-korwil') renderTable('pegawai_korwil');
   if (page === 'manajemen-pegawai') { populateSekolahFilter('filterPegawaiSekolah'); renderTable('pegawai'); }
   if (page === 'admin-sarpras') { populateSekolahFilter('filterSarprasSekolah'); renderTable('sarpras'); }
+  if (page === 'admin-siswa') { populateSiswaSekolahFilter(); adminSiswaKelasFilter = 'semua'; document.querySelectorAll('#page-admin-siswa .d-flex.gap-2.mb-3 button').forEach(function(b) { b.classList.remove('aktif-filter'); }); var semBtn2 = document.querySelector('#page-admin-siswa .d-flex.gap-2.mb-3 button'); if (semBtn2) semBtn2.classList.add('aktif-filter'); renderAdminSiswa(); }
   if (page === 'data-siswa') { activeKelasFilter = 'semua'; document.querySelectorAll('#page-data-siswa .d-flex.gap-2.mb-3 button').forEach(function(b) { b.classList.remove('aktif-filter'); }); var semBtn = document.querySelector('#page-data-siswa .d-flex.gap-2.mb-3 button'); if (semBtn) semBtn.classList.add('aktif-filter'); renderTable('siswa'); }
   if (page === 'siswa-lulusan') renderTable('siswa_lulusan');
   if (page === 'data-pegawai') renderTable('pegawai');
@@ -2562,12 +2612,16 @@ function loadProfile() {
     }
   }
 
-  document.getElementById('profileNama').value = profile.nama || '';
-  document.getElementById('profileNIP').value = profile.nip || '';
-  document.getElementById('profileJabatan').value = profile.jabatan || '';
-
-  if (currentUser && !isAdmin) {
+  if (isAdmin) {
+    // Admin Korwil / Admin Operator - tampilkan profil admin
+    document.getElementById('profileNama').value = profile.nama || '';
+    document.getElementById('profileNIP').value = profile.nip || '';
+    document.getElementById('profileJabatan').value = profile.jabatan || '';
+  } else {
+    // Admin Sekolah - tampilkan nama sekolah
     document.getElementById('profileNama').value = currentUser.name || '';
+    document.getElementById('profileNIP').value = profile.nip || '';
+    document.getElementById('profileJabatan').value = profile.jabatan || '';
   }
 }
 
@@ -5134,6 +5188,86 @@ function renderTableFiltered(type, searchTerm) {
   var html = records.map(function(r, i) {
     return '<tr>' +
       '<td class="center">' + (i+1) + '</td>' +
+      '<td>' + escapeHtml(r.nis_nisn) + '</td>' +
+      '<td><strong>' + escapeHtml(r.nama) + '</strong></td>' +
+      '<td>' + escapeHtml(r.jenis_kelamin) + '</td>' +
+      '<td>' + escapeHtml(r.tempat_lahir) + '</td>' +
+      '<td>' + escapeHtml(r.tanggal_lahir) + '</td>' +
+      '<td><span style="background:#ebf8ff;color:#2b6cb0;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;">' + escapeHtml(r.kelas) + '</span></td>' +
+      '<td>' + escapeHtml(r.alamat) + '</td>' +
+      '<td class="action-btns">' +
+      '<button class="btn btn-warning btn-sm" onclick="editRecord(\'siswa\',\'' + r.id + '\')"><i class="bi bi-pencil"></i></button>' +
+      '<button class="btn btn-danger btn-sm" onclick="confirmDelete(\'siswa\',\'' + r.id + '\')"><i class="bi bi-trash"></i></button>' +
+      '</td></tr>';
+  }).join('');
+  tbody.innerHTML = html;
+}
+
+// ============ DATA SISWA ADMIN (Semua Sekolah) ============
+var adminSiswaKelasFilter = 'semua';
+
+function filterAdminSiswaKelas(kelas, btn) {
+  adminSiswaKelasFilter = kelas;
+  // Update active button
+  var container = btn.parentElement;
+  container.querySelectorAll('.btn').forEach(function(b) { b.classList.remove('aktif-filter'); });
+  btn.classList.add('aktif-filter');
+  renderAdminSiswa();
+}
+
+function populateSiswaSekolahFilter() {
+  var select = document.getElementById('filterSiswaSekolah');
+  if (!select) return;
+  var schools = getRecords('sekolah');
+  var current = select.value;
+  select.innerHTML = '<option value="">Semua Sekolah</option>';
+  schools.sort(function(a,b) { return (a.nama_sekolah||'').localeCompare(b.nama_sekolah||''); });
+  schools.forEach(function(s) {
+    var opt = document.createElement('option');
+    opt.value = s.id;
+    opt.textContent = s.nama_sekolah + (s.jenjang ? ' (' + s.jenjang + ')' : '');
+    select.appendChild(opt);
+  });
+  select.value = current;
+}
+
+function renderAdminSiswa(searchTerm) {
+  var records = getRecords('siswa');
+
+  // Filter by school
+  var filterSchool = document.getElementById('filterSiswaSekolah');
+  if (filterSchool && filterSchool.value) {
+    records = records.filter(function(r) { return r.school_id === filterSchool.value; });
+  }
+
+  // Filter by kelas
+  if (adminSiswaKelasFilter !== 'semua') {
+    records = records.filter(function(r) {
+      var k = String(r.kelas || '').trim();
+      return k === adminSiswaKelasFilter || k.startsWith(adminSiswaKelasFilter);
+    });
+  }
+
+  // Search filter
+  if (searchTerm) {
+    var term = searchTerm.toLowerCase();
+    records = records.filter(function(r) { return Object.values(r).some(function(v) { return String(v).toLowerCase().includes(term); }); });
+  }
+
+  var tbody = document.getElementById('table-siswa');
+  if (!tbody) return;
+
+  if (records.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="20" class="text-center text-muted py-4">Tidak ada data</td></tr>';
+    return;
+  }
+
+  var html = records.map(function(r, i) {
+    var school = getRecord('sekolah', r.school_id);
+    var schoolName = school ? school.nama_sekolah : '-';
+    return '<tr>' +
+      '<td class="center">' + (i+1) + '</td>' +
+      '<td><span style="font-size:12px;color:#64748b;">' + escapeHtml(schoolName) + '</span></td>' +
       '<td>' + escapeHtml(r.nis_nisn) + '</td>' +
       '<td><strong>' + escapeHtml(r.nama) + '</strong></td>' +
       '<td>' + escapeHtml(r.jenis_kelamin) + '</td>' +

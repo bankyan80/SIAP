@@ -5162,11 +5162,13 @@ function renderTableFiltered(type, searchTerm) {
     records = records.filter(function(r) { return r.school_id === schoolId; });
   }
 
-  // Filter by kelas (membaca rombel, misal filter '6' akan menampilkan 6, 6A, 6B, dll)
+  // Filter by kelas — ekstrak angka pertama dari nilai kelas
+  // Mendukung format: "1", "1A", "1 A", "Kelas 1", "Kelas 1 A", dll.
   if (type === 'siswa' && activeKelasFilter !== 'semua') {
     records = records.filter(function(r) {
       var k = String(r.kelas || '').trim();
-      return k === activeKelasFilter || k.startsWith(activeKelasFilter);
+      var m = k.match(/(\d+)/);
+      return m && m[1] === activeKelasFilter;
     });
   }
 
@@ -5240,11 +5242,13 @@ function renderAdminSiswa(searchTerm) {
     records = records.filter(function(r) { return r.school_id === filterSchool.value; });
   }
 
-  // Filter by kelas
+  // Filter by kelas — ekstrak angka pertama dari nilai kelas
+  // Mendukung format: "1", "1A", "1 A", "Kelas 1", "Kelas 1 A", dll.
   if (adminSiswaKelasFilter !== 'semua') {
     records = records.filter(function(r) {
       var k = String(r.kelas || '').trim();
-      return k === adminSiswaKelasFilter || k.startsWith(adminSiswaKelasFilter);
+      var m = k.match(/(\d+)/);
+      return m && m[1] === adminSiswaKelasFilter;
     });
   }
 

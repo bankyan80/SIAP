@@ -1680,15 +1680,18 @@ function loadAdminDashboard() {
   if (sekolahs.length === 0) {
     tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Belum ada data sekolah</td></tr>';
   } else {
-    tbody.innerHTML = sekolahs.map((s, i) => `
+    tbody.innerHTML = sekolahs.map((s, i) => {
+      var kepsek = pegawais.find(p => p.school_id === s.id && p.jabatan && p.jabatan.toLowerCase().includes('kepala sekolah'));
+      var kepName = kepsek ? kepsek.nama : (s.kepala_sekolah || '-');
+      return `
       <tr>
         <td class="center">${i + 1}</td>
         <td><strong>${escapeHtml(s.nama_sekolah)}</strong></td>
         <td>${escapeHtml(s.npsn)}</td>
         <td><span class="badge-jenjang" style="background:${s.jenjang==='SD'?'#ebf8ff;color:#2b6cb0':s.jenjang==='SMP'?'#f0fff4;color:#276749':'#fffff0;color:#975a16'}">${escapeHtml(s.jenjang)}</span></td>
-        <td>${escapeHtml(s.kepala_sekolah)}</td>
-      </tr>
-    `).join('');
+        <td>${escapeHtml(kepName)}</td>
+      </tr>`;
+    }).join('');
   }
 }
 
@@ -1762,13 +1765,17 @@ function renderTable(type, searchTerm = '') {
   let html = '';
   switch(type) {
     case 'sekolah':
-      html = records.map((r, i) => `
+      var allPegawai = getRecords('pegawai');
+      html = records.map((r, i) => {
+        var kepsek = allPegawai.find(p => p.school_id === r.id && p.jabatan && p.jabatan.toLowerCase().includes('kepala sekolah'));
+        var kepName = kepsek ? kepsek.nama : (r.kepala_sekolah || '-');
+        return `
         <tr>
           <td class="center">${i+1}</td>
           <td><strong>${escapeHtml(r.nama_sekolah)}</strong></td>
           <td>${escapeHtml(r.npsn)}</td>
           <td>${escapeHtml(r.alamat)}</td>
-          <td>${escapeHtml(r.kepala_sekolah)}</td>
+          <td>${escapeHtml(kepName)}</td>
           <td><span class="badge-jenjang" style="background:${r.jenjang==='SD'?'#ebf8ff;color:#2b6cb0':r.jenjang==='SMP'?'#f0fff4;color:#276749':'#fffff0;color:#975a16'}">${escapeHtml(r.jenjang)}</span></td>
           <td>${escapeHtml(r.telepon)}</td>
           <td>${escapeHtml(r.email)}</td>
@@ -1776,8 +1783,8 @@ function renderTable(type, searchTerm = '') {
             <button class="btn btn-warning btn-sm" onclick="editRecord('${type}','${r.id}')"><i class="bi bi-pencil"></i></button>
             <button class="btn btn-danger btn-sm" onclick="confirmDelete('${type}','${r.id}')"><i class="bi bi-trash"></i></button>
           </td>
-        </tr>
-      `).join('');
+        </tr>`;
+      }).join('');
       break;
 
     case 'pegawai_korwil':
@@ -2522,6 +2529,16 @@ function saveCrudData() {
     updateRecord(currentCrudType, currentEditId, data);
   } else {
     addRecord(currentCrudType, data);
+  }
+
+  // Sinkronisasi: jika pegawai sekolah disimpan/diedit dan jabatan = Kepala Sekolah, update tabel sekolah
+  if (currentCrudType === 'pegawai' && data.school_id && data.jabatan) {
+    if (data.jabatan.toLowerCase().includes('kepala sekolah')) {
+      var school = getRecord('sekolah', data.school_id);
+      if (school) {
+        updateRecord('sekolah', school.id, { kepala_sekolah: data.nama, nip_kepala: data.nip || '' });
+      }
+    }
   }
 
   currentDokumenData = null;

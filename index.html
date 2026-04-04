@@ -2195,7 +2195,7 @@ function openModal(type, editId = null) {
       title.textContent = record ? 'Edit Pegawai Korwil' : 'Tambah Pegawai Korwil';
       formHtml = `
         <div class="row g-3">
-          <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_nama" value="${record ? escapeHtml(record.nama) : ''}"><label>Nama Lengkap</label></div></div>
+          <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_nama" value="${record ? escapeHtml(record.nama) : ''}"><label>Nama Lengkap & Gelar</label></div></div>
           <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_nip" value="${record ? escapeHtml(record.nip) : ''}"><label>NIP</label></div></div>
           <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_jabatan" value="${record ? escapeHtml(record.jabatan) : ''}"><label>Jabatan</label></div></div>
           <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_pangkat_golongan" value="${record ? escapeHtml(record.pangkat_golongan) : ''}"><label>Pangkat/Golongan</label></div></div>
@@ -2218,7 +2218,7 @@ function openModal(type, editId = null) {
       formHtml = `
         <div class="row g-3">
           ${currentUser.role === 'admin' ? `<div class="col-md-6"><div class="form-floating"><select class="form-select" id="f_school_id"><option value="">Pilih Sekolah</option>${sekolahOptions}</select><label>Sekolah</label></div></div>` : ''}
-          <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_nama" value="${record ? escapeHtml(record.nama) : ''}"><label>Nama Lengkap</label></div></div>
+          <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_nama" value="${record ? escapeHtml(record.nama) : ''}"><label>Nama Lengkap & Gelar</label></div></div>
           <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_nip" value="${record ? escapeHtml(record.nip) : ''}"><label>NIP</label></div></div>
           <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_jabatan" value="${record ? escapeHtml(record.jabatan) : ''}"><label>Jabatan</label></div></div>
           <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_pangkat_golongan" value="${record ? escapeHtml(record.pangkat_golongan) : ''}"><label>Pangkat/Golongan</label></div></div>
@@ -5772,7 +5772,7 @@ function showFormRincianGaji() {
     '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="gaji_tanggal" type="date" value="' + yyyy + '-' + mm + '-' + dd + '"></div><label>Tanggal</label></div>' +
     '<div class="col-12"><div class="form-floating"><select class="form-select" id="gaji_pegawai" onchange="autoFillGaji()">' + pegawaiOptions + '</select><label>Pilih Pegawai</label></div></div>' +
     '<hr class="my-1"><h6 class="mt-2" style="color:var(--primary);font-weight:700;">Data Pegawai</h6>' +
-    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="gaji_nama" placeholder="Nama"></div><label>Nama Lengkap</label></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="gaji_nama" placeholder="Nama"></div><label>Nama Lengkap & Gelar</label></div>' +
     '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="gaji_nip" placeholder="NIP"></div><label>NIP</label></div>' +
     '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="gaji_pangkat" placeholder="Pangkat/Golongan"></div><label>Pangkat / Golongan / Ruang</label></div>' +
     '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="gaji_jabatan" placeholder="Jabatan"></div><label>Jabatan</label></div>' +

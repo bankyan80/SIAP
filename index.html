@@ -575,7 +575,7 @@
             <div class="search-bar"><i class="bi bi-search"></i><input type="text" placeholder="Cari sekolah..." oninput="renderTable('sekolah', this.value)"></div>
             <div class="table-container max-h-table">
               <table class="table table-hover">
-                <thead><tr><th>No</th><th>Nama Sekolah</th><th>NPSN</th><th>Alamat</th><th>Kepala Sekolah</th><th>Jenjang</th><th>Telepon</th><th>Email</th><th>Aksi</th></tr></thead>
+                <thead><tr><th>No</th><th>Nama Sekolah</th><th>NPSN</th><th>Alamat</th><th>Kepala Sekolah</th><th>Telepon Kepsek</th><th>Jenjang</th><th>Email</th><th>Aksi</th></tr></thead>
                 <tbody id="table-sekolah"></tbody>
               </table>
             </div>
@@ -1769,6 +1769,7 @@ function renderTable(type, searchTerm = '') {
       html = records.map((r, i) => {
         var kepsek = allPegawai.find(p => p.school_id === r.id && p.jabatan && p.jabatan.toLowerCase().includes('kepala sekolah'));
         var kepName = kepsek ? kepsek.nama : (r.kepala_sekolah || '-');
+        var kepTelp = kepsek ? (kepsek.telepon || '-') : '-';
         return `
         <tr>
           <td class="center">${i+1}</td>
@@ -1776,8 +1777,8 @@ function renderTable(type, searchTerm = '') {
           <td>${escapeHtml(r.npsn)}</td>
           <td>${escapeHtml(r.alamat)}</td>
           <td>${escapeHtml(kepName)}</td>
+          <td>${escapeHtml(kepTelp)}</td>
           <td><span class="badge-jenjang" style="background:${r.jenjang==='SD'?'#ebf8ff;color:#2b6cb0':r.jenjang==='SMP'?'#f0fff4;color:#276749':'#fffff0;color:#975a16'}">${escapeHtml(r.jenjang)}</span></td>
-          <td>${escapeHtml(r.telepon)}</td>
           <td>${escapeHtml(r.email)}</td>
           <td class="action-btns">
             <button class="btn btn-warning btn-sm" onclick="editRecord('${type}','${r.id}')"><i class="bi bi-pencil"></i></button>

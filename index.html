@@ -310,7 +310,8 @@
       .sidebar, .top-header, .no-print { display: none !important; }
       .main-content { margin-left: 0 !important; }
       .content-area { padding: 0 !important; }
-      .report-container { box-shadow: none; padding: 10px 20px; max-width: 100%; }
+      #cetakSuratContent { overflow-x: visible !important; }
+      .report-container { box-shadow: none !important; padding: 0 !important; max-width: 100% !important; }
       .page-section { display: none !important; }
       .page-section.active { display: block !important; }
       body { background: #fff; }
@@ -838,10 +839,10 @@
       <!-- ======== CETAK SURAT ======== -->
       <div id="page-cetak-surat" class="page-section">
         <div class="d-flex justify-content-between align-items-center no-print mb-3">
-          <a href="javascript:void(0)" onclick="navigateTo('surat')" class="text-decoration-none" style="color:var(--primary);font-weight:600;font-size:14px;"><i class="bi bi-arrow-left me-1"></i>Kembali</a>
-          <button class="btn btn-accent" onclick="showCetakDialog(function(s){window.print()}, {paper:'F4',orientasi:'portrait',mt:2,mb:2,ml:2.5,mr:2})"><i class="bi bi-printer me-1"></i>Cetak Surat</button>
+          <a href="javascript:void(0)" onclick="_skumptkPrintMode=null;navigateTo('surat')" class="text-decoration-none" style="color:var(--primary);font-weight:600;font-size:14px;"><i class="bi bi-arrow-left me-1"></i>Kembali</a>
+          <button id="btnCetakSurat" class="btn btn-accent" onclick="handleCetakSuratBtn()"><i class="bi bi-printer me-1"></i>Cetak Surat</button>
         </div>
-        <div id="cetakSuratContent"></div>
+        <div id="cetakSuratContent" style="overflow-x:auto;"></div>
       </div>
 
       <!-- ======== ARSIP SURAT MASUK ======== -->
@@ -3389,6 +3390,17 @@ var _cetakCallback = null;
 var _cetakDefaultPaper = 'F4';
 var _cetakDefaultOrientasi = 'portrait';
 var _cetakDefaultMargins = { top: 2, bottom: 2, left: 2.5, right: 2 };
+var _skumptkPrintMode = null; // null, 'depan', 'belakang'
+
+function handleCetakSuratBtn() {
+  if (_skumptkPrintMode === 'depan') {
+    showCetakDialog(function(s){window.print()}, {paper:'F4',orientasi:'portrait',mt:0,mb:0,ml:0,mr:0});
+  } else if (_skumptkPrintMode === 'belakang') {
+    showCetakDialog(function(s){window.print()}, {paper:'F4',orientasi:'landscape',mt:0,mb:0,ml:0,mr:0});
+  } else {
+    showCetakDialog(function(s){window.print()}, {paper:'F4',orientasi:'portrait',mt:2,mb:2,ml:2.5,mr:2});
+  }
+}
 
 var PAPER_SIZES = {
   'A4':     { w: 21.0, h: 29.7, label: 'A4' },
@@ -3458,12 +3470,26 @@ function confirmCetak() {
   // Inject @page CSS + body margin CSS for direct page printing (main page)
   var dynStyle = document.getElementById('_cetakDynStyle');
   if (!dynStyle) { dynStyle = document.createElement('style'); dynStyle.id = '_cetakDynStyle'; dynStyle.setAttribute('media', 'print'); document.head.appendChild(dynStyle); }
-  dynStyle.textContent = getCetakPageCSS(settings) +
-    'body { margin: 0 !important; padding: ' + mt + 'cm ' + mr + 'cm ' + mb + 'cm ' + ml + 'cm !important; box-sizing: border-box !important; }' +
-    '.report-container { padding: 0 !important; max-width: 100% !important; box-shadow: none !important; }';
+  // SKUMPTK: use @page margin:0 + body margin:0, document handles its own padding internally
+  var skumptkMode = _skumptkPrintMode;
+  if (skumptkMode === 'depan') {
+    dynStyle.textContent = '@page { size: 21.5cm 33cm portrait; margin: 0; }' +
+      'body { margin: 0 !important; padding: 0 !important; }' +
+      '.report-container { padding: 0 !important; max-width: 100% !important; box-shadow: none !important; }' +
+      '.content-area { padding: 0 !important; }';
+  } else if (skumptkMode === 'belakang') {
+    dynStyle.textContent = '@page { size: 33cm 21.5cm landscape; margin: 0; }' +
+      'body { margin: 0 !important; padding: 0 !important; }' +
+      '.report-container { padding: 0 !important; max-width: 100% !important; box-shadow: none !important; }' +
+      '.content-area { padding: 0 !important; }';
+  } else {
+    dynStyle.textContent = getCetakPageCSS(settings) +
+      'body { margin: 0 !important; padding: ' + mt + 'cm ' + mr + 'cm ' + mb + 'cm ' + ml + 'cm !important; box-sizing: border-box !important; }' +
+      '.report-container { padding: 0 !important; max-width: 100% !important; box-shadow: none !important; }';
+  }
   if (_cetakCallback) { _cetakCallback(settings); _cetakCallback = null; }
   // Remove dynamic style after print dialog closes
-  setTimeout(function() { if (dynStyle) dynStyle.textContent = ''; }, 5000);
+  setTimeout(function() { if (dynStyle) dynStyle.textContent = ''; _skumptkPrintMode = null; }, 5000);
 }
 
 function getCetakPageCSS(s) {
@@ -5817,18 +5843,16 @@ function showFormSKUMPTK() {
   var pegawaiList;
   var sekolahFilterHtml = '';
 
-  if (isAdminKorwil) {
-    // Admin Korwil: tampilkan semua pegawai + filter sekolah
-    pegawaiList = getRecords('pegawai');
-    sekolahFilterHtml = '<div class="col-md-6"><div class="form-floating"><select class="form-select" id="skumptk_filter_sekolah" onchange="skumptkFilterPegawai()">' +
-      '<option value="">-- Semua Sekolah --</option>';
+  if (isAdminKorwil || isAdmin2) {
+    // Admin: filter lembaga (Korwil + Sekolah), pegawai kosong dulu tunggu pilihan
+    pegawaiList = [];
+    sekolahFilterHtml = '<div class="col-md-6"><div class="form-floating"><select class="form-select" id="skumptk_filter_lembaga" onchange="skumptkFilterPegawai()">' +
+      '<option value="">-- Pilih Lembaga --</option>' +
+      '<option value="__korwil__">KORWIL</option>';
     getRecords('sekolah').forEach(function(s) {
       sekolahFilterHtml += '<option value="' + s.id + '">' + escapeHtml(s.nama_sekolah) + '</option>';
     });
-    sekolahFilterHtml += '</select><label>Filter Sekolah</label></div></div>';
-  } else if (isAdmin2) {
-    // Admin Operator: hanya pegawai korwil (tanpa school_id)
-    pegawaiList = getRecords('pegawai').filter(function(p) { return !p.school_id; });
+    sekolahFilterHtml += '</select><label>Pilih Lembaga</label></div></div>';
   } else if (isSekolah) {
     // Admin Sekolah: hanya pegawai dari sekolahnya
     pegawaiList = getRecords('pegawai').filter(function(p) { return p.school_id === currentUser.schoolId; });
@@ -5854,10 +5878,10 @@ function showFormSKUMPTK() {
 
     '<!-- TAB DEPAN -->' +
     '<div id="skumptkTabDepan">' +
-      '<div class="alert alert-info" style="font-size:13px;"><i class="bi bi-info-circle me-1"></i>Pilih pegawai untuk mengisi otomatis data. Lengkapi sisa data sesuai dokumen asli.' + (isAdmin2 ? ' <strong>Hanya pegawai korwil yang ditampilkan.</strong>' : '') + '</div>' +
+      '<div class="alert alert-info" style="font-size:13px;"><i class="bi bi-info-circle me-1"></i>Pilih lembaga terlebih dahulu, kemudian pilih pegawai untuk mengisi otomatis data. Lengkapi sisa data sesuai dokumen asli.</div>' +
       '<div class="row g-3 mb-3">' +
         sekolahFilterHtml +
-        '<div class="' + (isAdminKorwil ? 'col-md-6' : 'col-md-12') + '"><div class="form-floating"><select class="form-select" id="skumptk_pegawai" onchange="skumptkAutoFill()">' + pegawaiOptions + '</select><label>Pilih Pegawai (Auto-fill)</label></div></div>' +
+        '<div class="' + (isAdminKorwil || isAdmin2 ? 'col-md-6' : 'col-md-12') + '"><div class="form-floating"><select class="form-select" id="skumptk_pegawai" onchange="skumptkAutoFill()">' + pegawaiOptions + '</select><label>Pilih Pegawai (Auto-fill)</label></div></div>' +
       '</div>' +
       '<hr style="margin:12px 0;border-color:var(--border-color);">' +
       '<h6 style="font-weight:700;color:var(--primary);margin-bottom:12px;"><i class="bi bi-building me-1"></i>Data Instansi</h6>' +
@@ -5904,7 +5928,10 @@ function showFormSKUMPTK() {
       '<div class="row g-3 mb-3">' +
         '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="skumptk_penghasilan" placeholder="Penghasilan" oninput="this.value=formatRupiahInput(this.value)"><label>13. Besarnya Penghasilan (Rp)</label></div></div>' +
         '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="skumptk_jabatan_struktural" placeholder="Jabatan Struktural/Fungsional"><label>14. Jabatan Struktural / Fungsional</label></div></div>' +
-        '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_jml_keluarga" type="number" value="0" min="0"><label>15. Jumlah Keluarga Tertanggung</label></div></div>' +
+        '<div class="col-md-2"><div class="form-floating"><select class="form-select" id="skumptk_status_kawin_kel" onchange="skumptkHitungKeluarga()"><option value="K">K (Kawin)</option><option value="TK">TK (Tidak Kawin)</option><option value="J">J (Janda)</option><option value="D">D (Duda)</option></select><label>15a. Status</label></div></div>' +
+        '<div class="col-md-3"><div class="form-floating"><input class="form-control" id="skumptk_kel_diri" type="number" value="1" min="0" max="1" onchange="skumptkHitungKeluarga()"><label>15b. Diri Sendiri</label></div></div>' +
+        '<div class="col-md-3"><div class="form-floating"><input class="form-control" id="skumptk_kel_istri" type="number" value="1" min="0" onchange="skumptkHitungKeluarga()"><label>15c. Suami/Istri</label></div></div>' +
+        '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_kel_anak" type="number" value="0" min="0" onchange="skumptkHitungKeluarga()"><label>15d. Anak Tertanggung</label></div></div>' +
         '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_mkg_tahun" type="number" value="0" min="0" placeholder="Tahun"><label>16. Masa Kerja Golongan (Tahun)</label></div></div>' +
         '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_mkg_bulan" type="number" value="0" min="0" max="11" placeholder="Bulan"><label>16. Masa Kerja Golongan (Bulan)</label></div></div>' +
         '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_mkk_tahun" type="number" value="0" min="0" placeholder="Tahun"><label>17. Masa Kerja Keseluruhan (Tahun)</label></div></div>' +
@@ -5960,7 +5987,7 @@ function showFormSKUMPTK() {
             '<div class="col-md-8">' +
               '<div class="row g-3">' +
                 '<div class="col-md-12"><div class="form-floating"><input class="form-control" id="skumptk_tanggal_surat" type="date" value="' + yyyy + '-' + mm + '-' + dd + '"><label>Tanggal Surat</label></div></div>' +
-                '<div class="col-md-12"><div class="form-floating"><input class="form-control" id="skumptk_kepala" placeholder="Kepala ..."><label>Mengetahui / Mengesahkan - Kepala (Unit)</label></div></div>' +
+                '<div class="col-md-12"><div class="form-floating"><input class="form-control" id="skumptk_kepala" placeholder="Kepala ..." readonly style="background:#f0f4f8;"><label>Atasan Langsung (otomatis berdasarkan jabatan)</label></div></div>' +
               '</div>' +
             '</div>' +
           '</div>' +
@@ -5970,7 +5997,8 @@ function showFormSKUMPTK() {
 
     '<!-- BUTTONS -->' +
     '<div class="d-flex gap-2 flex-wrap mt-3">' +
-      '<button class="btn btn-accent" onclick="cetakSKUMPTK()"><i class="bi bi-printer me-1"></i>Cetak SKUMPTK</button>' +
+      '<button class="btn btn-accent" onclick="cetakSKUMPTKDepan()"><i class="bi bi-printer me-1"></i>Cetak Depan</button>' +
+      '<button class="btn btn-accent" onclick="cetakSKUMPTKBelakang()" style="background:var(--success);"><i class="bi bi-printer me-1"></i>Cetak Belakang</button>' +
       '<button class="btn btn-outline-success" onclick="unduhDocsSKUMPTK()"><i class="bi bi-file-earmark-word me-1"></i>Unduh Docs</button>' +
     '</div>';
 
@@ -5986,6 +6014,19 @@ function skumptkSwitchTab(tab) {
   tabs.forEach(function(t) { t.classList.remove('active'); });
   if (tab === 'depan') tabs[0].classList.add('active');
   else tabs[1].classList.add('active');
+}
+
+function skumptkHitungKeluarga() {
+  var status = document.getElementById('skumptk_status_kawin_kel');
+  var kelIstri = document.getElementById('skumptk_kel_istri');
+  if (!status || !kelIstri) return;
+  if (status.value === 'TK') {
+    kelIstri.value = 0;
+    kelIstri.disabled = true;
+  } else {
+    kelIstri.disabled = false;
+    if (parseInt(kelIstri.value) === 0 || kelIstri.value === '') kelIstri.value = 1;
+  }
 }
 
 function skumptkSyncKepegawaian() {
@@ -6047,8 +6088,10 @@ function skumptkBuildAnakRow(no) {
     '<div class="row g-2">' +
       '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_anak_nama_' + no + '" placeholder="Nama"><label>Nama Anak</label></div></div>' +
       '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_anak_ttl_' + no + '" placeholder="Tempat/Tgl Lahir"><label>Tempat / Tanggal Lahir</label></div></div>' +
-      '<div class="col-md-2"><div class="form-floating"><select class="form-select" id="skumptk_anak_status_' + no + '"><option value="">-- Pilih --</option><option value="ak">Anak Kandung (ak)</option><option value="at">Anak Tiri (at)</option><option value="aa">Anak Angkat (aa)</option></select><label>Status Anak</label></div></div>' +
+      '<div class="col-md-2"><div class="form-floating"><select class="form-select" id="skumptk_anak_status_' + no + '"><option value="">-- Pilih --</option><option value="AK">Anak Kandung (AK)</option><option value="AT">Anak Tiri (AT)</option><option value="AA">Anak Asuhan (AA)</option></select><label>Status Anak</label></div></div>' +
       '<div class="col-md-2"><div class="form-floating"><input class="form-control" id="skumptk_anak_jk_' + no + '" placeholder="L/P"><label>Jenis Kelamin</label></div></div>' +
+      '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_anak_ayah_' + no + '" placeholder="Nama Ayah"><label>Nama Ayah</label></div></div>' +
+      '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_anak_ibu_' + no + '" placeholder="Nama Ibu"><label>Nama Ibu</label></div></div>' +
       '<div class="col-md-4"><div class="form-floating"><select class="form-select" id="skumptk_anak_tunjangan_' + no + '"><option value="">-- Pilih --</option><option value="Dapat Tunjangan">Dapat Tunjangan</option><option value="Tidak Dapat Tunjangan">Tidak Dapat Tunjangan</option></select><label>Tunjangan</label></div></div>' +
       '<div class="col-md-4"><div class="form-floating"><select class="form-select" id="skumptk_anak_sekolah_' + no + '"><option value="">-- Pilih --</option><option value="Masih Sekolah">Masih Sekolah</option><option value="Masih Kuliah">Masih Kuliah</option><option value="Tidak Sekolah">Tidak Sekolah</option></select><label>Status Sekolah</label></div></div>' +
       '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="skumptk_anak_putusan_' + no + '" placeholder="Putusan Pengadilan"><label>Putusan Pengadilan</label></div></div>' +
@@ -6102,7 +6145,8 @@ function formatRupiahInput(val) {
 function skumptkAutoFill() {
   var pegId = document.getElementById('skumptk_pegawai').value;
   if (!pegId) return;
-  var p = getRecord('pegawai', pegId);
+  // Cari di pegawai dulu, jika tidak ada cari di pegawai_korwil
+  var p = getRecord('pegawai', pegId) || getRecord('pegawai_korwil', pegId);
   if (!p) return;
 
   document.getElementById('skumptk_nama').value = p.nama || '';
@@ -6114,19 +6158,54 @@ function skumptkAutoFill() {
   document.getElementById('skumptk_jk').value = p.jenis_kelamin || '';
   document.getElementById('skumptk_agama').value = p.agama || '';
   document.getElementById('skumptk_alamat').value = p.alamat || '';
+
+  // Update atasan langsung otomatis
+  skumptkUpdateAtasan();
+}
+
+function skumptkUpdateAtasan() {
+  var jabatanVal = (document.getElementById('skumptk_jabatan').value || '').toLowerCase();
+  var lembagaEl = document.getElementById('skumptk_filter_lembaga');
+  var lembagaId = lembagaEl ? lembagaEl.value : '';
+  var kepalaEl = document.getElementById('skumptk_kepala');
+  if (!kepalaEl) return;
+
+  if (jabatanVal.indexOf('kepala sekolah') >= 0) {
+    kepalaEl.value = 'Kepala Dinas Pendidikan Kab. Cirebon - H. RONIANTO, S.Pd., M.M.';
+  } else if (jabatanVal.indexOf('penata layanan') >= 0) {
+    kepalaEl.value = 'Sekretaris Dinas Pendidikan Kab. Cirebon - ANDRI HERMANSYAH, S.H.';
+  } else if (lembagaId === '__korwil__' && (jabatanVal.indexOf('koordinator') >= 0 || jabatanVal.indexOf('pengawas') >= 0 || jabatanVal.indexOf('penilik') >= 0)) {
+    kepalaEl.value = 'Kepala Dinas Pendidikan Kab. Cirebon - H. RONIANTO, S.Pd., M.M.';
+  } else if (lembagaId && lembagaId !== '__korwil__') {
+    var pegawaiSekolah = getRecords('pegawai').filter(function(pp) { return pp.school_id === lembagaId; });
+    var kepSekolah = pegawaiSekolah.find(function(pp) { return pp.jabatan && pp.jabatan.toLowerCase().indexOf('kepala sekolah') >= 0; });
+    if (kepSekolah) {
+      var sekolahData = getRecord('sekolah', lembagaId);
+      kepalaEl.value = 'Kepala ' + (sekolahData ? sekolahData.nama : 'Sekolah') + ' - ' + kepSekolah.nama;
+    } else {
+      kepalaEl.value = '';
+    }
+  } else {
+    kepalaEl.value = '';
+  }
 }
 
 function skumptkFilterPegawai() {
-  var schoolId = document.getElementById('skumptk_filter_sekolah').value;
-  var pegawaiList = getRecords('pegawai');
-  if (schoolId) pegawaiList = pegawaiList.filter(function(p) { return p.school_id === schoolId; });
+  var lembagaId = document.getElementById('skumptk_filter_lembaga').value;
+  var pegawaiList;
+  if (lembagaId === '__korwil__') {
+    // Pegawai korwil dari tabel pegawai_korwil
+    pegawaiList = getRecords('pegawai_korwil');
+  } else if (lembagaId) {
+    pegawaiList = getRecords('pegawai').filter(function(p) { return p.school_id === lembagaId; });
+  } else {
+    pegawaiList = [];
+  }
   var sel = document.getElementById('skumptk_pegawai');
-  var currentVal = sel.value;
   sel.innerHTML = '<option value="">-- Pilih Pegawai --</option>';
   pegawaiList.forEach(function(p) {
     sel.innerHTML += '<option value="' + p.id + '">' + escapeHtml(p.nama || '') + ' - ' + escapeHtml(p.nip || '') + '</option>';
   });
-  sel.value = currentVal;
 }
 
 function skumptkGetField(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
@@ -6139,9 +6218,9 @@ function skumptkFormatDate(dateStr) {
   return d.getDate() + ' ' + bulan[d.getMonth()] + ' ' + d.getFullYear();
 }
 
-function cetakSKUMPTK() {
+function skumptkBuildHtml(part) {
   var nama = skumptkGetField('skumptk_nama');
-  if (!nama) { alert('Nama Pegawai harus diisi!'); return; }
+  if (!nama) { alert('Nama Pegawai harus diisi!'); return null; }
 
   var nip = skumptkGetField('skumptk_nip');
   var tempatLahir = skumptkGetField('skumptk_tempat_lahir');
@@ -6169,7 +6248,11 @@ function cetakSKUMPTK() {
   var gajiTmt = skumptkGetField('skumptk_gaji_tmt');
   var penghasilan = skumptkParseRupiah(skumptkGetField('skumptk_penghasilan'));
   var jabatanStruktural = skumptkGetField('skumptk_jabatan_struktural');
-  var jmlKeluarga = skumptkGetField('skumptk_jml_keluarga') || '0';
+  var statusKawinKel = skumptkGetField('skumptk_status_kawin_kel') || 'K';
+  var kelDiri = skumptkGetField('skumptk_kel_diri') || '1';
+  var kelIstri = skumptkGetField('skumptk_kel_istri') || '0';
+  var kelAnak = skumptkGetField('skumptk_kel_anak') || '0';
+  var jmlKeluarga = statusKawinKel + ' ' + kelDiri + '/' + kelIstri + '/' + kelAnak;
   var mkgTahun = skumptkGetField('skumptk_mkg_tahun') || '0';
   var mkgBulan = skumptkGetField('skumptk_mkg_bulan') || '0';
   var mkkTahun = skumptkGetField('skumptk_mkk_tahun') || '0';
@@ -6183,7 +6266,51 @@ function cetakSKUMPTK() {
   var istriKe = skumptkGetField('skumptk_istri_ke') || '1';
   var istriPenghasilan = skumptkParseRupiah(skumptkGetField('skumptk_istri_penghasilan'));
   var tanggalSurat = skumptkGetField('skumptk_tanggal_surat');
-  var kepala = skumptkGetField('skumptk_kepala');
+
+  // ===== LOGIKA ATASAN OTOMATIS =====
+  var jabatanLower = (jabatan || '').toLowerCase();
+  var lembagaId = document.getElementById('skumptk_filter_lembaga');
+  lembagaId = lembagaId ? lembagaId.value : '';
+  var kepala = '';
+  var kepalaNama = '';
+  var kepalaNip = '';
+
+  if (jabatanLower.indexOf('kepala sekolah') >= 0) {
+    // Kepala Sekolah → Kepala Dinas Pendidikan
+    kepala = 'Dinas Pendidikan Kabupaten Cirebon';
+    kepalaNama = 'H. RONIANTO, S.Pd., M.M.';
+    kepalaNip = '197011211999031006';
+  } else if (jabatanLower.indexOf('penata layanan') >= 0) {
+    // Penata Layanan Operasional → Sekretaris Dinas Pendidikan
+    kepala = 'Sekretaris Dinas Pendidikan Kabupaten Cirebon';
+    kepalaNama = 'ANDRI HERMANSYAH, S.H.';
+    kepalaNip = '198212032010011001';
+  } else if (lembagaId === '__korwil__' && (jabatanLower.indexOf('koordinator') >= 0 || jabatanLower.indexOf('pengawas') >= 0 || jabatanLower.indexOf('penilik') >= 0)) {
+    // Pegawai Korwil: Koordinator, Pengawas, Penilik → Kepala Dinas
+    kepala = 'Dinas Pendidikan Kabupaten Cirebon';
+    kepalaNama = 'H. RONIANTO, S.Pd., M.M.';
+    kepalaNip = '197011211999031006';
+  } else {
+    // Guru / Pegawai Sekolah lainnya → Kepala Sekolahnya
+    if (lembagaId && lembagaId !== '__korwil__') {
+      var sekolahData = getRecord('sekolah', lembagaId);
+      var pegawaiSekolah = getRecords('pegawai').filter(function(p) { return p.school_id === lembagaId; });
+      var kepSekolah = pegawaiSekolah.find(function(p) { return p.jabatan && p.jabatan.toLowerCase().indexOf('kepala sekolah') >= 0; });
+      if (kepSekolah) {
+        kepala = sekolahData ? sekolahData.nama || 'Sekolah' : 'Sekolah';
+        kepalaNama = kepSekolah.nama || '';
+        kepalaNip = kepSekolah.nip || '';
+      } else if (sekolahData && sekolahData.kepala_sekolah) {
+        kepala = sekolahData.nama || 'Sekolah';
+        kepalaNama = sekolahData.kepala_sekolah;
+        kepalaNip = '';
+      } else {
+        kepala = skumptkGetField('skumptk_kepala') || '';
+      }
+    } else {
+      kepala = skumptkGetField('skumptk_kepala') || '';
+    }
+  }
 
   var ttlText = (tempatLahir || '………') + ', ' + (tglLahir ? skumptkFormatDate(tglLahir) : '………');
   var skText = (skDari || '………') + ' / ' + (skTgl ? skumptkFormatDate(skTgl) : '………') + ' / ' + (skNomor || '………');
@@ -6199,29 +6326,31 @@ function cetakSKUMPTK() {
   for (var i = 1; i <= skumptkAnakCount; i++) {
     var aNama = skumptkGetField('skumptk_anak_nama_' + i);
     if (!aNama && i > 1) continue;
+    var aAyah = skumptkGetField('skumptk_anak_ayah_' + i) || '';
+    var aIbu = skumptkGetField('skumptk_anak_ibu_' + i) || '';
+    var ayahIbuText = (aAyah && aIbu) ? aAyah + ' / ' + aIbu : (aAyah || aIbu || '');
     anakRows += '<tr>' +
-      '<td>' + i + '</td>' +
-      '<td style="text-align:left;">' + (aNama || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
-      '<td>' + (skumptkGetField('skumptk_anak_ttl_' + i) || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
-      '<td>' + (skumptkGetField('skumptk_anak_status_' + i) || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
-      '<td>' + (nama || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
-      '<td>' + (skumptkGetField('skumptk_anak_jk_' + i) || '&hellip;&hellip;&hellip;&hellip;') + '</td>' +
-      '<td>' + (skumptkGetField('skumptk_anak_tunjangan_' + i) || '&hellip;&hellip;&hellip;&hellip;') + '</td>' +
-      '<td>' + (skumptkGetField('skumptk_anak_sekolah_' + i) || '&hellip;&hellip;&hellip;&hellip;') + '</td>' +
-      '<td>' + (skumptkGetField('skumptk_anak_putusan_' + i) || '-') + '</td>' +
+      '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + i + '</td>' +
+      '<td style="border:1px solid #000;padding:3px 5px;text-align:left;font-size:9pt;">' + (aNama || '') + '</td>' +
+      '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (skumptkGetField('skumptk_anak_ttl_' + i) || '') + '</td>' +
+      '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (skumptkGetField('skumptk_anak_status_' + i) || '') + '</td>' +
+      '<td style="border:1px solid #000;padding:3px 5px;text-align:left;font-size:9pt;">' + ayahIbuText + '</td>' +
+      '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (skumptkGetField('skumptk_anak_jk_' + i) || '') + '</td>' +
+      '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (skumptkGetField('skumptk_anak_tunjangan_' + i) || '') + '</td>' +
+      '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (skumptkGetField('skumptk_anak_sekolah_' + i) || '') + '</td>' +
+      '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (skumptkGetField('skumptk_anak_putusan_' + i) || '-') + '</td>' +
     '</tr>';
   }
   while (anakRows.split('</tr>').length - 1 < 3) {
     var nextNo = anakRows.split('</tr>').length;
-    anakRows += '<tr><td>' + nextNo + '</td><td style="text-align:left;">&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;</td><td>&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;</td><td>&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;</td><td>&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;</td><td>&hellip;&hellip;&hellip;&hellip;</td><td>&hellip;&hellip;&hellip;&hellip;</td><td>&hellip;&hellip;&hellip;&hellip;</td><td>-</td></tr>';
+    anakRows += '<tr><td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + nextNo + '</td><td style="border:1px solid #000;padding:3px 5px;text-align:left;font-size:9pt;"></td><td style="border:1px solid #000;padding:3px 5px;font-size:9pt;"></td><td style="border:1px solid #000;padding:3px 5px;font-size:9pt;"></td><td style="border:1px solid #000;padding:3px 5px;text-align:left;font-size:9pt;"></td><td style="border:1px solid #000;padding:3px 5px;font-size:9pt;"></td><td style="border:1px solid #000;padding:3px 5px;font-size:9pt;"></td><td style="border:1px solid #000;padding:3px 5px;font-size:9pt;"></td><td style="border:1px solid #000;padding:3px 5px;font-size:9pt;">-</td></tr>';
   }
 
   var tanggalFormatted = tanggalSurat ? skumptkFormatDate(tanggalSurat) : '………';
 
-  var html = '<div class="report-container" style="padding:0;">' +
-
-    // ===== PAGE DEPAN =====
-    '<div style="width:215mm;min-height:330mm;padding:24mm 23mm 18mm 24mm;background:#fff;margin:0 auto;font-family:Times New Roman,Times,serif;font-size:12pt;color:#000;line-height:1.15;">' +
+  // ===== HTML DEPAN =====
+  var depanHtml =
+    '<div style="width:215mm;min-height:330mm;padding:12mm 18mm 12mm 18mm;background:#fff;margin:0 auto;font-family:Times New Roman,Times,serif;font-size:12pt;color:#000;line-height:1.15;">' +
       '<!-- KOP -->' +
       '<div style="border-bottom:3px double #000;padding-bottom:10px;margin-bottom:16px;display:flex;align-items:center;gap:16px;">' +
         '<img src="https://i.pinimg.com/736x/56/aa/a0/56aaa0081307f40c09204c5edd934253.jpg" style="max-width:85px;max-height:85px;object-fit:contain;">' +
@@ -6248,19 +6377,19 @@ function cetakSKUMPTK() {
       '<!-- SECTION I -->' +
       '<div style="font-weight:bold;padding-left:0;">I.&nbsp;&nbsp;&nbsp;&nbsp;DATA PEGAWAI</div>' +
       '<table style="width:100%;border-collapse:collapse;font-size:12pt;line-height:1.45;">' +
-        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">1. Nama Lengkap</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (nama || '') + '&nbsp;</span></td></tr>' +
-        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">2. NIP <sup>*) 2</sup></td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (nip || '') + '&nbsp;</span></td></tr>' +
-        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">3. Tempat / Tanggal Lahir</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + ttlText + '&nbsp;</span></td></tr>' +
-        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">4. Pangkat / Golongan / Ruang</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (pangkat || '') + '&nbsp;</span></td></tr>' +
-        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">5. Jabatan</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (jabatan || '') + '&nbsp;</span></td></tr>' +
-        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">6. SK. Dari / Tanggal / Nomor</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + skText + '&nbsp;</span></td></tr>' +
-        '<tr><td style="padding-left:3.2em;white-space:nowrap;padding-right:4px;">Terhitung Mulai <sup>*) 3</sup></td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + tmtText + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">1. Nama Lengkap</td><td style="padding-right:6px;">:</td><td><span style="display:inline-block;width:100%;">&nbsp;' + (nama || '') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">2. NIP <sup>*) 2</sup></td><td style="padding-right:6px;">:</td><td><span style="display:inline-block;width:100%;">&nbsp;' + (nip || '') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">3. Tempat / Tanggal Lahir</td><td style="padding-right:6px;">:</td><td><span style="display:inline-block;width:100%;">&nbsp;' + ttlText + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">4. Pangkat / Golongan / Ruang</td><td style="padding-right:6px;">:</td><td><span style="display:inline-block;width:100%;">&nbsp;' + (pangkat || '') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">5. Jabatan</td><td style="padding-right:6px;">:</td><td><span style="display:inline-block;width:100%;">&nbsp;' + (jabatan || '') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">6. SK. Dari / Tanggal / Nomor</td><td style="padding-right:6px;">:</td><td><span style="display:inline-block;width:100%;">&nbsp;' + skText + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:3.2em;white-space:nowrap;padding-right:4px;">Terhitung Mulai <sup>*) 3</sup></td><td style="padding-right:6px;">:</td><td><span style="display:inline-block;width:100%;">&nbsp;' + tmtText + '&nbsp;</span></td></tr>' +
         '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">7. Jenis Kelamin</td><td style="padding-right:6px;">:</td><td>' + (jk || 'Laki-laki / Wanita') + '</td></tr>' +
         '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">8. Agama / Kebangsaan</td><td style="padding-right:6px;">:</td><td>' + (agama || '………') + ' / Indonesia</td></tr>' +
-        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">9. Alamat Lengkap</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (alamat || '') + '&nbsp;</span></td></tr>' +
-        '<tr><td style="padding-left:5.8em;white-space:nowrap;padding-right:4px;">RT / RW</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (rt || '') + ' / ' + (rw || '') + '&nbsp;</span></td></tr>' +
-        '<tr><td style="padding-left:5.8em;white-space:nowrap;padding-right:4px;">Desa / <strike>Kelurahan</strike></td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (desa || '') + '&nbsp;</span></td></tr>' +
-        '<tr><td style="padding-left:5.8em;white-space:nowrap;padding-right:4px;">Kecamatan</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (kecamatan || '') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">9. Alamat Lengkap</td><td style="padding-right:6px;">:</td><td><span style="display:inline-block;width:100%;">&nbsp;' + (alamat || '') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:5.8em;white-space:nowrap;padding-right:4px;">RT / RW</td><td style="padding-right:6px;">:</td><td><span style="display:inline-block;width:100%;">&nbsp;' + (rt || '') + ' / ' + (rw || '') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:5.8em;white-space:nowrap;padding-right:4px;">Desa / <strike>Kelurahan</strike></td><td style="padding-right:6px;">:</td><td><span style="display:inline-block;width:100%;">&nbsp;' + (desa || '') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:5.8em;white-space:nowrap;padding-right:4px;">Kecamatan</td><td style="padding-right:6px;">:</td><td><span style="display:inline-block;width:100%;">&nbsp;' + (kecamatan || '') + '&nbsp;</span></td></tr>' +
         '<tr><td style="padding-left:5.8em;white-space:nowrap;padding-right:4px;">Kabupaten / Kodya</td><td style="padding-right:6px;">:</td><td>' + kabupaten + '</td></tr>' +
         '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">10. Jenis Kepegawaian</td><td style="padding-right:6px;">:</td><td style="text-align:justify;"><b>' + (jenisKepeg || 'PPPK') + '</b> / Pejabat Negara / PNSP / PNSP dpb.I. / PNSP dpb.II. / PNSP dpk I / PNSP dpk.II / PNSD.I / PNSD.I dpb.II / PNSD.I dpk.II / PNSD.II / PNSD. dpb. Inst. Lain (swasta) / PNS. dpk. Pusat **)</td></tr>' +
         '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">11. Status Kepegawaian</td><td style="padding-right:6px;">:</td><td style="text-align:justify;"><b>' + (statusKepeg || 'PPPK') + '</b> / Capeg / Peg. Tetap / MPP / Pen.Uang Tunggu / Peg. Scorsing Cuti luar tanggungan negara (Perusahaan Daerah) Peg. Sementara (Perusahaan Daerah) / Peg.Bulanan (Pens.Peg. Negeri dpk. Jabatan semula) *** )</td></tr>' +
@@ -6268,12 +6397,12 @@ function cetakSKUMPTK() {
       '<div style="height:8px;"></div>' +
       '<table style="width:100%;border-collapse:collapse;font-size:12pt;line-height:1.45;">' +
         '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">12. Digaji menurut PP 11/2024 dengan :</td><td></td><td></td></tr>' +
-        '<tr><td style="padding-left:2.8em;white-space:nowrap;padding-right:4px;">- SK dari / Tgl Nomor <sup>*) 4</sup></td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + gajiSkText + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:2.8em;white-space:nowrap;padding-right:4px;">- SK dari / Tgl Nomor <sup>*) 4</sup></td><td style="padding-right:6px;">:</td><td><span style="display:inline-block;width:100%;">&nbsp;' + gajiSkText + '&nbsp;</span></td></tr>' +
         '<tr><td style="padding-left:2.8em;white-space:nowrap;padding-right:4px;">- Gaji Pokok</td><td style="padding-right:6px;">:</td><td>' + gajiPokokText + '</td></tr>' +
-        '<tr><td style="padding-left:2.8em;white-space:nowrap;padding-right:4px;">- Terhitung Mulai Berlaku</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (gajiTmt ? skumptkFormatDate(gajiTmt) : '………') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:2.8em;white-space:nowrap;padding-right:4px;">- Terhitung Mulai Berlaku</td><td style="padding-right:6px;">:</td><td><span style="display:inline-block;width:100%;">&nbsp;' + (gajiTmt ? skumptkFormatDate(gajiTmt) : '………') + '&nbsp;</span></td></tr>' +
         '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">13. Besarnya Penghasilan</td><td style="padding-right:6px;">:</td><td>' + penghasilanText + '</td></tr>' +
-        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">14. Jabatan Struktural / Fungsional</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (jabatanStruktural || '') + '&nbsp;</span></td></tr>' +
-        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">15. Jumlah Keluarga Tertanggung</td><td style="padding-right:6px;">:</td><td><span style="border-bottom:1px dotted #000;display:inline-block;width:100%;">&nbsp;' + (jmlKeluarga || '') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">14. Jabatan Struktural / Fungsional</td><td style="padding-right:6px;">:</td><td><span style="display:inline-block;width:100%;">&nbsp;' + (jabatanStruktural || '') + '&nbsp;</span></td></tr>' +
+        '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">15. Jumlah Keluarga Tertanggung</td><td style="padding-right:6px;">:</td><td><span style="display:inline-block;width:100%;">&nbsp;' + (jmlKeluarga || '') + '&nbsp;</span></td></tr>' +
         '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">16. Masa Kerja Golongan</td><td style="padding-right:6px;">:</td><td>' + mkgTahun + ' Tahun ' + mkgBulan + ' Bulan</td></tr>' +
         '<tr><td style="padding-left:1.6em;white-space:nowrap;padding-right:4px;">17. Masa Kerja Keseluruhan</td><td style="padding-right:6px;">:</td><td>' + mkkTahun + ' Tahun ' + mkkBulan + ' Bulan</td></tr>' +
       '</table>' +
@@ -6289,12 +6418,10 @@ function cetakSKUMPTK() {
         '<p style="font-size:10pt;line-height:1.4;margin-bottom:1px;margin-left:24px;">- dpb. = diperbantukan ; dpk = dipekerjakan</p>' +
         '<p style="font-size:10pt;line-height:1.4;text-align:justify;margin-bottom:1px;">***) 5 coret yang tidak perlu</p>' +
       '</div>' +
-    '</div>' +
+    '</div>';
 
-    '<!-- PAGE BREAK -->' +
-    '<div style="page-break-after:always;"></div>' +
-
-    // ===== PAGE BELAKANG =====
+  // ===== HTML BELAKANG =====
+  var belakangHtml =
     '<div style="width:330mm;min-height:215mm;padding:12mm 16mm;background:#fff;margin:0 auto;font-family:Times New Roman,Times,serif;font-size:11pt;color:#000;line-height:1.5;">' +
       '<div style="font-size:11pt;font-weight:bold;line-height:1.5;margin-bottom:2px;"><b>II.&nbsp;&nbsp;DATA KELUARGA ( YANG MENJADI TANGGUNGAN PEGAWAI )</b></div>' +
       '<div style="font-size:11pt;font-weight:bold;line-height:1.4;margin-bottom:2px;margin-left:1em;">A. KAWIN SYAH DENGAN ISTERI / SUAMI</div>' +
@@ -6313,21 +6440,21 @@ function cetakSKUMPTK() {
         '</tr></thead>' +
         '<tbody><tr>' +
           '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">1</td>' +
-          '<td style="border:1px solid #000;padding:3px 5px;text-align:left;font-size:9pt;">' + (istriNama || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
-          '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (istriTtl || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
-          '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (istriPekerjaan || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
-          '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (istriNip || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
-          '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (istriTglKawin ? skumptkFormatDate(istriTglKawin) : '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
-          '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (istriKe || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
-          '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (istriPenghasilan ? 'Rp. ' + parseInt(istriPenghasilan).toLocaleString('id-ID') : '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</td>' +
+          '<td style="border:1px solid #000;padding:3px 5px;text-align:left;font-size:9pt;">' + (istriNama || '') + '</td>' +
+          '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (istriTtl || '') + '</td>' +
+          '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (istriPekerjaan || '') + '</td>' +
+          '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (istriNip || '') + '</td>' +
+          '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (istriTglKawin ? skumptkFormatDate(istriTglKawin) : '') + '</td>' +
+          '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (istriKe || '') + '</td>' +
+          '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;">' + (istriPenghasilan ? 'Rp. ' + parseInt(istriPenghasilan).toLocaleString('id-ID') : '') + '</td>' +
           '<td style="border:1px solid #000;padding:3px 5px;text-align:center;font-size:9pt;"><br><br></td>' +
         '</tr></tbody>' +
       '</table>' +
 
       '<div style="font-size:11pt;font-weight:bold;line-height:1.4;margin-bottom:2px;margin-left:1em;">B. ANAK-ANAK YANG MENJADI TANGGUNGAN PEGAWAI (YANG BELUM DEWASA)</div>' +
       '<div style="font-size:11pt;line-height:1.4;margin-bottom:1px;margin-left:1em;text-align:justify;">Mempunyai anak-anak seperti dalam daftar di bawah ini, yaitu :</div>' +
-      '<div style="font-size:11pt;line-height:1.4;margin-bottom:1px;margin-left:1em;text-align:justify;">- Anak Kandung (ak), Anak Tiri (at), Anak Angkat (aa) yang masih menjadi tanggungan, belum mempunyai pekerjaan sendiri dan masuk dalam daftar gaji.</div>' +
-      '<div style="font-size:11pt;line-height:1.4;margin-bottom:1px;margin-left:1em;text-align:justify;">- Anak Kandung (ak), Anak Tiri (at), Anak Angkat (aa) yang masih menjadi tanggungan tetapi tidak masuk dalam daftar gaji</div>' +
+      '<div style="font-size:11pt;line-height:1.4;margin-bottom:1px;margin-left:1em;text-align:justify;">- Anak Kandung (AK), Anak Tiri (AT), Anak Asuhan (AA) yang masih menjadi tanggungan, belum mempunyai pekerjaan sendiri dan masuk dalam daftar gaji.</div>' +
+      '<div style="font-size:11pt;line-height:1.4;margin-bottom:1px;margin-left:1em;text-align:justify;">- Anak Kandung (AK), Anak Tiri (AT), Anak Asuhan (AA) yang masih menjadi tanggungan tetapi tidak masuk dalam daftar gaji</div>' +
 
       '<table style="width:100%;border-collapse:collapse;margin-bottom:4px;">' +
         '<thead><tr>' +
@@ -6335,7 +6462,7 @@ function cetakSKUMPTK() {
           '<th style="width:20%;border:1px solid #000;padding:3px 5px;font-size:9pt;">NAMA ANAK</th>' +
           '<th style="width:10%;border:1px solid #000;padding:3px 5px;font-size:9pt;">TEMPAT/TGL. LAHIR</th>' +
           '<th style="width:5%;border:1px solid #000;padding:3px 5px;font-size:9pt;">STATUS ANAK</th>' +
-          '<th style="width:15%;border:1px solid #000;padding:3px 5px;font-size:9pt;">NAMA AYAH/IBU</th>' +
+          '<th style="width:15%;border:1px solid #000;padding:3px 5px;font-size:9pt;">NAMA AYAH / NAMA IBU</th>' +
           '<th style="width:6%;border:1px solid #000;padding:3px 5px;font-size:9pt;">JENIS KELAMIN</th>' +
           '<th style="width:7%;border:1px solid #000;padding:3px 5px;font-size:9pt;">DAPAT / TIDAK TUNJANGAN</th>' +
           '<th style="width:8%;border:1px solid #000;padding:3px 5px;font-size:9pt;">MASUK / TIDAK SEKOLAH / KULIAH</th>' +
@@ -6357,33 +6484,59 @@ function cetakSKUMPTK() {
       '<div style="font-size:11pt;text-align:justify;line-height:1.35;margin:2px 0;">Keterangan ini saya buat dengan sesungguhnya dan apabila keterangan ini tidak benar (palsu), saya bersedia dituntut di muka pengadilan berdasarkan undang-undang yang berlaku dan bersedia mengembalikan semua uang tunjangan yang telah saya terima yang seharusnya bukan menjadi hak saya.</div>' +
 
       '<!-- TANDA TANGAN -->' +
-      '<div style="display:flex;width:100%;margin-top:2px;">' +
-        '<div style="width:50%;text-align:center;vertical-align:top;padding-top:4px;">' +
-          '<div style="height:30px;"></div>' +
-          '<div>Mengetahui / Mengesahkan</div>' +
-          '<div>Kepala ' + (kepala || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</div>' +
-          '<div style="height:30px;"></div>' +
-          '<div style="height:30px;"></div>' +
-          '<div style="height:30px;"></div>' +
-          '<div style="border-top:1px solid #000;display:inline-block;padding-top:2px;"><u>&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;</u></div>' +
-          '<div style="font-size:10pt;">NIP. &hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;</div>' +
-        '</div>' +
-        '<div style="width:50%;text-align:center;vertical-align:top;padding-top:4px;">' +
-          '<div>Cirebon, ' + tanggalFormatted + '</div>' +
-          '<div style="height:30px;"></div>' +
-          '<div>Pegawai yang bersangkutan,</div>' +
-          '<div style="height:30px;"></div>' +
-          '<div style="height:30px;"></div>' +
-          '<div style="height:30px;"></div>' +
-          '<div style="height:30px;"></div>' +
-          '<div style="border-top:1px solid #000;display:inline-block;padding-top:2px;"><u>' + (nama || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</u></div>' +
-          '<div style="font-size:10pt;">NIP. ' + (nip || '&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;&hellip;') + '</div>' +
-        '</div>' +
-      '</div>' +
-    '</div>' +
-  '</div>';
+      '<table style="width:100%;border-collapse:collapse;margin-top:4px;">' +
+        '<tr>' +
+          '<td style="width:50%;text-align:center;vertical-align:top;padding:4px 8px;font-size:11pt;">' +
+            '<div style="height:60px;"></div>' +
+            '<div>Mengetahui / Mengesahkan</div>' +
+            '<div>' + (kepala || '') + '</div>' +
+            '<div style="height:50px;"></div>' +
+            '<div style="border-top:1px solid #000;display:inline-block;padding-top:2px;min-width:200px;"><u>' + (kepalaNama || '') + '</u></div>' +
+            '<div style="font-size:10pt;">NIP. ' + (kepalaNip || '') + '</div>' +
+          '</td>' +
+          '<td style="width:50%;text-align:center;vertical-align:top;padding:4px 8px;font-size:11pt;">' +
+            '<div>Cirebon, ' + tanggalFormatted + '</div>' +
+            '<div style="height:60px;"></div>' +
+            '<div>Pegawai yang bersangkutan,</div>' +
+            '<div style="height:50px;"></div>' +
+            '<div style="border-top:1px solid #000;display:inline-block;padding-top:2px;min-width:200px;"><u>' + (nama || '') + '</u></div>' +
+            '<div style="font-size:10pt;">NIP. ' + (nip || '') + '</div>' +
+          '</td>' +
+        '</tr>' +
+      '</table>' +
+    '</div>';
 
+  // Wrap sesuai part yang diminta
+  if (part === 'depan') {
+    return '<div class="report-container" style="padding:0;">' + depanHtml + '</div>';
+  } else if (part === 'belakang') {
+    return '<div class="report-container" style="padding:0;">' + belakangHtml + '</div>';
+  } else {
+    return '<div class="report-container" style="padding:0;">' + depanHtml + '<div style="page-break-after:always;"></div>' + belakangHtml + '</div>';
+  }
+}
+
+function cetakSKUMPTKDepan() {
+  var html = skumptkBuildHtml('depan');
+  if (!html) return;
   document.getElementById('cetakSuratContent').innerHTML = html;
+  _skumptkPrintMode = 'depan';
+  navigateTo('cetak-surat');
+}
+
+function cetakSKUMPTKBelakang() {
+  var html = skumptkBuildHtml('belakang');
+  if (!html) return;
+  document.getElementById('cetakSuratContent').innerHTML = html;
+  _skumptkPrintMode = 'belakang';
+  navigateTo('cetak-surat');
+}
+
+function cetakSKUMPTK() {
+  var html = skumptkBuildHtml('lengkap');
+  if (!html) return;
+  document.getElementById('cetakSuratContent').innerHTML = html;
+  _skumptkPrintMode = null; // full version uses normal print settings
   navigateTo('cetak-surat');
 }
 

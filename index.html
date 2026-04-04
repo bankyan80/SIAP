@@ -4797,26 +4797,29 @@ function kopUploadHtml() {
 
 // ============ SURAT KATEGORI (Admin Sekolah) ============
 var suratKategoriList = [
-  { id: 'stnk', icon: 'bi-bicycle', title: 'Surat Pengantar Perpanjang STNK', desc: 'Surat pengantar untuk perpanjangan STNK kendaraan dinas', color: '#1a365d', roles: ['sekolah'] },
-  { id: 'pindah', icon: 'bi-mortarboard', title: 'Surat Permohonan Pindah Sekolah', desc: 'Surat permohonan rekomendasi pindah sekolah siswa', color: '#742a2a', roles: ['sekolah'] },
-  { id: 'gaji', icon: 'bi-cash-stack', title: 'Surat Rincian Gaji Pegawai', desc: 'Surat keterangan perincian pembayaran gaji pegawai', color: '#276749', roles: ['sekolah'] },
-  { id: 'skumptk', icon: 'bi-file-earmark-text', title: 'Pembuatan SKUMPTK', desc: 'Surat Keterangan Untuk Mendapatkan Pembayaran Tunjangan Keluarga Tahun 2026', color: '#44337a', roles: ['admin'] }
+  { id: 'stnk', icon: 'bi-bicycle', title: 'Surat Pengantar Perpanjang STNK', desc: 'Surat pengantar untuk perpanjangan STNK kendaraan dinas', color: '#1a365d', roles: ['sekolah', 'admin'] },
+  { id: 'pindah', icon: 'bi-mortarboard', title: 'Surat Permohonan Pindah Sekolah', desc: 'Surat permohonan rekomendasi pindah sekolah siswa', color: '#742a2a', roles: ['sekolah', 'admin'] },
+  { id: 'gaji', icon: 'bi-cash-stack', title: 'Surat Rincian Gaji Pegawai', desc: 'Surat keterangan perincian pembayaran gaji pegawai', color: '#276749', roles: ['sekolah', 'admin'] },
+  { id: 'skumptk', icon: 'bi-file-earmark-text', title: 'Pembuatan SKUMPTK', desc: 'Surat Keterangan Untuk Mendapatkan Pembayaran Tunjangan Keluarga Tahun 2026', color: '#44337a', roles: ['sekolah', 'admin'] }
 ];
 
+var suratPrevView = null;
+
 function showSuratKategori() {
-  // For admin: hide table, show category grid + back button
+  // Always hide table and form, show category grid
+  document.getElementById('suratTableView').style.display = 'none';
+  document.getElementById('suratKategoriView').style.display = 'block';
+  document.getElementById('suratFormView').style.display = 'none';
+  // For admin: show back-to-table button
   if (currentUser && currentUser.role === 'admin') {
-    document.getElementById('suratTableView').style.display = 'none';
     var backBtn = document.getElementById('suratBackToTable');
     if (backBtn) backBtn.style.display = 'flex';
   } else {
     var backBtn = document.getElementById('suratBackToTable');
     if (backBtn) backBtn.style.display = 'none';
   }
-  document.getElementById('suratKategoriView').style.display = 'block';
-  document.getElementById('suratFormView').style.display = 'none';
   var grid = document.getElementById('suratKategoriGrid');
-  var filtered = suratKategoriList.filter(function(k) { return !k.roles || k.roles.indexOf(currentUser.role) !== -1; });
+  var filtered = suratKategoriList.filter(function(k) { return !k.roles || !currentUser || k.roles.indexOf(currentUser.role) !== -1; });
   grid.innerHTML = filtered.map(function(k) {
     return '<div class="col-md-6 col-lg-4">' +
       '<div class="card h-100" style="cursor:pointer;border:2px solid transparent;transition:all 0.2s;" ' +
@@ -4835,6 +4838,7 @@ function suratShowTable() {
   document.getElementById('suratTableView').style.display = 'block';
   document.getElementById('suratKategoriView').style.display = 'none';
   document.getElementById('suratFormView').style.display = 'none';
+  suratPrevView = null;
   var backBtn = document.getElementById('suratBackToTable');
   if (backBtn) backBtn.style.display = 'none';
   renderTable('surat');
@@ -4848,13 +4852,18 @@ function suratShowKategori() {
 function suratFormBack() {
   document.getElementById('suratFormView').style.display = 'none';
   if (currentUser && currentUser.role === 'admin') {
-    suratShowTable();
+    if (suratPrevView === 'kategori') {
+      showSuratKategori();
+    } else {
+      suratShowTable();
+    }
   } else {
     showSuratKategori();
   }
 }
 
 function pilihKategoriSurat(kategoriId) {
+  suratPrevView = 'kategori';
   document.getElementById('suratKategoriView').style.display = 'none';
   document.getElementById('suratFormView').style.display = 'block';
   if (kategoriId === 'stnk') showFormSTNK();
@@ -4870,10 +4879,29 @@ function showFormPindahSekolah() {
   var mm = String(today.getMonth() + 1).padStart(2, '0');
   var yyyy = today.getFullYear();
 
-  // Ambil data siswa dari menu Data Siswa
-  var daftarSiswa = getRecords('siswa').filter(function(s) { return s.school_id === currentUser.schoolId; });
-  var school = getRecord('sekolah', currentUser.schoolId);
-  var namaSekolah = school ? school.nama_sekolah : '';
+  var isAdmin = currentUser && currentUser.role === 'admin';
+  var targetSchoolId = isAdmin ? '' : currentUser.schoolId;
+  var targetSchool = isAdmin ? null : getRecord('sekolah', currentUser.schoolId);
+  var namaSekolah = targetSchool ? targetSchool.nama_sekolah : '';
+
+  // Build sekolah filter for admin
+  var sekolahFilterHtml = '';
+  if (isAdmin) {
+    sekolahFilterHtml = '<div class="row g-3 mb-3"><div class="col-md-6"><div class="form-floating"><select class="form-select" id="pindah_filter_sekolah" onchange="pindahFilterSiswa()">' +
+      '<option value="">-- Pilih Sekolah --</option>';
+    getRecords('sekolah').forEach(function(s) {
+      sekolahFilterHtml += '<option value="' + s.id + '">' + escapeHtml(s.nama_sekolah) + '</option>';
+    });
+    sekolahFilterHtml += '</select><label>Pilih Sekolah</label></div></div></div>';
+  }
+
+  // Ambil data siswa
+  var daftarSiswa;
+  if (isAdmin) {
+    daftarSiswa = [];
+  } else {
+    daftarSiswa = getRecords('siswa').filter(function(s) { return s.school_id === currentUser.schoolId; });
+  }
 
   var siswaOptions = '<option value="">-- Pilih Siswa --</option>';
   daftarSiswa.forEach(function(s) {
@@ -4882,7 +4910,8 @@ function showFormPindahSekolah() {
 
   document.getElementById('suratFormBody').innerHTML =
     kopUploadHtml() +
-    '<div class="alert alert-info" style="font-size:13px;"><i class="bi bi-info-circle me-1"></i>Pilih siswa dari Data Siswa, lalu lengkapi informasi tujuan pindah. Data siswa akan otomatis terisi dari menu Data Siswa.</div>' +
+    (isAdmin ? '<div class="alert alert-warning" style="font-size:13px;"><i class="bi bi-exclamation-triangle me-1"></i>Pilih sekolah terlebih dahulu untuk menampilkan data siswa.</div>' : '<div class="alert alert-info" style="font-size:13px;"><i class="bi bi-info-circle me-1"></i>Pilih siswa dari Data Siswa, lalu lengkapi informasi tujuan pindah. Data siswa akan otomatis terisi dari menu Data Siswa.</div>') +
+    sekolahFilterHtml +
     '<hr style="margin:16px 0;border-color:var(--border-color);">' +
     '<h6 style="font-weight:700;color:var(--primary);margin-bottom:12px;"><i class="bi bi-person-check me-1"></i>Pilih Siswa</h6>' +
     '<div class="row g-3">' +
@@ -4943,6 +4972,24 @@ function pilihSiswaPindah() {
   }
   document.getElementById('pindah_ttl').value = ttl;
   document.getElementById('pindah_jk').value = siswa.jenis_kelamin || '';
+}
+
+function pindahFilterSiswa() {
+  var schoolId = document.getElementById('pindah_filter_sekolah').value;
+  var sel = document.getElementById('pindah_pilih_siswa');
+  var currentVal = sel.value;
+  sel.innerHTML = '<option value="">-- Pilih Siswa --</option>';
+  if (!schoolId) {
+    document.getElementById('pindah_asal_sekolah').value = '';
+    return;
+  }
+  var school = getRecord('sekolah', schoolId);
+  document.getElementById('pindah_asal_sekolah').value = school ? school.nama_sekolah : '';
+  var daftarSiswa = getRecords('siswa').filter(function(s) { return s.school_id === schoolId; });
+  daftarSiswa.forEach(function(s) {
+    sel.innerHTML += '<option value="' + s.id + '">' + escapeHtml(s.nama) + ' (' + escapeHtml(s.nis_nisn) + ')</option>';
+  });
+  sel.value = currentVal;
 }
 
 function cetakSuratPindahSekolah() {
@@ -5147,8 +5194,28 @@ function unduhDocsPindahSekolah() {
 // ============ RINCIAN GAJI PEGAWAI ============
 function showFormRincianGaji() {
   document.getElementById('suratFormTitle').innerHTML = '<i class="bi bi-cash-stack me-2"></i>Surat Rincian Gaji Pegawai';
-  var school = getRecord('sekolah', currentUser.schoolId) || {};
-  var daftarPegawai = getRecords('pegawai').filter(function(p) { return p.school_id === currentUser.schoolId; });
+  var isAdmin = currentUser && currentUser.role === 'admin';
+  var targetSchoolId = isAdmin ? '' : currentUser.schoolId;
+  var school = isAdmin ? null : (getRecord('sekolah', currentUser.schoolId) || {});
+
+  // Build sekolah filter for admin
+  var sekolahFilterHtml = '';
+  if (isAdmin) {
+    sekolahFilterHtml = '<div class="row g-3 mb-3"><div class="col-md-6"><div class="form-floating"><select class="form-select" id="gaji_filter_sekolah" onchange="gajiFilterPegawai()">' +
+      '<option value="">-- Pilih Sekolah --</option>';
+    getRecords('sekolah').forEach(function(s) {
+      sekolahFilterHtml += '<option value="' + s.id + '">' + escapeHtml(s.nama_sekolah) + '</option>';
+    });
+    sekolahFilterHtml += '</select><label>Pilih Sekolah</label></div></div></div>';
+  }
+
+  // Ambil data pegawai
+  var daftarPegawai;
+  if (isAdmin) {
+    daftarPegawai = [];
+  } else {
+    daftarPegawai = getRecords('pegawai').filter(function(p) { return p.school_id === currentUser.schoolId; });
+  }
 
   var pegawaiOptions = '<option value="">-- Pilih Pegawai --</option>' + daftarPegawai.map(function(p) {
     return '<option value="' + p.id + '">' + escapeHtml(p.nama) + ' - ' + escapeHtml(p.nip || '-') + '</option>';
@@ -5161,6 +5228,8 @@ function showFormRincianGaji() {
 
   document.getElementById('suratFormBody').innerHTML =
     kopUploadHtml() +
+    (isAdmin ? '<div class="alert alert-warning" style="font-size:13px;"><i class="bi bi-exclamation-triangle me-1"></i>Pilih sekolah terlebih dahulu untuk menampilkan daftar pegawai.</div>' : '') +
+    sekolahFilterHtml +
     '<div class="row g-3">' +
     '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="gaji_nomor" placeholder="Nomor Surat"></div><label>Nomor Surat</label></div>' +
     '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="gaji_tanggal" type="date" value="' + yyyy + '-' + mm + '-' + dd + '"></div><label>Tanggal</label></div>' +
@@ -5217,6 +5286,19 @@ function autoFillGaji() {
   document.getElementById('gaji_nip').value = pegawai.nip || '';
   document.getElementById('gaji_pangkat').value = (pegawai.pangkat_golongan || '') + (pegawai.golongan_ruang ? ', ' + pegawai.golongan_ruang : '');
   document.getElementById('gaji_jabatan').value = pegawai.jabatan || '';
+}
+
+function gajiFilterPegawai() {
+  var schoolId = document.getElementById('gaji_filter_sekolah').value;
+  var sel = document.getElementById('gaji_pegawai');
+  var currentVal = sel.value;
+  sel.innerHTML = '<option value="">-- Pilih Pegawai --</option>';
+  if (!schoolId) return;
+  var daftarPegawai = getRecords('pegawai').filter(function(p) { return p.school_id === schoolId; });
+  daftarPegawai.forEach(function(p) {
+    sel.innerHTML += '<option value="' + p.id + '">' + escapeHtml(p.nama) + ' - ' + escapeHtml(p.nip || '-') + '</option>';
+  });
+  sel.value = currentVal;
 }
 
 function parseRupiahInput(id) {
@@ -5729,7 +5811,31 @@ function showFormSKUMPTK() {
   skumptkAnakCount = 1;
   skumptkFotoBase64 = '';
 
-  var pegawaiList = getRecords('pegawai');
+  var isAdminKorwil = currentUser && currentUser.role === 'admin' && currentUser.adminLevel === 'full';
+  var isAdmin2 = currentUser && currentUser.role === 'admin' && currentUser.adminLevel === 'limited';
+  var isSekolah = currentUser && currentUser.role === 'sekolah';
+  var pegawaiList;
+  var sekolahFilterHtml = '';
+
+  if (isAdminKorwil) {
+    // Admin Korwil: tampilkan semua pegawai + filter sekolah
+    pegawaiList = getRecords('pegawai');
+    sekolahFilterHtml = '<div class="col-md-6"><div class="form-floating"><select class="form-select" id="skumptk_filter_sekolah" onchange="skumptkFilterPegawai()">' +
+      '<option value="">-- Semua Sekolah --</option>';
+    getRecords('sekolah').forEach(function(s) {
+      sekolahFilterHtml += '<option value="' + s.id + '">' + escapeHtml(s.nama_sekolah) + '</option>';
+    });
+    sekolahFilterHtml += '</select><label>Filter Sekolah</label></div></div>';
+  } else if (isAdmin2) {
+    // Admin Operator: hanya pegawai korwil (tanpa school_id)
+    pegawaiList = getRecords('pegawai').filter(function(p) { return !p.school_id; });
+  } else if (isSekolah) {
+    // Admin Sekolah: hanya pegawai dari sekolahnya
+    pegawaiList = getRecords('pegawai').filter(function(p) { return p.school_id === currentUser.schoolId; });
+  } else {
+    pegawaiList = getRecords('pegawai');
+  }
+
   var pegawaiOptions = '<option value="">-- Pilih Pegawai --</option>';
   pegawaiList.forEach(function(p) {
     pegawaiOptions += '<option value="' + p.id + '">' + escapeHtml(p.nama || '') + ' - ' + escapeHtml(p.nip || '') + '</option>';
@@ -5748,9 +5854,10 @@ function showFormSKUMPTK() {
 
     '<!-- TAB DEPAN -->' +
     '<div id="skumptkTabDepan">' +
-      '<div class="alert alert-info" style="font-size:13px;"><i class="bi bi-info-circle me-1"></i>Pilih pegawai untuk mengisi otomatis data. Lengkapi sisa data sesuai dokumen asli.</div>' +
+      '<div class="alert alert-info" style="font-size:13px;"><i class="bi bi-info-circle me-1"></i>Pilih pegawai untuk mengisi otomatis data. Lengkapi sisa data sesuai dokumen asli.' + (isAdmin2 ? ' <strong>Hanya pegawai korwil yang ditampilkan.</strong>' : '') + '</div>' +
       '<div class="row g-3 mb-3">' +
-        '<div class="col-md-12"><div class="form-floating"><select class="form-select" id="skumptk_pegawai" onchange="skumptkAutoFill()">' + pegawaiOptions + '</select><label>Pilih Pegawai (Auto-fill)</label></div></div>' +
+        sekolahFilterHtml +
+        '<div class="' + (isAdminKorwil ? 'col-md-6' : 'col-md-12') + '"><div class="form-floating"><select class="form-select" id="skumptk_pegawai" onchange="skumptkAutoFill()">' + pegawaiOptions + '</select><label>Pilih Pegawai (Auto-fill)</label></div></div>' +
       '</div>' +
       '<hr style="margin:12px 0;border-color:var(--border-color);">' +
       '<h6 style="font-weight:700;color:var(--primary);margin-bottom:12px;"><i class="bi bi-building me-1"></i>Data Instansi</h6>' +
@@ -5956,6 +6063,19 @@ function skumptkAutoFill() {
   document.getElementById('skumptk_jk').value = p.jenis_kelamin || '';
   document.getElementById('skumptk_agama').value = p.agama || '';
   document.getElementById('skumptk_alamat').value = p.alamat || '';
+}
+
+function skumptkFilterPegawai() {
+  var schoolId = document.getElementById('skumptk_filter_sekolah').value;
+  var pegawaiList = getRecords('pegawai');
+  if (schoolId) pegawaiList = pegawaiList.filter(function(p) { return p.school_id === schoolId; });
+  var sel = document.getElementById('skumptk_pegawai');
+  var currentVal = sel.value;
+  sel.innerHTML = '<option value="">-- Pilih Pegawai --</option>';
+  pegawaiList.forEach(function(p) {
+    sel.innerHTML += '<option value="' + p.id + '">' + escapeHtml(p.nama || '') + ' - ' + escapeHtml(p.nip || '') + '</option>';
+  });
+  sel.value = currentVal;
 }
 
 function skumptkGetField(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }

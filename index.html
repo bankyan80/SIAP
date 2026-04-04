@@ -1212,10 +1212,25 @@ function getKepalaSekolah(schoolId) {
 }
 
 function getAdminProfile() {
-  try { return JSON.parse(localStorage.getItem('siap_admin_profile') || '{}'); }
+  var key = 'siap_admin_profile';
+  if (currentUser) {
+    if (currentUser.adminLevel === 'limited') key = 'siap_admin2_profile';
+    else if (currentUser.role === 'admin') key = 'siap_admin1_profile';
+  }
+  try { return JSON.parse(localStorage.getItem(key) || '{}'); }
   catch { return {}; }
 }
-function saveAdminProfile(p) { localStorage.setItem('siap_admin_profile', JSON.stringify(p)); }
+function saveAdminProfile(p) {
+  var key = 'siap_admin1_profile';
+  if (currentUser) {
+    if (currentUser.adminLevel === 'limited') key = 'siap_admin2_profile';
+    else if (currentUser.role === 'admin') key = 'siap_admin1_profile';
+  }
+  localStorage.setItem(key, JSON.stringify(p));
+  if (firebaseReady) {
+    firebaseDb.ref('settings/' + key).set(p);
+  }
+}
 
 
 function escapeHtml(str) {
@@ -2533,12 +2548,25 @@ function confirmDelete(type, id) {
 
 // ============ PROFILE ============
 function loadProfile() {
-  const profile = getAdminProfile();
+  var isAdmin = currentUser.role === 'admin';
+  var profile = getAdminProfile();
+
+  // Update card header
+  var headerEl = document.querySelector('#page-profile .card-header h5');
+  if (headerEl) {
+    if (isAdmin) {
+      var label = currentUser.adminLevel === 'full' ? 'Admin Korwil (Admin_01)' : 'Admin Operator (Admin_02)';
+      headerEl.innerHTML = '<i class="bi bi-person-circle me-2"></i>Profil ' + label;
+    } else {
+      headerEl.innerHTML = '<i class="bi bi-person-circle me-2"></i>Profil ' + escapeHtml(currentUser.name);
+    }
+  }
+
   document.getElementById('profileNama').value = profile.nama || '';
   document.getElementById('profileNIP').value = profile.nip || '';
   document.getElementById('profileJabatan').value = profile.jabatan || '';
 
-  if (currentUser && currentUser.role !== 'admin') {
+  if (currentUser && !isAdmin) {
     document.getElementById('profileNama').value = currentUser.name || '';
   }
 }
@@ -2970,7 +2998,8 @@ function syncAllFromFirebase() {
     if (settings) {
       if (settings.admin_password) localStorage.setItem('siap_admin_password', settings.admin_password);
       if (settings.admin2_password) localStorage.setItem('siap_admin2_password', settings.admin2_password);
-      if (settings.admin_profile) localStorage.setItem('siap_admin_profile', JSON.stringify(settings.admin_profile));
+      if (settings.siap_admin1_profile) localStorage.setItem('siap_admin1_profile', JSON.stringify(settings.siap_admin1_profile));
+      if (settings.siap_admin2_profile) localStorage.setItem('siap_admin2_profile', JSON.stringify(settings.siap_admin2_profile));
     }
   });
 }
@@ -2995,6 +3024,8 @@ function setupFirebaseListeners() {
     if (settings) {
       if (settings.admin_password) localStorage.setItem('siap_admin_password', settings.admin_password);
       if (settings.admin2_password) localStorage.setItem('siap_admin2_password', settings.admin2_password);
+      if (settings.siap_admin1_profile) localStorage.setItem('siap_admin1_profile', JSON.stringify(settings.siap_admin1_profile));
+      if (settings.siap_admin2_profile) localStorage.setItem('siap_admin2_profile', JSON.stringify(settings.siap_admin2_profile));
     }
   });
 }
@@ -3092,15 +3123,6 @@ var _originalSetAdminPassword = setAdminPassword;
 setAdminPassword = function(pw) {
   localStorage.setItem('siap_admin_password', pw);
   syncSettingToFirebase('admin_password', pw);
-};
-
-// Override saveAdminProfile
-var _originalSaveAdminProfile = saveAdminProfile;
-saveAdminProfile = function(p) {
-  localStorage.setItem('siap_admin_profile', JSON.stringify(p));
-  if (firebaseReady) {
-    firebaseDb.ref('settings/admin_profile').set(p);
-  }
 };
 
 // ============ KONFIGURASI DATABASE PAGE ============

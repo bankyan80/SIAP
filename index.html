@@ -515,6 +515,7 @@
             <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="logout()"><i class="bi bi-box-arrow-left me-2"></i>Keluar</a></li>
           </ul>
         </div>
+        <span id="fbStatusIndicator" style="font-size:18px;cursor:help;margin-left:4px;" title="Firebase: Menunggu..."><i class="bi bi-cloud-arrow-up text-warning"></i></span>
       </div>
     </header>
 
@@ -1437,6 +1438,28 @@ var firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 
+// ============ FIREBASE CONNECTION DIAGNOSTIC ============
+window._fbConnected = false;
+window._fbError = null;
+(function checkFirebase() {
+  var testRef = firebase.database().ref('.info/connected');
+  testRef.on('value', function(snap) {
+    window._fbConnected = snap.val() === true;
+    if (!window._fbConnected) {
+      console.warn('[SIAP] Firebase disconnected');
+    }
+  });
+  var testRead = firebase.database().ref('siap_records_sekolah').limitToFirst(1);
+  testRead.once('value', function(snap) {
+    window._fbConnected = true;
+    console.log('[SIAP] Firebase connected OK');
+  }).catch(function(err) {
+    window._fbConnected = false;
+    window._fbError = err.message;
+    console.error('[SIAP] Firebase error:', err.message);
+  });
+})();
+
 // Helper: Firebase snapshot to array
 window.PV = function(v) {
   if (!v || !v.val()) return [];
@@ -1446,6 +1469,53 @@ window.PV = function(v) {
   Object.keys(obj).forEach(function(k) { var item = obj[k]; if (item) { item._key = k; arr.push(item); } });
   return arr;
 };
+
+// ============ SYNC SEKOLAH LOCAL → FIREBASE ============
+function syncSekolahToFirebase() {
+  if (!firebase || !firebase.database) return;
+  try {
+    var sekolahs = getRecords('sekolah');
+    if (!sekolahs || sekolahs.length === 0) return;
+    var dataObj = {};
+    sekolahs.forEach(function(s) {
+      var key = s.id || s._key;
+      if (!key) return;
+      dataObj[key] = {
+        id: key,
+        nama_sekolah: s.nama_sekolah || '',
+        npsn: s.npsn || '',
+        alamat: s.alamat || '',
+        kepala_sekolah: s.kepala_sekolah || '',
+        nip_kepala: s.nip_kepala || '',
+        jenjang: s.jenjang || 'SD',
+        telepon: s.telepon || '',
+        email: s.email || '',
+        username: s.username || '',
+        password: s.password || '',
+        updated_at: s.updated_at || new Date().toISOString()
+      };
+    });
+    firebase.database().ref('siap_records_sekolah').set(dataObj).then(function() {
+      console.log('[SIAP] Synced ' + sekolahs.length + ' sekolah to Firebase');
+    }).catch(function(err) {
+      console.error('[SIAP] Sync sekolah failed:', err.message);
+    });
+  } catch(e) { console.warn('[SIAP] syncSekolahToFirebase error:', e); }
+}
+
+// ============ FIREBASE STATUS INDICATOR ============
+function updateFirebaseStatus() {
+  var el = document.getElementById('fbStatusIndicator');
+  if (!el) return;
+  if (window._fbConnected) {
+    el.innerHTML = '<i class="bi bi-cloud-check text-success"></i>';
+    el.title = 'Firebase: Terhubung';
+  } else {
+    el.innerHTML = '<i class="bi bi-cloud-slash text-danger"></i>';
+    el.title = 'Firebase: Tidak terhubung';
+  }
+}
+setInterval(updateFirebaseStatus, 5000);
 
 // ============ UTILITY FUNCTIONS ============
 function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 9); }
@@ -1611,6 +1681,8 @@ function handleRegister() {
     });
     successEl.textContent = 'Akun berhasil dibuat untuk ' + nama + '. Silakan login.'; successEl.style.display = 'block';
   }
+  // Sync new sekolah to Firebase
+  syncSekolahToFirebase();
   document.getElementById('regNamaSekolah').value = '';
   document.getElementById('regNpsn').value = '';
   document.getElementById('regUsername').value = '';
@@ -2807,6 +2879,11 @@ function saveCrudData() {
     addRecord(currentCrudType, data);
   }
 
+  // Sync sekolah data to Firebase when admin adds/edits school
+  if (currentCrudType === 'sekolah' && window._fbConnected) {
+    syncSekolahToFirebase();
+  }
+
   currentDokumenData = null;
   bootstrap.Modal.getInstance(document.getElementById('crudModal')).hide();
   if (currentCrudType === 'pip_verval') { renderVervalPipPage(); } else { renderTable(currentCrudType); }
@@ -3216,6 +3293,8 @@ function handleUbahSandi() {
     sekolahs[idx].password = sandiBaru;
     sekolahs[idx].updated_at = new Date().toISOString();
     saveRecords('sekolah', sekolahs);
+    // Sync to Firebase
+    syncSekolahToFirebase();
     alert('Kata sandi berhasil diubah!');
   }
 
@@ -3317,6 +3396,7 @@ function editSekolahPassword(schoolId) {
   s.password = newPw;
   s.updated_at = new Date().toISOString();
   saveRecords('sekolah', sekolahs);
+  syncSekolahToFirebase();
   loadManajemenUser();
   alert('Kata sandi ' + s.nama_sekolah + ' berhasil diubah!');
 }
@@ -3343,6 +3423,9 @@ function resetDataSekolah(schoolId, namaSekolah) {
   var filteredSekolah = sekolahs.filter(function(s) { return s.id !== schoolId; });
   saveRecords('sekolah', filteredSekolah);
   deleted['sekolah'] = sekolahs.length - filteredSekolah.length;
+
+  // Sync to Firebase after delete
+  syncSekolahToFirebase();
 
   // Hapus pengaturan cetak sekolah
   var settingKey = 'siap_pengaturan_' + schoolId;

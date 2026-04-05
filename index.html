@@ -1045,11 +1045,14 @@
       <!-- ======== PPDB - HASIL PENDAFTARAN (Sekolah) ======== -->
       <div id="page-ppdb-pendaftaran" class="page-section">
         <div class="card">
-          <div class="card-header"><h5><i class="bi bi-mortarboard me-2"></i>Hasil Pendaftaran PPDB</h5></div>
+          <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h5><i class="bi bi-mortarboard me-2"></i>Hasil Pendaftaran PPDB</h5>
+            <button class="btn btn-sm btn-danger" onclick="ppdbHapusTerpilih()" id="btnHapusTerpilih" style="display:none;"><i class="bi bi-trash3 me-1"></i>Hapus Terpilih</button>
+          </div>
           <div class="card-body">
             <div class="table-responsive">
               <table class="table table-hover table-bordered" style="font-size:13px">
-                <thead><tr><th>No</th><th>No Pendaftaran</th><th>Nama</th><th>Jenis Kelamin</th><th>Asal Sekolah</th><th>Tgl Daftar</th><th>Status</th></tr></thead>
+                <thead><tr><th style="width:40px;text-align:center;"><input type="checkbox" id="ppdb_select_all" onchange="ppdbToggleAll(this)"></th><th>No</th><th>No Pendaftaran</th><th>Nama</th><th>Jenis Kelamin</th><th>Asal Sekolah</th><th>Tgl Daftar</th><th>Status</th><th>Aksi</th></tr></thead>
                 <tbody id="ppdbPendaftaranBody"></tbody>
               </table>
             </div>
@@ -6932,7 +6935,7 @@ function renderPPDBPendaftaran() {
   var schoolName = currentUser ? currentUser.name : '';
   var filtered = data.filter(function(r) { return r.sekolah_tujuan === schoolName; });
   if (filtered.length === 0) {
-    body.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Belum ada data pendaftaran.</td></tr>';
+    body.innerHTML = '<tr><td colspan="9" class="text-center text-muted">Belum ada data pendaftaran.</td></tr>';
     return;
   }
   var html = '';
@@ -6940,7 +6943,8 @@ function renderPPDBPendaftaran() {
     var statusBadge = '<span class="badge bg-warning text-dark">Menunggu</span>';
     if (r.status === 'Diterima') statusBadge = '<span class="badge bg-success">Diterima</span>';
     else if (r.status === 'Ditolak') statusBadge = '<span class="badge bg-danger">Ditolak</span>';
-    html += '<tr>' +
+    html += '<tr id="row_ppdb_' + escapeHtml(r.no_pendaftaran || '') + '">' +
+      '<td class="text-center"><input type="checkbox" class="ppdb-row-check" value="' + escapeHtml(r.no_pendaftaran || '') + '"></td>' +
       '<td>' + (i + 1) + '</td>' +
       '<td>' + escapeHtml(r.no_pendaftaran || '-') + '</td>' +
       '<td>' + escapeHtml(r.nama || '-') + '</td>' +
@@ -6948,9 +6952,81 @@ function renderPPDBPendaftaran() {
       '<td>' + escapeHtml(r.asal_sekolah || '-') + '</td>' +
       '<td>' + (r.created_at ? new Date(r.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '-') + '</td>' +
       '<td>' + statusBadge + '</td>' +
+      '<td class="action-btns"><button class="btn btn-sm btn-danger" onclick="ppdbHapusSatu(\'' + escapeHtml(r.no_pendaftaran || '') + '\')" title="Hapus"><i class="bi bi-trash3"></i> Hapus</button></td>' +
       '</tr>';
   });
   body.innerHTML = html;
+  // Attach change listener to checkboxes
+  var checks = body.querySelectorAll('.ppdb-row-check');
+  checks.forEach(function(cb) {
+    cb.addEventListener('change', ppdbUpdateSelectAll);
+  });
+  ppdbUpdateSelectAll();
+}
+
+// Toggle all checkboxes in PPDB Hasil Pendaftaran
+function ppdbToggleAll(el) {
+  var checks = document.querySelectorAll('.ppdb-row-check');
+  checks.forEach(function(cb) { cb.checked = el.checked; });
+  ppdbUpdateSelectAll();
+}
+
+// Update select-all checkbox state
+function ppdbUpdateSelectAll() {
+  var checks = document.querySelectorAll('.ppdb-row-check');
+  var selectAll = document.getElementById('ppdb_select_all');
+  var btnHapus = document.getElementById('btnHapusTerpilih');
+  if (!checks.length) {
+    if (selectAll) selectAll.checked = false;
+    if (btnHapus) btnHapus.style.display = 'none';
+    return;
+  }
+  var checked = document.querySelectorAll('.ppdb-row-check:checked');
+  if (selectAll) selectAll.checked = checked.length === checks.length;
+  if (btnHapus) btnHapus.style.display = checked.length > 0 ? 'inline-block' : 'none';
+}
+
+// Delete single pendaftar
+function ppdbHapusSatu(noPendaftaran) {
+  if (!noPendaftaran) return;
+  if (!confirm('Yakin ingin menghapus data pendaftaran ' + noPendaftaran + '?\nData yang sudah dihapus tidak dapat dikembalikan.')) return;
+  var ref = firebase.database().ref('siap_ppdb_pendaftaran/' + noPendaftaran);
+  ref.remove().then(function() {
+    // Also remove from siap_ppdb_diterima if exists
+    firebase.database().ref('siap_ppdb_diterima/' + noPendaftaran).remove();
+    // Also remove from siap_ppdb_registrasi if exists
+    firebase.database().ref('siap_ppdb_registrasi/' + noPendaftaran).remove();
+    alert('Data pendaftaran ' + noPendaftaran + ' berhasil dihapus.');
+  }).catch(function(err) {
+    alert('Gagal menghapus: ' + err.message);
+  });
+}
+
+// Delete multiple selected pendaftar
+function ppdbHapusTerpilih() {
+  var checks = document.querySelectorAll('.ppdb-row-check:checked');
+  if (checks.length === 0) {
+    alert('Pilih data yang ingin dihapus.');
+    return;
+  }
+  if (!confirm('Yakin ingin menghapus ' + checks.length + ' data pendaftaran yang dipilih?\nData yang sudah dihapus tidak dapat dikembalikan.')) return;
+  var total = checks.length;
+  var deleted = 0;
+  checks.forEach(function(cb) {
+    var noPendaftaran = cb.value;
+    firebase.database().ref('siap_ppdb_pendaftaran/' + noPendaftaran).remove().then(function() {
+      firebase.database().ref('siap_ppdb_diterima/' + noPendaftaran).remove();
+      firebase.database().ref('siap_ppdb_registrasi/' + noPendaftaran).remove();
+      deleted++;
+      if (deleted === total) {
+        alert(total + ' data pendaftaran berhasil dihapus.');
+      }
+    });
+  });
+  // Uncheck all
+  var selectAll = document.getElementById('ppdb_select_all');
+  if (selectAll) selectAll.checked = false;
+  if (document.getElementById('btnHapusTerpilih')) document.getElementById('btnHapusTerpilih').style.display = 'none';
 }
 
 function renderPPDBVerifikasi() {

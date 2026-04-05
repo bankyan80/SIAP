@@ -700,13 +700,28 @@
             </div>
           </div>
           <div class="card-body">
-            <div class="search-bar"><i class="bi bi-search"></i><input type="text" placeholder="Cari pegawai..." oninput="renderTable('pegawai', this.value)"></div>
-            <div class="table-container max-h-table">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+              <div class="search-bar mb-0"><i class="bi bi-search"></i><input type="text" placeholder="Cari pegawai..." oninput="renderTable('pegawai', this.value)" id="searchPegawaiAdmin"></div>
+              <div class="d-flex align-items-center gap-2">
+                <span style="font-size:13px;color:#64748b;">Tampilkan</span>
+                <select class="form-select form-select-sm" id="perPagePegawai" onchange="renderTable('pegawai', document.getElementById('searchPegawaiAdmin').value)" style="width:90px;border-radius:8px;">
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="30">30</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                  <option value="all">Semua</option>
+                </select>
+                <span style="font-size:13px;color:#64748b;" id="pegawaiTotalInfo">data</span>
+              </div>
+            </div>
+            <div class="table-container">
               <table class="table table-hover">
                 <thead><tr><th>No</th><th>Nama</th><th>NIP</th><th>Sekolah</th><th>Jabatan</th><th>Pangkat/Gol.</th><th>JK</th><th>Pendidikan</th><th>Masa Kerja</th><th>BUP</th><th>Aksi</th></tr></thead>
                 <tbody id="table-pegawai"></tbody>
               </table>
             </div>
+            <div id="paginationPegawai" class="d-flex justify-content-between align-items-center mt-3" style="font-size:13px;"></div>
           </div>
         </div>
       </div>
@@ -724,13 +739,28 @@
             </div>
           </div>
           <div class="card-body">
-            <div class="search-bar"><i class="bi bi-search"></i><input type="text" placeholder="Cari siswa..." oninput="renderTable('siswa', this.value)"></div>
-            <div class="table-container max-h-table">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+              <div class="search-bar mb-0"><i class="bi bi-search"></i><input type="text" placeholder="Cari siswa..." oninput="renderTable('siswa', this.value)" id="searchSiswaAdmin"></div>
+              <div class="d-flex align-items-center gap-2">
+                <span style="font-size:13px;color:#64748b;">Tampilkan</span>
+                <select class="form-select form-select-sm" id="perPageSiswa" onchange="renderTable('siswa', document.getElementById('searchSiswaAdmin').value)" style="width:90px;border-radius:8px;">
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="30">30</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                  <option value="all">Semua</option>
+                </select>
+                <span style="font-size:13px;color:#64748b;" id="siswaTotalInfo">data</span>
+              </div>
+            </div>
+            <div class="table-container">
               <table class="table table-hover">
                 <thead><tr><th>No</th><th>NIS/NISN</th><th>Nama Siswa</th><th>Sekolah</th><th>JK</th><th>Tempat Lahir</th><th>Tanggal Lahir</th><th>Kelas</th><th>Alamat</th><th>Aksi</th></tr></thead>
                 <tbody id="table-siswa"></tbody>
               </table>
             </div>
+            <div id="paginationSiswa" class="d-flex justify-content-between align-items-center mt-3" style="font-size:13px;"></div>
           </div>
         </div>
       </div>
@@ -2284,6 +2314,68 @@ function populateSekolahFilter(selectId) {
 
 // ============ TABLE RENDERING ============
 var _pegawaiKorwilMode = false; // flag saat menampilkan pegawai korwil di halaman manajemen pegawai
+var _paginationCurrentPage = {}; // { type: currentPage }
+
+function getPerPage(type) {
+  var selId = type === 'pegawai' ? 'perPagePegawai' : type === 'siswa' ? 'perPageSiswa' : null;
+  if (!selId) return Infinity;
+  var el = document.getElementById(selId);
+  if (!el) return Infinity;
+  return el.value === 'all' ? Infinity : parseInt(el.value);
+}
+
+function paginateRecords(records, type) {
+  var perPage = getPerPage(type);
+  if (!isFinite(perPage) || perPage >= records.length) {
+    _paginationCurrentPage[type] = 1;
+    return { data: records, page: 1, totalPages: 1, total: records.length, start: 1, end: records.length };
+  }
+  if (!_paginationCurrentPage[type]) _paginationCurrentPage[type] = 1;
+  var page = _paginationCurrentPage[type];
+  var totalPages = Math.ceil(records.length / perPage);
+  if (page > totalPages) page = totalPages;
+  _paginationCurrentPage[type] = page;
+  var start = (page - 1) * perPage;
+  var end = Math.min(start + perPage, records.length);
+  return { data: records.slice(start, end), page: page, totalPages: totalPages, total: records.length, start: start + 1, end: end };
+}
+
+function buildPaginationHTML(paginationInfo, type) {
+  if (paginationInfo.totalPages <= 1) return '';
+  var page = paginationInfo.page;
+  var totalPages = paginationInfo.totalPages;
+  var total = paginationInfo.total;
+  var start = paginationInfo.start;
+  var end = paginationInfo.end;
+
+  // Info text
+  var infoHtml = '<span style="color:#64748b;">Menampilkan ' + start + '-' + end + ' dari ' + total + ' data</span>';
+
+  // Page buttons
+  var btns = '';
+  btns += '<div class="d-flex gap-1 align-items-center">';
+  btns += '<button class="btn btn-sm btn-outline-secondary" onclick="_paginationGoTo(\'' + type + '\',' + (page - 1) + ')"' + (page <= 1 ? ' disabled' : '') + '><i class="bi bi-chevron-left"></i></button>';
+
+  // Show max 5 page buttons
+  var startPage = Math.max(1, page - 2);
+  var endPage = Math.min(totalPages, startPage + 4);
+  if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+
+  for (var i = startPage; i <= endPage; i++) {
+    btns += '<button class="btn btn-sm ' + (i === page ? 'btn-accent' : 'btn-outline-secondary') + '" onclick="_paginationGoTo(\'' + type + '\',' + i + ')" style="min-width:36px;">' + i + '</button>';
+  }
+
+  btns += '<button class="btn btn-sm btn-outline-secondary" onclick="_paginationGoTo(\'' + type + '\',' + (page + 1) + ')"' + (page >= totalPages ? ' disabled' : '') + '><i class="bi bi-chevron-right"></i></button>';
+  btns += '</div>';
+
+  return infoHtml + btns;
+}
+
+function _paginationGoTo(type, page) {
+  _paginationCurrentPage[type] = page;
+  var searchEl = type === 'pegawai' ? document.getElementById('searchPegawaiAdmin') : document.getElementById('searchSiswaAdmin');
+  renderTable(type, searchEl ? searchEl.value : '');
+}
 
 function renderTable(type, searchTerm = '') {
   _pegawaiKorwilMode = false;
@@ -2343,10 +2435,31 @@ function renderTable(type, searchTerm = '') {
     }
   }
 
+  // Reset page on search change
+  if (searchTerm && (type === 'pegawai' || type === 'siswa')) {
+    _paginationCurrentPage[type] = 1;
+  }
+
+  // Apply pagination for pegawai (admin) and siswa (admin)
+  var _pagInfo = null;
+  var _usePagination = (type === 'pegawai' && isAdmin) || (type === 'siswa' && isAdmin);
+  if (_usePagination) {
+    _pagInfo = paginateRecords(records, type);
+    records = _pagInfo.data;
+  }
+
   if (records.length === 0) {
     tbody.innerHTML = '<tr><td colspan="20" class="text-center text-muted py-4">Tidak ada data</td></tr>';
+    if (_usePagination) {
+      var pagEl = document.getElementById(type === 'pegawai' ? 'paginationPegawai' : 'paginationSiswa');
+      if (pagEl) pagEl.innerHTML = '';
+      var infoEl = document.getElementById(type === 'pegawai' ? 'pegawaiTotalInfo' : 'siswaTotalInfo');
+      if (infoEl) infoEl.textContent = '0 data';
+    }
     return;
   }
+
+  var _offset = _usePagination ? (_pagInfo.start - 1) : 0;
 
   let html = '';
   switch(type) {
@@ -2398,7 +2511,7 @@ function renderTable(type, searchTerm = '') {
         const isAdmin = currentUser && currentUser.role === 'admin';
         return `
         <tr>
-          <td class="center">${i+1}</td>
+          <td class="center">${_offset + i + 1}</td>
           <td><strong>${escapeHtml(r.nama)}</strong></td>
           <td>${escapeHtml(r.nip)}</td>
           ${isAdmin ? '<td>' + (_pegawaiKorwilMode ? '<span style=\"background:#dbeafe;color:#1d4ed8;padding:3px 8px;border-radius:12px;font-size:11px;\">Korwil</span>' : (school ? escapeHtml(school.nama_sekolah) : '-')) + '</td>' : ''}
@@ -2421,7 +2534,7 @@ function renderTable(type, searchTerm = '') {
         const school = isAdmin ? getRecord('sekolah', r.school_id) : null;
         return `
         <tr>
-          <td class="center">${i+1}</td>
+          <td class="center">${_offset + i + 1}</td>
           <td>${escapeHtml(r.nis_nisn)}</td>
           <td><strong>${escapeHtml(r.nama)}</strong></td>
           ${isAdmin ? '<td>' + (school ? escapeHtml(school.nama_sekolah) : '-') + '</td>' : ''}
@@ -2590,6 +2703,16 @@ function renderTable(type, searchTerm = '') {
       break;
   }
   tbody.innerHTML = html;
+
+  // Render pagination controls
+  if (_usePagination && _pagInfo) {
+    var pagElId = type === 'pegawai' ? 'paginationPegawai' : 'paginationSiswa';
+    var infoElId = type === 'pegawai' ? 'pegawaiTotalInfo' : 'siswaTotalInfo';
+    var pagEl = document.getElementById(pagElId);
+    var infoEl = document.getElementById(infoElId);
+    if (pagEl) pagEl.innerHTML = buildPaginationHTML(_pagInfo, type);
+    if (infoEl) infoEl.textContent = _pagInfo.total + ' data';
+  }
 }
 
 // ============ CETAK SURAT ============

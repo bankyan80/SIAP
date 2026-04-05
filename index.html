@@ -420,6 +420,57 @@
   </div>
 </div>
 
+<!-- ============ TKA POPUP MODAL (Sekolah) ============ -->
+<div class="modal fade" id="tkaPanitiaModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:16px;border:none;">
+      <div class="modal-header" style="background:var(--primary);color:#fff;border-radius:16px 16px 0 0;">
+        <h5 class="modal-title" style="font-size:15px;font-weight:700;"><i class="bi bi-clipboard-data me-2"></i>Data Panitia TKA</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" id="tkaCloseModal"></button>
+      </div>
+      <div class="modal-body" style="padding:24px;">
+        <div class="alert alert-info" style="font-size:12px;padding:10px 14px;border-radius:10px;">
+          <i class="bi bi-info-circle me-1"></i>Lengkapi data panitia TKA untuk sekolah Anda. Data ini akan digunakan untuk monitoring pelaksanaan TKA.
+        </div>
+        <input type="hidden" id="tkaEditId" value="">
+        <div class="form-floating mb-3">
+          <input type="text" class="form-control" id="tkaProktor" placeholder="Nama Proktor" style="font-size:14px;border-radius:10px;">
+          <label style="font-size:13px;">Nama Proktor *</label>
+        </div>
+        <div class="form-floating mb-3">
+          <input type="text" class="form-control" id="tkaTeknisi" placeholder="Nama Teknisi" style="font-size:14px;border-radius:10px;">
+          <label style="font-size:13px;">Nama Teknisi *</label>
+        </div>
+        <div class="form-floating mb-3">
+          <input type="text" class="form-control" id="tkaPengawas" placeholder="Nama Pengawas" style="font-size:14px;border-radius:10px;">
+          <label style="font-size:13px;">Nama Pengawas *</label>
+        </div>
+        <div class="form-floating mb-3">
+          <input type="number" class="form-control" id="tkaPeserta" placeholder="0" min="0" style="font-size:14px;border-radius:10px;">
+          <label style="font-size:13px;">Jumlah Peserta *</label>
+        </div>
+        <div class="form-floating mb-3">
+          <select class="form-select" id="tkaGelombang" style="font-size:14px;border-radius:10px;">
+            <option value="">Pilih Gelombang</option>
+            <option value="Gelombang 1">Gelombang 1</option>
+            <option value="Gelombang 2">Gelombang 2</option>
+            <option value="Gelombang 3">Gelombang 3</option>
+          </select>
+          <label style="font-size:13px;">Gelombang *</label>
+        </div>
+        <div class="form-floating mb-3">
+          <input type="date" class="form-control" id="tkaTanggal" style="font-size:14px;border-radius:10px;">
+          <label style="font-size:13px;">Tanggal Mulai Pelaksanaan *</label>
+        </div>
+      </div>
+      <div class="modal-footer" style="border-top:1px solid var(--border-color);padding:16px 24px;">
+        <button type="button" class="btn btn-secondary" style="border-radius:10px;font-size:13px;" onclick="tkaClosePanitiaModal()">Nanti Saja</button>
+        <button type="button" class="btn btn-accent" style="border-radius:10px;font-size:13px;" onclick="tkaSimpanPanitia()"><i class="bi bi-check-circle me-1"></i>Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ============ MAIN APPLICATION ============ -->
 <div id="mainApp">
   <!-- Sidebar Overlay (Mobile) -->
@@ -1120,6 +1171,64 @@
         </div>
       </div>
 
+      <!-- ======== TKA LAPORAN (Admin Korwil) ======== -->
+      <div id="page-tka-laporan" class="page-section">
+        <!-- Data Panitia TKA -->
+        <div class="card mb-4">
+          <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h5><i class="bi bi-clipboard-data me-2"></i>Data Panitia TKA Sekolah</h5>
+            <button class="btn btn-accent btn-sm" onclick="tkaAddPanitia()"><i class="bi bi-plus-circle me-1"></i>Tambah Panitia</button>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive max-h-table">
+              <table class="table table-hover table-bordered" style="font-size:13px">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Nama Sekolah</th>
+                    <th>Nama Proktor</th>
+                    <th>Nama Teknisi</th>
+                    <th>Nama Pengawas</th>
+                    <th>Jumlah Peserta</th>
+                    <th>Gelombang</th>
+                    <th>Tanggal Mulai Pelaksanaan</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="tkaPanitiaBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <!-- Rekap Hasil Kegiatan TKA -->
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h5><i class="bi bi-bar-chart-line me-2"></i>Rekap Hasil Kegiatan TKA per Sesi</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive max-h-table">
+              <table class="table table-hover table-bordered" style="font-size:13px">
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Sekolah</th>
+                    <th>Gelombang</th>
+                    <th>Sesi</th>
+                    <th>Proktor</th>
+                    <th>Ruang</th>
+                    <th>Peserta</th>
+                    <th>Progress</th>
+                    <th>Status</th>
+                    <th>Tanggal</th>
+                  </tr>
+                </thead>
+                <tbody id="tkaRekapBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ============ MODAL TANDA TERIMA ============ -->
       <div class="modal fade" id="tandaTerimaModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -1555,6 +1664,8 @@ function showMainApp() {
     navigateTo('admin-dashboard');
   } else {
     navigateTo('sekolah-dashboard');
+    // Show TKA panitia popup for sekolah role
+    setTimeout(function(){ tkaCheckAndShowPopup(); }, 500);
   }
 }
 
@@ -1588,6 +1699,7 @@ function buildSidebarMenu() {
         </ul>
       </li>
       <li><a href="#" data-page="laporan" onclick="navigateTo('laporan')"><i class="bi bi-file-earmark-bar-graph"></i>Laporan</a></li>
+      <li><a href="#" data-page="tka-laporan" onclick="navigateTo('tka-laporan')"><i class="bi bi-clipboard-data"></i>Laporan TKA</a></li>
       <li class="menu-parent" onclick="toggleSubmenu(this)">
         <a><i class="bi bi-mortarboard"></i>PPDB Online<i class="bi bi-chevron-right menu-arrow"></i></a>
         <ul class="submenu">
@@ -1691,7 +1803,8 @@ function navigateTo(page) {
     'ppdb-verifikasi': 'PPDB - Verifikasi Siswa Diterima',
     'ppdb-registrasi': 'PPDB - Hasil Registrasi',
     'ppdb-rekap-daftar': 'PPDB - Rekap Pendaftaran',
-    'ppdb-rekap-diterima': 'PPDB - Rekap Siswa Diterima'
+    'ppdb-rekap-diterima': 'PPDB - Rekap Siswa Diterima',
+    'tka-laporan': 'Laporan TKA'
   };
   document.getElementById('pageTitle').textContent = titles[page] || 'SIAP';
 
@@ -1709,7 +1822,7 @@ function navigateTo(page) {
   if (page === 'laporan') generateAdminLaporan();
   if (page === 'laporan-sekolah') generateSekolahLaporan();
   if (page === 'verval-pip') renderVervalPipPage();
-  if (page === 'aktivasi-pip') { populateSekolahFilter('filterAktivasiSekolah'); renderTable('pip_aktivasi'); if (currentUser.role === 'sekolah') document.getElementById('unduhTandaTerimaCard').style.display = 'block'; }
+  if (page === 'aktivasi-pip') { populateSekolahFilter('filterAktivasiSekolah'); renderTable('pip_aktivasi'); var ttc = document.getElementById('unduhTandaTerimaCard'); if (ttc) ttc.style.display = (currentUser.role === 'sekolah') ? 'block' : 'none'; }
   if (page === 'arsip-masuk') renderTable('arsip_masuk');
   if (page === 'arsip-keluar') renderTable('arsip_keluar');
   if (page === 'surat') {
@@ -1739,6 +1852,7 @@ function navigateTo(page) {
   if (page === 'ppdb-rekap-daftar') renderPPDBRekapDaftar();
   if (page === 'ppdb-rekap-diterima') renderPPDBRekapDiterima();
   if (page === 'ppdb-pengaturan') renderPPDBPengaturan();
+  if (page === 'tka-laporan') renderTKALaporan();
 
   // Close sidebar on mobile
   closeSidebar();
@@ -1768,7 +1882,7 @@ function closeSidebar() {
 
 // ============ DASHBOARD ============
 function loadAdminDashboard() {
-  const sekolahs = getRecords('sekolah');
+  const sekolahs = getRecords('sekolah').sort((a, b) => (a.nama_sekolah || '').localeCompare(b.nama_sekolah || ''));
   const siswas = getRecords('siswa');
   const pegawais = getRecords('pegawai');
   const pegawaiKorwils = getRecords('pegawai_korwil');
@@ -1821,7 +1935,7 @@ function populateSekolahFilter(selectId) {
   const sel = document.getElementById(selectId);
   const currentVal = sel.value;
   sel.innerHTML = '<option value="">Semua Sekolah</option>';
-  getRecords('sekolah').forEach(s => {
+  getRecords('sekolah').sort((a, b) => (a.nama_sekolah || '').localeCompare(b.nama_sekolah || '')).forEach(s => {
     sel.innerHTML += `<option value="${s.id}">${escapeHtml(s.nama_sekolah)}</option>`;
   });
   sel.value = currentVal;
@@ -1855,8 +1969,29 @@ function renderTable(type, searchTerm = '') {
     records = records.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(term)));
   }
 
+  // Sort by school name for admin
+  if (currentUser && currentUser.role === 'admin') {
+    if (type === 'sekolah') {
+      records.sort((a, b) => (a.nama_sekolah || '').localeCompare(b.nama_sekolah || ''));
+    } else if (type === 'pegawai' || type === 'sarpras' || type === 'pip_verval' || type === 'pip_aktivasi' || type === 'surat') {
+      records.sort((a, b) => {
+        const sa = getRecord('sekolah', a.school_id);
+        const sb = getRecord('sekolah', b.school_id);
+        return (sa ? sa.nama_sekolah : '').localeCompare(sb ? sb.nama_sekolah : '');
+      });
+    }
+  }
+  // Sort by name for sekolah role
+  if (currentUser && currentUser.role === 'sekolah') {
+    if (type === 'pegawai') records.sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
+    else if (type === 'siswa') records.sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
+    else if (type === 'siswa_lulusan') records.sort((a, b) => (a.nama || '').localeCompare(b.nama || ''));
+    else if (type === 'sarpras') records.sort((a, b) => (a.nama_barang || '').localeCompare(b.nama_barang || ''));
+    else if (type === 'surat') records.sort((a, b) => (a.perihal || '').localeCompare(b.perihal || ''));
+  }
+
   const isAdmin = currentUser && currentUser.role === 'admin';
-  const sharedTypes = ['surat'];
+  const sharedTypes = ['surat', 'arsip_masuk', 'arsip_keluar', 'pip_aktivasi'];
   const tbodyId = sharedTypes.includes(type) ? `table-${type}` : (isAdmin ? `table-${type}` : `table-${type}-sekolah`);
   const tbody = document.getElementById(tbodyId);
   if (!tbody) return;
@@ -2311,7 +2446,7 @@ function openModal(type, editId = null) {
 
     case 'pegawai':
       title.textContent = record ? 'Edit Pegawai' : 'Tambah Pegawai';
-      const sekolahOptions = getRecords('sekolah').map(s =>
+      const sekolahOptions = getRecords('sekolah').sort((a, b) => (a.nama_sekolah || '').localeCompare(b.nama_sekolah || '')).map(s =>
         `<option value="${s.id}" ${record && record.school_id===s.id ? 'selected' : (!record && currentUser.schoolId===s.id ? 'selected' : '')}>${escapeHtml(s.nama_sekolah)}</option>`
       ).join('');
       formHtml = `
@@ -2348,7 +2483,7 @@ function openModal(type, editId = null) {
 
     case 'sarpras':
       title.textContent = record ? 'Edit Sarana/Prasarana' : 'Tambah Sarana/Prasarana';
-      const sarprasSekolahOptions = getRecords('sekolah').map(s =>
+      const sarprasSekolahOptions = getRecords('sekolah').sort((a, b) => (a.nama_sekolah || '').localeCompare(b.nama_sekolah || '')).map(s =>
         `<option value="${s.id}" ${record && record.school_id===s.id ? 'selected' : (!record && currentUser.schoolId===s.id ? 'selected' : '')}>${escapeHtml(s.nama_sekolah)}</option>`
       ).join('');
       formHtml = `
@@ -2365,7 +2500,7 @@ function openModal(type, editId = null) {
 
     case 'pip_verval':
       title.textContent = record ? 'Edit Verval PIP' : 'Tambah Verval PIP';
-      var pipVervalSekolahOpts = getRecords('sekolah').map(function(s) {
+      var pipVervalSekolahOpts = getRecords('sekolah').sort((a, b) => (a.nama_sekolah || '').localeCompare(b.nama_sekolah || '')).map(function(s) {
         return '<option value="' + s.id + '"' + (record && record.school_id === s.id ? ' selected' : (!record && currentUser.schoolId === s.id ? ' selected' : '')) + '>' + escapeHtml(s.nama_sekolah) + '</option>';
       }).join('');
       formHtml = '<div class="row g-3">' +
@@ -2382,7 +2517,7 @@ function openModal(type, editId = null) {
 
     case 'pip_aktivasi':
       title.textContent = record ? 'Edit Aktivasi PIP' : 'Tambah Aktivasi PIP';
-      var pipAktSekolahOpts = getRecords('sekolah').map(function(s) {
+      var pipAktSekolahOpts = getRecords('sekolah').sort((a, b) => (a.nama_sekolah || '').localeCompare(b.nama_sekolah || '')).map(function(s) {
         return '<option value="' + s.id + '"' + (record && record.school_id === s.id ? ' selected' : (!record && currentUser.schoolId === s.id ? ' selected' : '')) + '>' + escapeHtml(s.nama_sekolah) + '</option>';
       }).join('');
       formHtml = '<div class="row g-3">' +
@@ -2424,7 +2559,7 @@ function openModal(type, editId = null) {
 
     case 'surat':
       title.textContent = record ? 'Edit Surat' : 'Buat Surat Baru';
-      const suratSekolahOptions = getRecords('sekolah').map(function(s) {
+      const suratSekolahOptions = getRecords('sekolah').sort((a, b) => (a.nama_sekolah || '').localeCompare(b.nama_sekolah || '')).map(function(s) {
         return '<option value="' + s.id + '"' + (record && record.school_id === s.id ? ' selected' : (!record && currentUser.schoolId === s.id ? ' selected' : '')) + '>' + escapeHtml(s.nama_sekolah) + '</option>';
       }).join('');
       formHtml = '<div class="row g-3">' +
@@ -2674,7 +2809,7 @@ function hapusDokumenForm() {
 
 function lihatDokumen(id) {
   var rec = getRecord('surat', id);
-  if (!rec || !rec.dokumen_data) { alert('Dokumen tidak ditemukan!'); return; }
+  if (!rec || !rec.dokumen_data || !rec.dokumen_data.startsWith('data:')) { alert('Dokumen tidak ditemukan!'); return; }
   var win = window.open('', '_blank');
   if (rec.dokumen_tipe === 'application/pdf') {
     win.document.write('<html><head><title>' + escapeHtml(rec.dokumen_nama) + '</title></head><body style="margin:0;"><iframe src="' + rec.dokumen_data + '" style="width:100%;height:100vh;border:none;"></iframe></body></html>');
@@ -3691,7 +3826,7 @@ function generateAdminLaporan() {
   const bulan = document.getElementById('laporanBulan').value;
   const tahun = new Date().getFullYear();
   const bulanName = MONTHS[parseInt(bulan) - 1];
-  const sekolahs = getRecords('sekolah');
+  const sekolahs = getRecords('sekolah').sort((a, b) => (a.nama_sekolah || '').localeCompare(b.nama_sekolah || ''));
 
   // Ambil status laporan dari localStorage
   var laporanStatus = JSON.parse(localStorage.getItem('siap_laporan_status') || '{}');
@@ -4110,7 +4245,7 @@ function renderVervalPipPage() {
 
 // ---------- ADMIN: Full CRUD table ----------
 function renderAdminVervalPip(container) {
-  var sekolahOpts = getRecords('sekolah').map(function(s) {
+  var sekolahOpts = getRecords('sekolah').sort((a, b) => (a.nama_sekolah || '').localeCompare(b.nama_sekolah || '')).map(function(s) {
     return '<option value="' + s.id + '">' + escapeHtml(s.nama_sekolah) + '</option>';
   }).join('');
   container.innerHTML =
@@ -4143,6 +4278,12 @@ function renderAdminVervalPipTable(searchTerm) {
     var term = searchTerm.toLowerCase();
     records = records.filter(function(r) { return Object.values(r).some(function(v) { return String(v).toLowerCase().includes(term); }); });
   }
+  // Sort by school name
+  records.sort(function(a, b) {
+    var sa = getRecord('sekolah', a.school_id);
+    var sb = getRecord('sekolah', b.school_id);
+    return (sa ? sa.nama_sekolah : '').localeCompare(sb ? sb.nama_sekolah : '');
+  });
   if (records.length === 0) { tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4">Tidak ada data</td></tr>'; return; }
   tbody.innerHTML = records.map(function(r, i) {
     var school = getRecord('sekolah', r.school_id);
@@ -4802,6 +4943,9 @@ function renderTableFiltered(type, searchTerm) {
     var term = searchTerm.toLowerCase();
     records = records.filter(function(r) { return Object.values(r).some(function(v) { return String(v).toLowerCase().includes(term); }); });
   }
+
+  // Sort by name
+  records.sort(function(a, b) { return (a.nama || '').localeCompare(b.nama || ''); });
 
   var tbodyId = 'table-siswa-sekolah';
   var tbody = document.getElementById(tbodyId);
@@ -6870,6 +7014,239 @@ function cetakTandaTerimaPIP() {
   document.getElementById('mainApp').style.display = 'none';
 })();
 
+// ============ TKA FIREBASE INIT ============
+(function(){
+  window._tkaPanitia = [];
+  window._tkaMonitoring = [];
+  window._tkaPanitiaLoaded = false;
+  firebase.database().ref('siap_tka_panitia').on('value', function(snap) {
+    window._tkaPanitia = PV(snap);
+    window._tkaPanitiaLoaded = true;
+    // Check popup after data loaded (for sekolah)
+    if (currentUser && currentUser.role === 'sekolah') {
+      tkaCheckAndShowPopup();
+    }
+  });
+  firebase.database().ref('siap_tka_monitoring').on('value', function(snap) {
+    window._tkaMonitoring = PV(snap);
+  });
+})();
+
+// ============ TKA POPUP (SEKOLAH) ============
+function tkaCheckAndShowPopup() {
+  if (!currentUser || currentUser.role !== 'sekolah') return;
+  // Only check if Firebase data has been loaded
+  if (!window._tkaPanitiaLoaded) return;
+  var schoolName = currentUser.name || '';
+  var data = window._tkaPanitia || [];
+  var found = data.find(function(r) { return r.nama_sekolah === schoolName; });
+  if (!found) {
+    document.getElementById('tkaEditId').value = '';
+    document.getElementById('tkaProktor').value = '';
+    document.getElementById('tkaTeknisi').value = '';
+    document.getElementById('tkaPengawas').value = '';
+    document.getElementById('tkaPeserta').value = '';
+    document.getElementById('tkaGelombang').value = '';
+    document.getElementById('tkaTanggal').value = '';
+    // Check if modal is already shown
+    var existingModal = bootstrap.Modal.getInstance(document.getElementById('tkaPanitiaModal'));
+    if (!existingModal) {
+      var modal = new bootstrap.Modal(document.getElementById('tkaPanitiaModal'));
+      modal.show();
+    }
+  }
+}
+
+function tkaClosePanitiaModal() {
+  var modal = bootstrap.Modal.getInstance(document.getElementById('tkaPanitiaModal'));
+  if (modal) modal.hide();
+}
+
+function tkaSimpanPanitia() {
+  var proktor = (document.getElementById('tkaProktor').value || '').trim();
+  var teknisi = (document.getElementById('tkaTeknisi').value || '').trim();
+  var pengawas = (document.getElementById('tkaPengawas').value || '').trim();
+  var peserta = (document.getElementById('tkaPeserta').value || '').trim();
+  var gelombang = (document.getElementById('tkaGelombang').value || '').trim();
+  var tanggal = (document.getElementById('tkaTanggal').value || '').trim();
+  if (!proktor || !teknisi || !pengawas || !peserta || !gelombang || !tanggal) {
+    alert('Lengkapi semua field yang wajib diisi (*).'); return;
+  }
+  var editId = document.getElementById('tkaEditId').value;
+  var schoolName = '';
+  // Determine school name
+  var schoolSelect = document.getElementById('tkaSchoolSelect');
+  if (schoolSelect && schoolSelect.value && schoolSelect.closest('#tkaSchoolSelectWrap').style.display !== 'none') {
+    schoolName = schoolSelect.value;
+  } else if (editId) {
+    // Editing existing - keep original school
+    var existing = (window._tkaPanitia || []).find(function(r) { return r._key === editId; });
+    schoolName = existing ? existing.nama_sekolah : (currentUser.name || '');
+  } else {
+    schoolName = currentUser.name || '';
+  }
+  if (!schoolName) { alert('Nama sekolah belum dipilih.'); return; }
+
+  var ref;
+  if (editId) {
+    ref = firebase.database().ref('siap_tka_panitia/' + editId);
+  } else {
+    ref = firebase.database().ref('siap_tka_panitia').push();
+  }
+  ref.set({
+    nama_sekolah: schoolName,
+    nama_proktor: proktor,
+    nama_teknisi: teknisi,
+    nama_pengawas: pengawas,
+    jumlah_peserta: parseInt(peserta) || 0,
+    gelombang: gelombang,
+    tanggal_mulai: tanggal,
+    updated_at: new Date().toISOString()
+  }).then(function() {
+    tkaClosePanitiaModal();
+    alert('Data panitia TKA berhasil disimpan!');
+  }).catch(function(err) {
+    alert('Gagal menyimpan: ' + err.message);
+  });
+}
+
+// ============ TKA LAPORAN (ADMIN KORWIL) ============
+function renderTKALaporan() {
+  renderTKAPanitiaTable();
+  renderTKARekapTable();
+}
+
+function renderTKAPanitiaTable() {
+  var body = document.getElementById('tkaPanitiaBody');
+  if (!body) return;
+  var data = (window._tkaPanitia || []).slice();
+  // Sort by nama sekolah
+  data.sort(function(a, b) { return (a.nama_sekolah || '').localeCompare(b.nama_sekolah || ''); });
+  if (data.length === 0) {
+    body.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">Belum ada data panitia TKA.</td></tr>';
+    return;
+  }
+  var html = '';
+  data.forEach(function(r, i) {
+    var tgl = r.tanggal_mulai ? new Date(r.tanggal_mulai).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '-';
+    html += '<tr>'
+      + '<td class="center">' + (i + 1) + '</td>'
+      + '<td><strong>' + escapeHtml(r.nama_sekolah || '-') + '</strong></td>'
+      + '<td>' + escapeHtml(r.nama_proktor || '-') + '</td>'
+      + '<td>' + escapeHtml(r.nama_teknisi || '-') + '</td>'
+      + '<td>' + escapeHtml(r.nama_pengawas || '-') + '</td>'
+      + '<td class="center">' + escapeHtml(r.jumlah_peserta || '0') + '</td>'
+      + '<td>' + escapeHtml(r.gelombang || '-') + '</td>'
+      + '<td>' + tgl + '</td>'
+      + '<td class="action-btns">'
+      + '<button class="btn btn-warning btn-sm me-1" onclick="tkaEditPanitia(\'' + escapeHtml(r._key || '') + '\')"><i class="bi bi-pencil"></i></button>'
+      + '<button class="btn btn-danger btn-sm" onclick="tkaHapusPanitia(\'' + escapeHtml(r._key || '') + '\')"><i class="bi bi-trash"></i></button>'
+      + '</td></tr>';
+  });
+  body.innerHTML = html;
+}
+
+function renderTKARekapTable() {
+  var body = document.getElementById('tkaRekapBody');
+  if (!body) return;
+  var data = (window._tkaMonitoring || []).slice();
+  data.sort(function(a, b) {
+    var sa = (a.school || '').localeCompare(b.school || '');
+    if (sa !== 0) return sa;
+    return (a.wave || '').localeCompare(b.wave || '');
+  });
+  if (data.length === 0) {
+    body.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4">Belum ada data monitoring TKA.</td></tr>';
+    return;
+  }
+  var html = '';
+  data.forEach(function(r, i) {
+    var statusBadge = '<span class="badge bg-warning text-dark">' + escapeHtml(r.status || 'Pending') + '</span>';
+    var status = (r.status || '').toLowerCase();
+    if (status === 'selesai') statusBadge = '<span class="badge bg-success">Selesai</span>';
+    else if (status === 'berlangsung') statusBadge = '<span class="badge bg-primary">Berlangsung</span>';
+    var progressVal = r.progress_persen || 0;
+    var progressColor = progressVal >= 80 ? '#10b981' : progressVal >= 40 ? '#f59e0b' : '#ef4444';
+    var tgl = r.last_update ? new Date(r.last_update).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
+    html += '<tr>'
+      + '<td class="center">' + (i + 1) + '</td>'
+      + '<td><strong>' + escapeHtml(r.school || '-') + '</strong></td>'
+      + '<td>' + escapeHtml(r.wave || '-') + '</td>'
+      + '<td>' + escapeHtml(r.session || '-') + '</td>'
+      + '<td>' + escapeHtml(r.proctor_name || '-') + '</td>'
+      + '<td>' + escapeHtml(r.room || '-') + '</td>'
+      + '<td class="center">' + escapeHtml(r.attendance || '0') + '</td>'
+      + '<td><div style="display:flex;align-items:center;gap:6px;"><div style="flex:1;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;"><div style="height:100%;width:' + progressVal + '%;background:' + progressColor + ';border-radius:4px;"></div></div><span style="font-size:11px;font-weight:600;color:' + progressColor + ';">' + progressVal + '%</span></div></td>'
+      + '<td>' + statusBadge + '</td>'
+      + '<td style="font-size:11px;">' + tgl + '</td>'
+      + '</tr>';
+  });
+  body.innerHTML = html;
+}
+
+function tkaAddPanitia() {
+  // Admin korwil manually adds panitia for a school
+  var sekolahs = getRecords('sekolah').sort(function(a, b) { return (a.nama_sekolah || '').localeCompare(b.nama_sekolah || ''); });
+  if (sekolahs.length === 0) { alert('Belum ada data sekolah.'); return; }
+  var opts = sekolahs.map(function(s) { return '<option value="' + escapeHtml(s.nama_sekolah) + '">' + escapeHtml(s.nama_sekolah) + '</option>'; }).join('');
+
+  document.getElementById('tkaEditId').value = '';
+  document.getElementById('tkaProktor').value = '';
+  document.getElementById('tkaTeknisi').value = '';
+  document.getElementById('tkaPengawas').value = '';
+  document.getElementById('tkaPeserta').value = '';
+  document.getElementById('tkaGelombang').value = '';
+  document.getElementById('tkaTanggal').value = '';
+
+  // Inject school selector before proktor field
+  var modalBody = document.querySelector('#tkaPanitiaModal .modal-body');
+  var existingSchoolSelect = document.getElementById('tkaSchoolSelect');
+  if (!existingSchoolSelect) {
+    var schoolDiv = document.createElement('div');
+    schoolDiv.className = 'form-floating mb-3';
+    schoolDiv.id = 'tkaSchoolSelectWrap';
+    schoolDiv.innerHTML = '<select class="form-select" id="tkaSchoolSelect" style="font-size:14px;border-radius:10px;"><option value="">Pilih Sekolah</option>' + opts + '</select><label style="font-size:13px;">Nama Sekolah *</label>';
+    var proktorDiv = document.getElementById('tkaProktor').closest('.form-floating');
+    if (proktorDiv) modalBody.insertBefore(schoolDiv, proktorDiv);
+  } else {
+    existingSchoolSelect.innerHTML = '<option value="">Pilih Sekolah</option>' + opts;
+    document.getElementById('tkaSchoolSelectWrap').style.display = '';
+  }
+
+  var modal = new bootstrap.Modal(document.getElementById('tkaPanitiaModal'));
+  modal.show();
+}
+
+function tkaEditPanitia(key) {
+  var data = window._tkaPanitia || [];
+  var record = data.find(function(r) { return r._key === key; });
+  if (!record) { alert('Data tidak ditemukan.'); return; }
+
+  document.getElementById('tkaEditId').value = key;
+  // Hide school selector for edit
+  var schoolWrap = document.getElementById('tkaSchoolSelectWrap');
+  if (schoolWrap) schoolWrap.style.display = 'none';
+
+  document.getElementById('tkaProktor').value = record.nama_proktor || '';
+  document.getElementById('tkaTeknisi').value = record.nama_teknisi || '';
+  document.getElementById('tkaPengawas').value = record.nama_pengawas || '';
+  document.getElementById('tkaPeserta').value = record.jumlah_peserta || '';
+  document.getElementById('tkaGelombang').value = record.gelombang || '';
+  document.getElementById('tkaTanggal').value = record.tanggal_mulai || '';
+
+  var modal = new bootstrap.Modal(document.getElementById('tkaPanitiaModal'));
+  modal.show();
+}
+
+function tkaHapusPanitia(key) {
+  if (!confirm('Yakin ingin menghapus data panitia TKA ini?')) return;
+  firebase.database().ref('siap_tka_panitia/' + key).remove().then(function() {
+    alert('Data panitia berhasil dihapus.');
+  }).catch(function(err) {
+    alert('Gagal menghapus: ' + err.message);
+  });
+}
+
 // ============ FIREBASE PPDB INIT ============
 (function() {
   var firebaseConfig = {
@@ -6934,6 +7311,8 @@ function renderPPDBPendaftaran() {
   var data = window._ppdbPendaftaran || [];
   var schoolName = currentUser ? currentUser.name : '';
   var filtered = data.filter(function(r) { return r.sekolah_tujuan === schoolName; });
+  // Sort by nama
+  filtered.sort(function(a, b) { return (a.nama || '').localeCompare(b.nama || ''); });
   if (filtered.length === 0) {
     body.innerHTML = '<tr><td colspan="9" class="text-center text-muted">Belum ada data pendaftaran.</td></tr>';
     return;
@@ -7035,6 +7414,7 @@ function renderPPDBVerifikasi() {
   var data = window._ppdbPendaftaran || [];
   var schoolName = currentUser ? currentUser.name : '';
   var filtered = data.filter(function(r) { return r.sekolah_tujuan === schoolName && r.status === 'Menunggu'; });
+  filtered.sort(function(a, b) { return (a.nama || '').localeCompare(b.nama || ''); });
   if (filtered.length === 0) {
     body.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Tidak ada siswa yang menunggu verifikasi.</td></tr>';
     return;
@@ -7091,6 +7471,9 @@ function renderPPDBRegistrasi() {
   var registrasi = window._ppdbRegistrasi || [];
   var schoolName = currentUser ? currentUser.name : '';
 
+  // Sort diterima by nama
+  diterima.sort(function(a, b) { return (a.nama || '').localeCompare(b.nama || ''); });
+
   // Find registrations that have file data, for this school
   var html = '';
   var count = 0;
@@ -7120,7 +7503,7 @@ function renderPPDBRegistrasi() {
 function ppdbViewFile(noPendaftaran) {
   var registrasi = window._ppdbRegistrasi || [];
   var reg = registrasi.find(function(r) { return r.no_pendaftaran === noPendaftaran; });
-  if (!reg || !reg.file_data) { alert('File tidak ditemukan.'); return; }
+  if (!reg || !reg.file_data || !reg.file_data.startsWith('data:')) { alert('File tidak ditemukan.'); return; }
   var win = window.open('', '_blank');
   if (reg.file_name && (reg.file_name.toLowerCase().endsWith('.pdf'))) {
     win.document.write('<html><head><title>' + escapeHtml(reg.file_name) + '</title></head><body style="margin:0;"><iframe src="' + reg.file_data + '" style="width:100%;height:100vh;border:none;"></iframe></body></html>');

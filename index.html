@@ -5538,11 +5538,18 @@ function renderTableFiltered(type, searchTerm) {
     records = records.filter(function(r) { return r.school_id === schoolId; });
   }
 
-  // Filter by kelas (membaca rombel, misal filter '6' akan menampilkan 6, 6A, 6B, dll)
+  // Filter by kelas (membaca rombel, misal filter '1' akan menampilkan Kelas 1, Kelas 1 A, Kelas 1B, 1A, dll)
   if (type === 'siswa' && activeKelasFilter !== 'semua') {
     records = records.filter(function(r) {
-      var k = String(r.kelas || '').trim();
-      return k === activeKelasFilter || k.startsWith(activeKelasFilter);
+      var k = String(r.kelas || '').trim().toLowerCase();
+      var filter = activeKelasFilter.trim();
+      // Exact match
+      if (k === filter) return true;
+      // Extract first number from kelas value and compare (handles "Kelas 1 A", "Kelas 1B", "1A", dll)
+      var numMatch = k.match(/(\d+)/);
+      if (numMatch) return numMatch[1] === filter;
+      // Fallback: check if string contains the filter
+      return k.includes(filter);
     });
   }
 
@@ -5595,13 +5602,16 @@ function naikanKelas() {
   }
 
   function getAngkaKelas(kelasStr) {
-    var m = String(kelasStr || '').trim().match(/^(\d+)/);
+    var m = String(kelasStr || '').trim().match(/(\d+)/);
     return m ? parseInt(m[1]) : 0;
   }
 
   function isKelasLulus(kelasStr) {
     if (isTK) {
-      return String(kelasStr || '').trim().toUpperCase() === String(kelasLulus).toUpperCase();
+      var k = String(kelasStr || '').trim().toUpperCase();
+      var lulus = String(kelasLulus).toUpperCase();
+      // Exact match or contains the letter (handles "B", "Kelompok B", "Kelas B", etc.)
+      return k === lulus || k.includes(lulus);
     }
     return getAngkaKelas(kelasStr) === kelasLulus;
   }
@@ -5621,7 +5631,7 @@ function naikanKelas() {
       }
     } else {
       var angka = getAngkaKelas(kls);
-      rombel = kls.replace(/^(\d+)/, '');
+      rombel = kls.replace(/(\d+)/, '');
       if (kelasNaik[angka]) {
         daftarKenaikan.push({ id: s.id, nama: s.nama, dari: s.kelas, ke: String(kelasNaik[angka]) + rombel });
       }

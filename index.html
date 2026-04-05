@@ -1328,6 +1328,96 @@ function _notifyFirebaseReady() {
   _firebaseCallbacks = [];
 }
 
+// Migrate localStorage data to Firebase (one-time)
+function _migrateLocalStorageToFirebase() {
+  var types = ['sekolah','siswa','pegawai','pegawai_korwil','sarpras','surat','siswa_lulusan','pengumuman','pip_verval','pip_aktivasi'];
+  var migrated = false;
+
+  types.forEach(function(type) {
+    var fbData = _dbCache[type] || [];
+    // If Firebase is empty, check localStorage
+    if (fbData.length === 0) {
+      try {
+        var localData = JSON.parse(localStorage.getItem('siap_records_' + type) || '[]');
+        if (Array.isArray(localData) && localData.length > 0) {
+          _dbCache[type] = localData;
+          firebaseSaveRecords(type, localData);
+          if (GOOGLE_SCRIPT_URL) syncToGoogleSheets(type, localData);
+          migrated = true;
+          console.log('Migrated ' + localData.length + ' ' + type + ' records from localStorage to Firebase');
+        }
+      } catch(e) {}
+    }
+  });
+
+  // Migrate pengaturan
+  if (!_dbCache['_pengaturan'] || Object.keys(_dbCache['_pengaturan']).length === 0) {
+    for (var i = 0; i < localStorage.length; i++) {
+      var key = localStorage.key(i);
+      if (key && key.indexOf('siap_pengaturan_') === 0) {
+        try {
+          var pData = JSON.parse(localStorage.getItem(key) || '{}');
+          var schoolId = key.replace('siap_pengaturan_', '');
+          if (!_dbCache['_pengaturan']) _dbCache['_pengaturan'] = {};
+          if (Object.keys(pData).length > 0) {
+            _dbCache['_pengaturan'][schoolId] = pData;
+            dbRef.ref('siap_pengaturan/' + schoolId).set(pData);
+            migrated = true;
+          }
+        } catch(e) {}
+      }
+    }
+  }
+
+  // Migrate laporan_status
+  if (!_dbCache['_laporan_status'] || Object.keys(_dbCache['_laporan_status']).length === 0) {
+    try {
+      var lStatus = JSON.parse(localStorage.getItem('siap_laporan_status') || '{}');
+      if (Object.keys(lStatus).length > 0) {
+        _dbCache['_laporan_status'] = lStatus;
+        dbRef.ref('siap_laporan_status').set(lStatus);
+        migrated = true;
+      }
+    } catch(e) {}
+  }
+
+  // Migrate admin profile (only if user was admin korwil)
+  if (!_dbCache['_admin_profile'] || Object.keys(_dbCache['_admin_profile']).length === 0) {
+    try {
+      var aProfile = JSON.parse(localStorage.getItem('siap_admin_profile') || '{}');
+      // Only migrate to admin profile if it looks like a korwil profile (not school operator)
+      if (aProfile && aProfile.nama && Object.keys(aProfile).length > 0) {
+        // Check if it was a school profile mistakenly saved as admin profile
+        // We only migrate if jabatan indicates korwil level
+        var isKorwilProfile = aProfile.jabatan && (aProfile.jabatan.toLowerCase().indexOf('korwil') >= 0 || aProfile.jabatan.toLowerCase().indexOf('koordinator') >= 0 || aProfile.jabatan.toLowerCase().indexOf('pengawas') >= 0);
+        if (isKorwilProfile) {
+          _dbCache['_admin_profile'] = aProfile;
+          dbRef.ref('siap_admin_profile').set(aProfile);
+          migrated = true;
+        }
+      }
+    } catch(e) {}
+  }
+
+  // Migrate admin passwords
+  if (!_dbCache['_admin_passwords'] || Object.keys(_dbCache['_admin_passwords']).length === 0) {
+    var pw1 = localStorage.getItem('siap_admin_password');
+    var pw2 = localStorage.getItem('siap_admin2_password');
+    if (pw1 || pw2) {
+      var pwData = {};
+      if (pw1) pwData.admin1 = pw1;
+      if (pw2) pwData.admin2 = pw2;
+      _dbCache['_admin_passwords'] = pwData;
+      dbRef.ref('siap_admin_passwords').set(pwData);
+      migrated = true;
+    }
+  }
+
+  if (migrated) {
+    console.log('=== SIAP: Data berhasil dimigrasi dari localStorage ke Firebase ===');
+  }
+}
+
 // Initialize Firebase data - call once at startup
 function initFirebaseData() {
   var types = ['sekolah','siswa','pegawai','pegawai_korwil','sarpras','surat','siswa_lulusan','pengumuman','pip_verval','pip_aktivasi'];
@@ -1337,7 +1427,7 @@ function initFirebaseData() {
 
   types.forEach(function(type) {
     var ref = dbRef.ref('siap_records_' + type);
-    ref.on('value', function(snapshot) {
+    ref.once('value', function(snapshot) {
       var val = snapshot.val();
       if (val && typeof val === 'object' && !Array.isArray(val)) {
         _dbCache[type] = Object.values(val);
@@ -1347,33 +1437,77 @@ function initFirebaseData() {
         _dbCache[type] = [];
       }
       loaded++;
-      if (loaded >= total) _notifyFirebaseReady();
+      if (loaded >= total) {
+        // Migrate localStorage data if Firebase is empty
+        _migrateLocalStorageToFirebase();
+        // Now attach real-time listeners
+        types.forEach(function(t) {
+          dbRef.ref('siap_records_' + t).on('value', function(snap) {
+            var v = snap.val();
+            if (v && typeof v === 'object' && !Array.isArray(v)) {
+              _dbCache[t] = Object.values(v);
+            } else if (Array.isArray(v)) {
+              _dbCache[t] = v;
+            } else {
+              _dbCache[t] = [];
+            }
+          });
+        });
+        _notifyFirebaseReady();
+      }
     }, function(err) {
       console.error('Firebase read error for ' + type + ':', err);
       _dbCache[type] = _dbCache[type] || [];
       loaded++;
-      if (loaded >= total) _notifyFirebaseReady();
+      if (loaded >= total) {
+        _migrateLocalStorageToFirebase();
+        types.forEach(function(t) {
+          dbRef.ref('siap_records_' + t).on('value', function(snap) {
+            var v = snap.val();
+            if (v && typeof v === 'object' && !Array.isArray(v)) {
+              _dbCache[t] = Object.values(v);
+            } else if (Array.isArray(v)) {
+              _dbCache[t] = v;
+            } else {
+              _dbCache[t] = [];
+            }
+          });
+        });
+        _notifyFirebaseReady();
+      }
     });
-    _dbListeners[type] = ref;
   });
 
   // pengaturan
-  dbRef.ref('siap_pengaturan').on('value', function(snapshot) {
+  dbRef.ref('siap_pengaturan').once('value', function(snapshot) {
     _dbCache['_pengaturan'] = snapshot.val() || {};
     loaded++;
-    if (loaded >= total) _notifyFirebaseReady();
+    if (loaded >= total) {
+      _migrateLocalStorageToFirebase();
+      dbRef.ref('siap_pengaturan').on('value', function(s) { _dbCache['_pengaturan'] = s.val() || {}; });
+      _notifyFirebaseReady();
+    }
   });
 
   // laporan_status
-  dbRef.ref('siap_laporan_status').on('value', function(snapshot) {
+  dbRef.ref('siap_laporan_status').once('value', function(snapshot) {
     _dbCache['_laporan_status'] = snapshot.val() || {};
     loaded++;
-    if (loaded >= total) _notifyFirebaseReady();
+    if (loaded >= total) {
+      _migrateLocalStorageToFirebase();
+      dbRef.ref('siap_laporan_status').on('value', function(s) { _dbCache['_laporan_status'] = s.val() || {}; });
+      _notifyFirebaseReady();
+    }
   });
 
   // admin profile
   dbRef.ref('siap_admin_profile').on('value', function(snapshot) {
     _dbCache['_admin_profile'] = snapshot.val() || {};
+  });
+
+  // school profiles
+  dbRef.ref('siap_school_profiles').on('value', function(snapshot) {
+    _dbCache['_school_profiles'] = snapshot.val() || {};
   });
 
   // admin passwords
@@ -1412,12 +1546,21 @@ function firebaseGetLaporanStatus() {
   return _dbCache['_laporan_status'] || {};
 }
 
-// Admin profile
+// Admin profile (korwil only)
 function firebaseSaveAdminProfile(data) {
   dbRef.ref('siap_admin_profile').set(data);
 }
 function firebaseGetAdminProfile() {
   return _dbCache['_admin_profile'] || {};
+}
+// School profiles (separate per school)
+function firebaseSaveSchoolProfile(schoolId, data) {
+  dbRef.ref('siap_school_profiles/' + schoolId).set(data);
+  if (!_dbCache['_school_profiles']) _dbCache['_school_profiles'] = {};
+  _dbCache['_school_profiles'][schoolId] = data;
+}
+function firebaseGetSchoolProfile(schoolId) {
+  return (_dbCache['_school_profiles'] || {})[schoolId] || {};
 }
 
 // Admin passwords
@@ -1524,9 +1667,25 @@ function getKepalaSekolah(schoolId) {
 }
 
 function getAdminProfile() {
+  // Admin korwil reads from siap_admin_profile
+  if (currentUser && currentUser.role === 'admin') return firebaseGetAdminProfile();
+  // Sekolah reads from siap_school_profiles/{schoolId}
+  if (currentUser && currentUser.schoolId) return firebaseGetSchoolProfile(currentUser.schoolId);
   return firebaseGetAdminProfile();
 }
 function saveAdminProfile(p) {
+  // Admin korwil saves to siap_admin_profile
+  if (currentUser && currentUser.role === 'admin') {
+    firebaseSaveAdminProfile(p);
+    try { localStorage.setItem('siap_admin_profile', JSON.stringify(p)); } catch(e) {}
+    return;
+  }
+  // Sekolah saves to siap_school_profiles/{schoolId}
+  if (currentUser && currentUser.schoolId) {
+    firebaseSaveSchoolProfile(currentUser.schoolId, p);
+    try { localStorage.setItem('siap_school_profile_' + currentUser.schoolId, JSON.stringify(p)); } catch(e) {}
+    return;
+  }
   firebaseSaveAdminProfile(p);
   try { localStorage.setItem('siap_admin_profile', JSON.stringify(p)); } catch(e) {}
 }

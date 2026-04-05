@@ -5047,7 +5047,8 @@ var suratKategoriList = [
   { id: 'stnk', icon: 'bi-bicycle', title: 'Surat Pengantar Perpanjang STNK', desc: 'Surat pengantar untuk perpanjangan STNK kendaraan dinas', color: '#1a365d', roles: ['sekolah', 'admin'] },
   { id: 'pindah', icon: 'bi-mortarboard', title: 'Surat Permohonan Pindah Sekolah', desc: 'Surat permohonan rekomendasi pindah sekolah siswa', color: '#742a2a', roles: ['sekolah', 'admin'] },
   { id: 'gaji', icon: 'bi-cash-stack', title: 'Surat Rincian Gaji Pegawai', desc: 'Surat keterangan perincian pembayaran gaji pegawai', color: '#276749', roles: ['sekolah', 'admin'] },
-  { id: 'skumptk', icon: 'bi-file-earmark-text', title: 'Pembuatan SKUMPTK', desc: 'Surat Keterangan Untuk Mendapatkan Pembayaran Tunjangan Keluarga Tahun 2026', color: '#44337a', roles: ['sekolah', 'admin'] }
+  { id: 'skumptk', icon: 'bi-file-earmark-text', title: 'Pembuatan SKUMPTK', desc: 'Surat Keterangan Untuk Mendapatkan Pembayaran Tunjangan Keluarga Tahun 2026', color: '#44337a', roles: ['sekolah', 'admin'] },
+  { id: 'pengantar', icon: 'bi-envelope-paper', title: 'Surat Pengantar', desc: 'Surat pengantar untuk pengiriman dokumen/barang ke dinas atau instansi terkait', color: '#9b2c2c', roles: ['sekolah', 'admin'] }
 ];
 
 var suratPrevView = null;
@@ -5117,6 +5118,7 @@ function pilihKategoriSurat(kategoriId) {
   else if (kategoriId === 'pindah') showFormPindahSekolah();
   else if (kategoriId === 'gaji') showFormRincianGaji();
   else if (kategoriId === 'skumptk') showFormSKUMPTK();
+  else if (kategoriId === 'pengantar') showFormSuratPengantar();
 }
 
 function showFormPindahSekolah() {
@@ -6047,6 +6049,278 @@ function unduhDocsSTNK() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+// ============ SURAT PENGANTAR ============
+var _pengantarRows = [{ uraian: '', banyaknya: '1 ( satu ) set', keterangan: 'Dikirimkan dengan hormat untuk mendapatkan penyelesaian lebih lanjut' }];
+
+function showFormSuratPengantar() {
+  document.getElementById('suratFormTitle').innerHTML = '<i class="bi bi-envelope-paper me-2"></i>Surat Pengantar';
+  _pengantarRows = [{ uraian: '', banyaknya: '1 ( satu ) set', keterangan: 'Dikirimkan dengan hormat untuk mendapatkan penyelesaian lebih lanjut' }];
+
+  var today = new Date();
+  var dd = String(today.getDate()).padStart(2, '0');
+  var mm = String(today.getMonth() + 1).padStart(2, '0');
+  var yyyy = today.getFullYear();
+
+  var isAdmin = currentUser && currentUser.role === 'admin';
+
+  // Daftar pilihan tujuan surat
+  var tujuanOptions = [
+    { value: 'dinas_pendidikan', label: 'Kepala Dinas Pendidikan Kabupaten Cirebon di Sumber', tujuanText: 'Yth. Bapak Kepala Dinas Pendidikan\nKabupaten Cirebon\nDi\nSumber' },
+    { value: 'bupati', label: 'Bupati Cirebon di Sumber', tujuanText: 'Yth. Bapak Bupati Cirebon\nDi\nSumber' },
+    { value: 'sekda', label: 'Sekretaris Daerah Kabupaten Cirebon di Sumber', tujuanText: 'Yth. Bapak Sekretaris Daerah\nKabupaten Cirebon\nDi\nSumber' },
+    { value: 'inspektorat', label: 'Inspektorat Kabupaten Cirebon di Sumber', tujuanText: 'Yth. Bapak Inspektur Kabupaten Cirebon\nDi\nSumber' },
+    { value: 'bkpsdm', label: 'BKPSDM Kabupaten Cirebon di Sumber', tujuanText: 'Yth. Bapak Kepala BKPSDM\nKabupaten Cirebon\nDi\nSumber' },
+    { value: 'bpkad', label: 'BPKAD Kabupaten Cirebon di Sumber', tujuanText: 'Yth. Bapak Kepala BPKAD\nKabupaten Cirebon\nDi\nSumber' },
+    { value: 'disdik_cirebon', label: 'Dinas Pendidikan Provinsi Jawa Barat di Bandung', tujuanText: 'Yth. Bapak Kepala Dinas Pendidikan\nProvinsi Jawa Barat\nDi\nBandung' },
+    { value: 'custom', label: 'Tujuan Lainnya... (Isi manual)', tujuanText: '' }
+  ];
+
+  var tujuanOptsHtml = tujuanOptions.map(function(t) {
+    return '<option value="' + t.value + '">' + escapeHtml(t.label) + '</option>';
+  }).join('');
+
+  document.getElementById('suratFormBody').innerHTML =
+    kopUploadHtml() +
+    '<div class="alert alert-info" style="font-size:13px;"><i class="bi bi-info-circle me-1"></i>Isi data surat pengantar. Pilih tujuan surat, kemudian isi uraian barang/dokumen yang akan dikirim. Anda dapat menambahkan lebih dari satu baris uraian.</div>' +
+    '<div class="row g-3">' +
+    '<div class="col-md-4"><div class="form-floating"><input class="form-control" id="sp_nomor_urut" value="000" placeholder="Nomor Urut"><label>Nomor Urut Surat</label></div></div>' +
+    '<div class="col-md-8"><div class="form-floating"><input class="form-control" id="sp_tanggal" type="date" value="' + yyyy + '-' + mm + '-' + dd + '"><label>Tanggal Surat</label></div></div>' +
+    '</div>' +
+    '<hr style="margin:16px 0;border-color:var(--border-color);">' +
+    '<h6 style="font-weight:700;color:var(--primary);margin-bottom:12px;"><i class="bi bi-person me-1"></i>Tujuan Surat</h6>' +
+    '<div class="row g-3">' +
+    '<div class="col-md-8"><div class="form-floating"><select class="form-select" id="sp_tujuan_pilih" onchange="spTujuanChange()">' + tujuanOptsHtml + '</select><label>Pilih Tujuan Surat</label></div></div>' +
+    '<div class="col-md-4" id="sp_tempat_wrap" style="display:none;"><div class="form-floating"><input class="form-control" id="sp_tempat" placeholder="Tempat" style="text-transform:capitalize;"><label>Tempat (Di)</label></div></div>' +
+    '<div class="col-12" id="sp_tujuan_manual_wrap" style="display:none;"><div class="form-floating"><textarea class="form-control" id="sp_tujuan_manual" style="height:120px;" placeholder="Yth. Bapak/Ibu ...&#10;...&#10;Di&#10;..."></textarea><label>Tujuan (Isi Manual)</label></div></div>' +
+    '</div>' +
+    '<hr style="margin:16px 0;border-color:var(--border-color);">' +
+    '<h6 style="font-weight:700;color:var(--primary);margin-bottom:12px;"><i class="bi bi-list-check me-1"></i>Daftar Uraian</h6>' +
+    '<div id="sp_rows_container"></div>' +
+    '<button class="btn btn-outline-primary btn-sm mt-2" onclick="spAddRow()"><i class="bi bi-plus-circle me-1"></i>Tambah Baris</button>' +
+    '<div class="mt-3">' +
+    '<button class="btn btn-accent" onclick="cetakSuratPengantar()"><i class="bi bi-printer me-1"></i>Cetak Surat Pengantar</button>' +
+    '</div>';
+
+  spRenderRows();
+}
+
+var _spTujuanData = [
+  { value: 'dinas_pendidikan', text: 'Yth. Bapak Kepala Dinas Pendidikan\nKabupaten Cirebon\nDi\nSumber' },
+  { value: 'bupati', text: 'Yth. Bapak Bupati Cirebon\nDi\nSumber' },
+  { value: 'sekda', text: 'Yth. Bapak Sekretaris Daerah\nKabupaten Cirebon\nDi\nSumber' },
+  { value: 'inspektorat', text: 'Yth. Bapak Inspektur Kabupaten Cirebon\nDi\nSumber' },
+  { value: 'bkpsdm', text: 'Yth. Bapak Kepala BKPSDM\nKabupaten Cirebon\nDi\nSumber' },
+  { value: 'bpkad', text: 'Yth. Bapak Kepala BPKAD\nKabupaten Cirebon\nDi\nSumber' },
+  { value: 'disdik_cirebon', text: 'Yth. Bapak Kepala Dinas Pendidikan\nProvinsi Jawa Barat\nDi\nBandung' }
+];
+
+function spTujuanChange() {
+  var val = document.getElementById('sp_tujuan_pilih').value;
+  var manualWrap = document.getElementById('sp_tujuan_manual_wrap');
+  var tempatWrap = document.getElementById('sp_tempat_wrap');
+
+  if (val === 'custom') {
+    if (manualWrap) manualWrap.style.display = 'block';
+    if (tempatWrap) tempatWrap.style.display = 'none';
+  } else {
+    if (manualWrap) manualWrap.style.display = 'none';
+    if (tempatWrap) tempatWrap.style.display = 'none';
+  }
+}
+
+function spRenderRows() {
+  var container = document.getElementById('sp_rows_container');
+  if (!container) return;
+  var html = '<div class="table-responsive"><table class="table table-bordered table-sm"><thead><tr>' +
+    '<th style="width:5%;text-align:center;">No</th>' +
+    '<th style="width:45%;">Uraian</th>' +
+    '<th style="width:20%;">Banyaknya</th>' +
+    '<th style="width:25%;">Keterangan</th>' +
+    '<th style="width:5%;"></th>' +
+    '</tr></thead><tbody>';
+  _pengantarRows.forEach(function(row, i) {
+    html += '<tr>' +
+      '<td style="text-align:center;vertical-align:middle;">' + (i + 1) + '</td>' +
+      '<td><textarea class="form-control form-control-sm" rows="3" placeholder="Uraian dokumen/barang..." onchange="_pengantarRows[' + i + '].uraian=this.value">' + escapeHtml(row.uraian) + '</textarea></td>' +
+      '<td><input class="form-control form-control-sm" placeholder="cth: 1 (satu) set" value="' + escapeHtml(row.banyaknya) + '" onchange="_pengantarRows[' + i + '].banyaknya=this.value"></td>' +
+      '<td><textarea class="form-control form-control-sm" rows="2" placeholder="Keterangan..." onchange="_pengantarRows[' + i + '].keterangan=this.value">' + escapeHtml(row.keterangan) + '</textarea></td>' +
+      '<td style="text-align:center;vertical-align:middle;">' + (_pengantarRows.length > 1 ? '<button class="btn btn-outline-danger btn-sm" onclick="spRemoveRow(' + i + ')" title="Hapus"><i class="bi bi-trash"></i></button>' : '') + '</td>' +
+      '</tr>';
+  });
+  html += '</tbody></table></div>';
+  container.innerHTML = html;
+}
+
+function spAddRow() {
+  _pengantarRows.push({ uraian: '', banyaknya: '1 ( satu ) set', keterangan: 'Dikirimkan dengan hormat untuk mendapatkan penyelesaian lebih lanjut' });
+  spRenderRows();
+}
+
+function spRemoveRow(idx) {
+  _pengantarRows.splice(idx, 1);
+  spRenderRows();
+}
+
+function cetakSuratPengantar() {
+  var nomorUrut = document.getElementById('sp_nomor_urut').value.trim();
+  var tanggal = document.getElementById('sp_tanggal').value;
+  var tujuanVal = document.getElementById('sp_tujuan_pilih').value;
+
+  if (!tanggal) { alert('Tanggal harus diisi!'); return; }
+  if (!_pengantarRows.length || !_pengantarRows[0].uraian.trim()) { alert('Uraian harus diisi minimal 1 baris!'); return; }
+
+  // Bangun teks tujuan
+  var tujuanLines = '';
+  if (tujuanVal === 'custom') {
+    tujuanLines = (document.getElementById('sp_tujuan_manual').value || '').trim();
+  } else {
+    var found = _spTujuanData.find(function(t) { return t.value === tujuanVal; });
+    tujuanLines = found ? found.text : '';
+  }
+
+  var tglParts = tanggal.split('-');
+  var bulanNama = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  var tglDisplay = tglParts[2] + ' ' + bulanNama[parseInt(tglParts[1]) - 1] + ' ' + tglParts[0];
+
+  // Bangun nomor surat
+  var nomorDisplay = nomorUrut ? (nomorUrut + ' / SP / Korwil / ' + tglParts[0]) : '........................................';
+
+  // Bangun baris tabel
+  var tableRows = '';
+  _pengantarRows.forEach(function(row, i) {
+    // Ubah uraian menjadi dotted lines (seperti template)
+    var uraianLines = (row.uraian || '').split('\n');
+    var dottedHtml = '';
+    uraianLines.forEach(function(line) {
+      dottedHtml += '<div style="border-bottom:1px dotted black;height:1.1em;margin-bottom:6px;min-height:1.1em;">' + escapeHtml(line) + '</div>';
+    });
+    if (!uraianLines.length || !uraianLines[0].trim()) {
+      dottedHtml = '<div style="border-bottom:1px dotted black;height:1.1em;margin-bottom:6px;min-height:1.1em;"></div>' +
+                   '<div style="border-bottom:1px dotted black;height:1.1em;margin-bottom:6px;min-height:1.1em;"></div>' +
+                   '<div style="border-bottom:1px dotted black;height:1.1em;margin-bottom:6px;min-height:1.1em;"></div>' +
+                   '<div style="border-bottom:1px dotted black;height:1.1em;margin-bottom:6px;min-height:1.1em;"></div>';
+    }
+
+    tableRows += '<tr>' +
+      '<td style="text-align:center;vertical-align:top;">' + (i + 1) + '</td>' +
+      '<td>' + dottedHtml + '</td>' +
+      '<td style="text-align:center;vertical-align:top;">' + escapeHtml(row.banyaknya || '-') + '</td>' +
+      '<td style="vertical-align:top;">' + escapeHtml(row.keterangan || '-') + '</td>' +
+      '</tr>';
+  });
+
+  // Bangun tujuan HTML
+  var tujuanHtml = '';
+  if (tujuanLines) {
+    var lines = tujuanLines.split('\n');
+    tujuanHtml = lines.map(function(line) {
+      var trimmed = line.trim();
+      if (!trimmed) return '';
+      // Bold + underline baris terakhir sebelum "Di"
+      return '<p>' + escapeHtml(line) + '</p>';
+    }).join('');
+  }
+
+  showCetakDialog(function(cs) {
+    var printWin = window.open('', '_blank');
+    printWin.document.write('<!DOCTYPE html>\
+<html lang="id">\
+<head>\
+<meta charset="UTF-8">\
+<title>Surat Pengantar</title>\
+<style>\
+' + getCetakPageCSS(cs) + '\
+* { margin: 0; padding: 0; box-sizing: border-box; }\
+body { font-family: "Times New Roman", Times, serif; width: 100%; margin: auto; font-size: 12pt; line-height: 1.5; color: #000; }\
+.sheet { width: 100%; padding: 0; }\
+.kop-surat { text-align: center; margin-bottom: 20px; border-bottom: 3px double black; padding-bottom: 10px; }\
+.kop-text h1 { font-size: 10pt; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }\
+.kop-text h2 { font-size: 10pt; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }\
+.kop-text h3 { font-size: 12pt; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }\
+.kecamatan-text { font-size: 10pt; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }\
+.kop-text p { font-size: 9pt; margin: 0; }\
+.recipient-info { margin-left: auto; width: fit-content; text-align: left; margin-bottom: 20px; }\
+.recipient-info p { margin-bottom: 2px; }\
+.surat-title { text-align: center; margin-bottom: 5px; }\
+.surat-title h2 { font-size: 14pt; font-weight: bold; text-decoration: underline; margin-bottom: 5px; }\
+.nomor-surat { text-align: center; margin-bottom: 25px; font-size: 12pt; }\
+table.sp-tbl { width: 100%; table-layout: fixed; border-collapse: collapse; margin-bottom: 15px; }\
+table.sp-tbl th, table.sp-tbl td { border: 1px solid black; padding: 6px 8px; vertical-align: top; font-size: 11pt; }\
+table.sp-tbl th { text-align: center; font-weight: bold; text-transform: uppercase; background-color: #fff; font-size: 9pt; line-height: 1.2; letter-spacing: -0.5px; }\
+table.sp-tbl th:nth-child(1) { width: 5%; }\
+table.sp-tbl th:nth-child(2) { width: 55%; }\
+table.sp-tbl th:nth-child(3) { width: 18%; }\
+table.sp-tbl th:nth-child(4) { width: 22%; }\
+.signature-block { margin-left: auto; width: fit-content; text-align: left; margin-top: 20px; }\
+.signature-block p { margin-bottom: 2px; }\
+.signature-name { font-weight: bold; text-decoration: underline; margin-top: 5px; margin-bottom: 0; }\
+.signature-nip { font-weight: normal; }\
+@media screen { .page { box-shadow: 0 0 20px rgba(0,0,0,0.1); margin: 20px auto; } .no-print { display: block; padding: 10px 20px; background: #9b2c2c; color: #fff; text-align: center; } .no-print button { padding: 8px 24px; background: #e53e3e; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; margin: 0 4px; } .no-print button:hover { background: #c53030; } }\
+@media print { .no-print { display: none; } }\
+' + getCetakMarginCSS(cs) + '\
+</style>\
+</head>\
+<body>\
+<div class="no-print">\
+<button onclick="window.print()">&#128424; Cetak / Simpan sebagai PDF</button>\
+<button onclick="window.close()">&#10005; Tutup</button>\
+</div>\
+<div class="sheet">\
+<!-- KOP SURAT -->\
+<header class="kop-surat">\
+<div class="kop-text">\
+<h1>PEMERINTAH KABUPATEN CIREBON</h1>\
+<h2>DINAS PENDIDIKAN</h2>\
+<h3>KOORDINATOR WILAYAH BIDANG PENDIDIKAN</h3>\
+<div class="kecamatan-text">KECAMATAN LEMAHABANG</div>\
+<p>Jl. Letjend MT. Haryono No.05 Sindanglaut Telp. (0231) 635285<br>Lemahabang 45183</p>\
+</div>\
+</header>\
+\
+<!-- ISI SURAT -->\
+<main>\
+<div class="recipient-info">\
+<p>Kepada</p>\
+' + tujuanHtml + '\
+</div>\
+\
+<div class="surat-title">\
+<h2>SURAT PENGANTAR</h2>\
+<div class="nomor-surat">Nomor : ' + escapeHtml(nomorDisplay) + '</div>\
+</div>\
+\
+<!-- TABEL -->\
+<table class="sp-tbl">\
+<thead><tr>\
+<th>No</th>\
+<th>U R A I A N</th>\
+<th>BANYAKNYA</th>\
+<th>KETERANGAN</th>\
+</tr></thead>\
+<tbody>\
+' + tableRows + '\
+</tbody>\
+</table>\
+\
+<!-- TANDA TANGAN -->\
+<div class="signature-block">\
+<p>Lemahabang, ' + tglDisplay + '</p>\
+<br>\
+<p>Korwil Bidang Pendidikan</p>\
+<p>Kecamatan Lemahabang,</p>\
+<br><br><br>\
+<p class="signature-name">ETI BUDIWATI, S.Pd</p>\
+<p class="signature-nip">NIP. 19691002 200604 2 005</p>\
+</div>\
+\
+</main>\
+</div>\
+</body>\
+</html>');
+    printWin.document.close();
+  });
 }
 
 // ============ SKUMPTK ============

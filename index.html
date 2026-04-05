@@ -610,7 +610,7 @@
               <select class="form-select form-select-sm" id="filterPegawaiSekolah" onchange="renderTable('pegawai')" style="width:220px;border-radius:8px;">
                 <option value="">Semua Sekolah</option>
               </select>
-              <button class="btn btn-accent btn-sm" onclick="openModal('pegawai')"><i class="bi bi-plus-circle me-1"></i>Tambah Pegawai</button>
+              <button class="btn btn-accent btn-sm" id="btnTambahPegawai" onclick="openModal('pegawai')"><i class="bi bi-plus-circle me-1"></i>Tambah Pegawai</button>
             </div>
           </div>
           <div class="card-body">
@@ -1243,6 +1243,20 @@ function escapeHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ============ LINKIFY (auto-link URLs) ============
+function linkify(text) {
+  if (!text) return '';
+  var escaped = escapeHtml(text);
+  // Match URLs starting with http:// or https:// or www.
+  var urlRegex = /(https?:\/\/[^\s<]+)|(www\.[^\s<]+\.[^\s<]+)/gi;
+  escaped = escaped.replace(urlRegex, function(url) {
+    var href = url;
+    if (href.indexOf('http') !== 0) href = 'https://' + href;
+    return '<a href="' + href + '" target="_blank" rel="noopener noreferrer" style="color:#2563eb;text-decoration:underline;word-break:break-all;">' + url + '</a>';
+  });
+  return escaped;
+}
+
 // ============ PROPER CASE (Title Case) ============
 function toProper(str) {
   if (!str) return '';
@@ -1680,7 +1694,11 @@ function loadSekolahDashboard() {
 function populateSekolahFilter(selectId) {
   const sel = document.getElementById(selectId);
   const currentVal = sel.value;
+  var isPegawaiFilter = (selectId === 'filterPegawaiSekolah');
   sel.innerHTML = '<option value="">Semua Sekolah</option>';
+  if (isPegawaiFilter) {
+    sel.innerHTML += '<option value="__korwil__"> Pegawai Korwil</option>';
+  }
   getRecords('sekolah').forEach(s => {
     sel.innerHTML += `<option value="${s.id}">${escapeHtml(s.nama_sekolah)}</option>`;
   });
@@ -1688,7 +1706,10 @@ function populateSekolahFilter(selectId) {
 }
 
 // ============ TABLE RENDERING ============
+var _pegawaiKorwilMode = false; // flag saat menampilkan pegawai korwil di halaman manajemen pegawai
+
 function renderTable(type, searchTerm = '') {
+  _pegawaiKorwilMode = false;
   let records = getRecords(type);
   const schoolId = currentUser?.schoolId;
 
@@ -1701,7 +1722,13 @@ function renderTable(type, searchTerm = '') {
   if (currentUser && currentUser.role === 'admin') {
     if (type === 'pegawai') {
       const filterSchool = document.getElementById('filterPegawaiSekolah')?.value;
-      if (filterSchool) records = records.filter(r => r.school_id === filterSchool);
+      if (filterSchool === '__korwil__') {
+        // Tampilkan pegawai korwil
+        records = getRecords('pegawai_korwil');
+        _pegawaiKorwilMode = true;
+      } else if (filterSchool) {
+        records = records.filter(r => r.school_id === filterSchool);
+      }
     }
     if (type === 'sarpras') {
       const filterSchool = document.getElementById('filterSarprasSekolah')?.value;
@@ -1720,6 +1747,20 @@ function renderTable(type, searchTerm = '') {
   const tbodyId = sharedTypes.includes(type) ? `table-${type}` : (isAdmin ? `table-${type}` : `table-${type}-sekolah`);
   const tbody = document.getElementById(tbodyId);
   if (!tbody) return;
+
+  // Update tambah pegawai button when in korwil mode
+  if (type === 'pegawai' && isAdmin) {
+    var btnTambah = document.getElementById('btnTambahPegawai');
+    if (btnTambah) {
+      if (_pegawaiKorwilMode) {
+        btnTambah.setAttribute('onclick', "openModal('pegawai_korwil')");
+        btnTambah.innerHTML = '<i class="bi bi-plus-circle me-1"></i>Tambah Pegawai Korwil';
+      } else {
+        btnTambah.setAttribute('onclick', "openModal('pegawai')");
+        btnTambah.innerHTML = '<i class="bi bi-plus-circle me-1"></i>Tambah Pegawai';
+      }
+    }
+  }
 
   if (records.length === 0) {
     tbody.innerHTML = '<tr><td colspan="20" class="text-center text-muted py-4">Tidak ada data</td></tr>';
@@ -1770,15 +1811,16 @@ function renderTable(type, searchTerm = '') {
       break;
 
     case 'pegawai':
+      var _pegType = _pegawaiKorwilMode ? 'pegawai_korwil' : type;
       html = records.map((r, i) => {
-        const school = getRecord('sekolah', r.school_id);
+        const school = !_pegawaiKorwilMode ? getRecord('sekolah', r.school_id) : null;
         const isAdmin = currentUser && currentUser.role === 'admin';
         return `
         <tr>
           <td class="center">${i+1}</td>
           <td><strong>${escapeHtml(r.nama)}</strong></td>
           <td>${escapeHtml(r.nip)}</td>
-          ${isAdmin ? '<td>' + (school ? escapeHtml(school.nama_sekolah) : '-') + '</td>' : ''}
+          ${isAdmin ? '<td>' + (_pegawaiKorwilMode ? '<span style=\"background:#dbeafe;color:#1d4ed8;padding:3px 8px;border-radius:12px;font-size:11px;\">Korwil</span>' : (school ? escapeHtml(school.nama_sekolah) : '-')) + '</td>' : ''}
           <td>${escapeHtml(r.jabatan)}</td>
           <td>${escapeHtml(r.pangkat_golongan)}</td>
           <td>${escapeHtml(r.jenis_kelamin)}</td>
@@ -1786,8 +1828,8 @@ function renderTable(type, searchTerm = '') {
           <td class="center"><span style="background:#e8f5e9;color:#2e7d32;padding:3px 8px;border-radius:12px;font-size:11px;white-space:nowrap;">${hitungMasaKerja(r.tanggal_mulai_kerja)}</span></td>
           <td class="center"><span style="background:#fff3e0;color:#e65100;padding:3px 8px;border-radius:12px;font-size:11px;white-space:nowrap;">${hitungBUP(r.nip)}</span></td>
           <td class="action-btns">
-            <button class="btn btn-warning btn-sm" onclick="editRecord('${type}','${r.id}')"><i class="bi bi-pencil"></i></button>
-            <button class="btn btn-danger btn-sm" onclick="confirmDelete('${type}','${r.id}')"><i class="bi bi-trash"></i></button>
+            <button class="btn btn-warning btn-sm" onclick="editRecord('${_pegType}','${r.id}')"><i class="bi bi-pencil"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="confirmDelete('${_pegType}','${r.id}')"><i class="bi bi-trash"></i></button>
           </td>
         </tr>`;
       }).join('');
@@ -2493,7 +2535,7 @@ function saveCrudData() {
 
   currentDokumenData = null;
   bootstrap.Modal.getInstance(document.getElementById('crudModal')).hide();
-  if (currentCrudType === 'pip_verval') { renderVervalPipPage(); } else { renderTable(currentCrudType); }
+  if (currentCrudType === 'pip_verval') { renderVervalPipPage(); } else if (currentCrudType === 'pegawai_korwil' && _pegawaiKorwilMode) { renderTable('pegawai'); } else { renderTable(currentCrudType); }
 }
 
 // ============ DOKUMEN SURAT ============
@@ -2558,7 +2600,7 @@ function confirmDelete(type, id) {
   document.getElementById('confirmDeleteBtn').onclick = function() {
     deleteRecord(type, id);
     modal.hide();
-    if (type === 'pip_verval') { renderVervalPipPage(); } else { renderTable(type); }
+    if (type === 'pip_verval') { renderVervalPipPage(); } else if (type === 'pegawai_korwil' && _pegawaiKorwilMode) { renderTable('pegawai'); } else { renderTable(type); }
   };
   modal.show();
 }
@@ -3906,7 +3948,7 @@ function loadPengumuman(containerId) {
     html += '<div class="pengumuman-item ' + prioritasClass + '">' +
       actions +
       '<div class="d-flex align-items-center gap-2 mb-1"><span class="pengumuman-badge ' + badgeColor + '">' + escapeHtml(r.prioritas || 'Biasa') + '</span><span class="pengumuman-judul mb-0">' + escapeHtml(r.judul) + '</span></div>' +
-      '<div class="pengumuman-isi">' + escapeHtml(r.isi) + '</div>' +
+      '<div class="pengumuman-isi">' + linkify(r.isi) + '</div>' +
       '<div class="pengumuman-meta"><i class="bi bi-clock me-1"></i>' + tanggal + '</div>' +
       '</div>';
   });

@@ -1010,6 +1010,38 @@
         <div id="databaseBody"></div>
       </div>
 
+      <!-- ======== PPDB PENGATURAN ======== -->
+      <div id="page-ppdb-pengaturan" class="page-section">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5><i class="bi bi-calendar-check me-2"></i>Pengaturan PPDB</h5>
+          </div>
+          <div class="card-body">
+            <div class="alert alert-info" style="font-size:13px;">
+              <i class="bi bi-info-circle me-1"></i>Atur tanggal mulai dan akhir pendaftaran, serta tanggal pengumuman hasil seleksi. Pengaturan ini akan tampil di halaman PPDB Online.
+            </div>
+            <div class="row g-3 mb-4">
+              <div class="col-md-4">
+                <label class="form-label fw-bold" style="font-size:13px"><i class="bi bi-calendar-event me-1"></i>Tanggal Mulai Pendaftaran</label>
+                <input type="date" class="form-control" id="ppdbTglMulai" style="font-size:14px">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-bold" style="font-size:13px"><i class="bi bi-calendar-x me-1"></i>Tanggal Akhir Pendaftaran</label>
+                <input type="date" class="form-control" id="ppdbTglAkhir" style="font-size:14px">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-bold" style="font-size:13px"><i class="bi bi-megaphone me-1"></i>Tanggal Pengumuman</label>
+                <input type="date" class="form-control" id="ppdbTglUmum" style="font-size:14px">
+              </div>
+            </div>
+            <button class="btn btn-accent" onclick="ppdbSimpanPengaturan()" style="font-size:14px">
+              <i class="bi bi-save me-1"></i>Simpan Pengaturan
+            </button>
+            <div id="ppdbPengaturanStatus" style="margin-top:12px;"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- ======== PPDB - HASIL PENDAFTARAN (Sekolah) ======== -->
       <div id="page-ppdb-pendaftaran" class="page-section">
         <div class="card">
@@ -1591,6 +1623,7 @@ function buildSidebarMenu() {
         </ul>
       </li>
       <li><a href="#" data-page="laporan-sekolah" onclick="navigateTo('laporan-sekolah')"><i class="bi bi-file-earmark-bar-graph"></i>Laporan Sekolah</a></li>
+      <li><a href="#" data-page="ppdb-pengaturan" onclick="navigateTo('ppdb-pengaturan')"><i class="bi bi-calendar-check"></i>Pengaturan PPDB</a></li>
       <li class="menu-parent" onclick="toggleSubmenu(this)">
         <a><i class="bi bi-mortarboard"></i>PPDB Online<i class="bi bi-chevron-right menu-arrow"></i></a>
         <ul class="submenu">
@@ -1650,6 +1683,7 @@ function navigateTo(page) {
     'ubah-sandi': 'Ubah Kata Sandi',
     'manajemen-user': 'Manajemen User',
     'database': 'Export/Import Database',
+    'ppdb-pengaturan': 'PPDB - Pengaturan',
     'ppdb-pendaftaran': 'PPDB - Hasil Pendaftaran',
     'ppdb-verifikasi': 'PPDB - Verifikasi Siswa Diterima',
     'ppdb-registrasi': 'PPDB - Hasil Registrasi',
@@ -1701,6 +1735,7 @@ function navigateTo(page) {
   if (page === 'ppdb-registrasi') renderPPDBRegistrasi();
   if (page === 'ppdb-rekap-daftar') renderPPDBRekapDaftar();
   if (page === 'ppdb-rekap-diterima') renderPPDBRekapDiterima();
+  if (page === 'ppdb-pengaturan') renderPPDBPengaturan();
 
   // Close sidebar on mobile
   closeSidebar();
@@ -6882,6 +6917,10 @@ function cetakTandaTerimaPIP() {
   firebase.database().ref('siap_records_sekolah').on('value', function(snap) {
     window._ppdbSekolah = PV(snap);
   });
+  window._ppdbPengaturan = [];
+  firebase.database().ref('siap_ppdb_pengaturan').on('value', function(snap) {
+    window._ppdbPengaturan = PV(snap);
+  });
 })();
 
 // ============ PPDB RENDER FUNCTIONS ============
@@ -6907,7 +6946,7 @@ function renderPPDBPendaftaran() {
       '<td>' + escapeHtml(r.nama || '-') + '</td>' +
       '<td>' + escapeHtml(r.jenis_kelamin || '-') + '</td>' +
       '<td>' + escapeHtml(r.asal_sekolah || '-') + '</td>' +
-      '<td>' + escapeHtml(r.tanggal_daftar || '-') + '</td>' +
+      '<td>' + (r.created_at ? new Date(r.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '-') + '</td>' +
       '<td>' + statusBadge + '</td>' +
       '</tr>';
   });
@@ -6932,7 +6971,7 @@ function renderPPDBVerifikasi() {
       '<td>' + escapeHtml(r.nama || '-') + '</td>' +
       '<td>' + escapeHtml(r.jenis_kelamin || '-') + '</td>' +
       '<td>' + escapeHtml(r.asal_sekolah || '-') + '</td>' +
-      '<td>' + escapeHtml(r.tanggal_daftar || '-') + '</td>' +
+      '<td>' + (r.created_at ? new Date(r.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '-') + '</td>' +
       '<td>' +
         '<button class="btn btn-sm btn-success me-1" onclick="ppdbTerima(\'' + escapeHtml(r.no_pendaftaran || '') + '\')"><i class="bi bi-check-lg me-1"></i>Terima</button>' +
         '<button class="btn btn-sm btn-danger" onclick="ppdbTolak(\'' + escapeHtml(r.no_pendaftaran || '') + '\')"><i class="bi bi-x-lg me-1"></i>Tolak</button>' +
@@ -6991,7 +7030,7 @@ function renderPPDBRegistrasi() {
       '<td>' + escapeHtml(r.nama || '-') + '</td>' +
       '<td>' + escapeHtml(r.sekolah_tujuan || '-') + '</td>' +
       '<td>' + escapeHtml(reg.file_name || '-') + '</td>' +
-      '<td>' + escapeHtml(reg.tanggal_upload || '-') + '</td>' +
+      '<td>' + (reg.uploaded_at ? new Date(reg.uploaded_at).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '-') + '</td>' +
       '<td><button class="btn btn-sm btn-primary" onclick="ppdbViewFile(\'' + escapeHtml(r.no_pendaftaran || '') + '\')"><i class="bi bi-eye me-1"></i>Lihat</button></td>' +
       '</tr>';
   });
@@ -7095,6 +7134,60 @@ function renderPPDBRekapDiterima() {
   } else {
     body.innerHTML = html;
   }
+}
+
+function renderPPDBPengaturan() {
+  var settings = window._ppdbPengaturan || [];
+  var schoolName = currentUser ? currentUser.name : '';
+  var existing = settings.find(function(s) { return s.nama_sekolah === schoolName; });
+  
+  document.getElementById('ppdbTglMulai').value = existing ? (existing.tanggal_mulai || '') : '';
+  document.getElementById('ppdbTglAkhir').value = existing ? (existing.tanggal_akhir || '') : '';
+  document.getElementById('ppdbTglUmum').value = existing ? (existing.tanggal_pengumuman || '') : '';
+  
+  var statusEl = document.getElementById('ppdbPengaturanStatus');
+  if (existing && existing.tanggal_mulai) {
+    statusEl.innerHTML = '<div class="alert alert-success" style="font-size:12px;margin:0"><i class="bi bi-check-circle me-1"></i>Pengaturan tersimpan. Pendaftaran: ' + 
+      new Date(existing.tanggal_mulai).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) + ' s/d ' + 
+      new Date(existing.tanggal_akhir).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) + 
+      ' | Pengumuman: ' + new Date(existing.tanggal_pengumuman).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}) + '</div>';
+  } else {
+    statusEl.innerHTML = '<div class="alert alert-warning" style="font-size:12px;margin:0"><i class="bi bi-exclamation-triangle me-1"></i>Belum ada pengaturan PPDB untuk sekolah Anda.</div>';
+  }
+}
+
+function ppdbSimpanPengaturan() {
+  var schoolName = currentUser ? currentUser.name : '';
+  if (!schoolName) { alert('Data sekolah tidak ditemukan.'); return; }
+  
+  var tglMulai = document.getElementById('ppdbTglMulai').value;
+  var tglAkhir = document.getElementById('ppdbTglAkhir').value;
+  var tglUmum = document.getElementById('ppdbTglUmum').value;
+  
+  if (!tglMulai || !tglAkhir || !tglUmum) {
+    alert('Semua tanggal harus diisi.');
+    return;
+  }
+  if (new Date(tglAkhir) < new Date(tglMulai)) {
+    alert('Tanggal akhir tidak boleh sebelum tanggal mulai.');
+    return;
+  }
+  
+  var data = {
+    nama_sekolah: schoolName,
+    tanggal_mulai: tglMulai,
+    tanggal_akhir: tglAkhir,
+    tanggal_pengumuman: tglUmum,
+    updated_at: new Date().toISOString()
+  };
+  
+  var ref = firebase.database().ref('siap_ppdb_pengaturan/' + schoolName.replace(/\./g, '_'));
+  ref.set(data).then(function() {
+    alert('Pengaturan PPDB berhasil disimpan!');
+    renderPPDBPengaturan();
+  }).catch(function(e) {
+    alert('Gagal menyimpan: ' + e.message);
+  });
 }
 </script>
 </body>

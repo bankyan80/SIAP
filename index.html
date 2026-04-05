@@ -2046,7 +2046,7 @@ function renderTable(type, searchTerm = '') {
           <td><strong>${escapeHtml(r.perihal)}</strong></td>
           <td>${escapeHtml(r.jenis_surat)}</td>
           <td>${escapeHtml(r.tanggal_surat)}</td>
-          <td>${escapeHtml(r.tujuan)}</td>
+          <td>${r.tujuan === 'Semua Sekolah' ? '<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;white-space:nowrap;">🌐 Semua Sekolah</span>' : escapeHtml(r.tujuan)}</td>
           <td class="center">${statusBadge}</td>
           <td class="center">${docBadge}</td>
           <td class="action-btns">
@@ -2250,6 +2250,32 @@ function suratAutoNomor() {
   nomorEl.value = nomor;
 }
 
+function suratTujuanChange() {
+  var sel = document.getElementById('f_tujuan_select');
+  var customWrap = document.getElementById('suratTujuanCustomWrap');
+  var hiddenTujuan = document.getElementById('f_tujuan');
+  var hiddenTujuanId = document.getElementById('f_tujuan_id');
+  if (!sel) return;
+
+  var val = sel.value;
+  if (val === '__semua__') {
+    if (customWrap) customWrap.style.display = 'none';
+    hiddenTujuan.value = 'Semua Sekolah';
+    hiddenTujuanId.value = '';
+  } else if (val === '__custom__') {
+    if (customWrap) customWrap.style.display = 'block';
+    var customInput = document.getElementById('f_tujuan_custom');
+    hiddenTujuan.value = customInput ? customInput.value : '';
+    hiddenTujuanId.value = '';
+    if (customInput) customInput.focus();
+  } else {
+    if (customWrap) customWrap.style.display = 'none';
+    var sekolah = getRecord('sekolah', val);
+    hiddenTujuan.value = sekolah ? sekolah.nama_sekolah : '';
+    hiddenTujuanId.value = val;
+  }
+}
+
 // ============ CRUD MODAL ============
 function openModal(type, editId = null) {
   document.getElementById('crudModalSave').onclick = saveCrudData;
@@ -2431,7 +2457,14 @@ function openModal(type, editId = null) {
         '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_perihal" value="' + (record ? escapeHtml(record.perihal) : '') + '"><label>Perihal</label></div></div>' +
         '<div class="col-md-6"><div class="form-floating"><select class="form-select" id="f_jenis_surat"><option value="Undangan"' + (record && record.jenis_surat==='Undangan'?' selected':'') + '>Undangan</option><option value="Pemberitahuan"' + (record && record.jenis_surat==='Pemberitahuan'?' selected':'') + '>Pemberitahuan</option><option value="Permohonan"' + (record && record.jenis_surat==='Permohonan'?' selected':'') + '>Permohonan</option><option value="Keterangan"' + (record && record.jenis_surat==='Keterangan'?' selected':'') + '>Keterangan</option><option value="Lainnya"' + (record && record.jenis_surat==='Lainnya'?' selected':'') + '>Lainnya</option></select><label>Jenis Surat</label></div></div>' +
         '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_tanggal_surat" type="date" value="' + (record ? escapeHtml(record.tanggal_surat) : new Date().toISOString().split('T')[0]) + '"><label>Tanggal Surat</label></div></div>' +
-        '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_tujuan" value="' + (record ? escapeHtml(record.tujuan) : 'Koordinator Korwil Bidang Pendidikan Kec. Lemahabang') + '"' + (record ? '' : ' readonly style="background:#f0f4f8;"') + '><label>Tujuan</label></div></div>' +
+        (currentUser.role === 'admin' ?
+          '<div class="col-md-6"><div class="form-floating"><select class="form-select" id="f_tujuan_select" onchange="suratTujuanChange()"><option value="__semua__"' + (!record || record.tujuan==='Semua Sekolah' ? ' selected' : '') + '>Semua Sekolah</option><option value="__custom__"' + (record && record.tujuan && record.tujuan!=='Semua Sekolah' && !getRecord('sekolah',record.tujuan_id) ? ' selected' : '') + '>Tujuan Lainnya...</option>' +
+          getRecords('sekolah').map(function(s) { return '<option value="' + s.id + '"' + (record && record.tujuan_id===s.id ? ' selected' : '') + '>' + escapeHtml(s.nama_sekolah) + '</option>'; }).join('') +
+          '</select><label>Tujuan Surat</label></div></div>' +
+          '<div class="col-md-6" id="suratTujuanCustomWrap" style="display:none;"><div class="form-floating"><input class="form-control" id="f_tujuan_custom" value="' + (record && record.tujuan && record.tujuan!=='Semua Sekolah' && !getRecord('sekolah',record.tujuan_id) ? escapeHtml(record.tujuan) : '') + '" placeholder="Isi tujuan lainnya"><label>Tujuan Lainnya</label></div></div>' +
+          '<input type="hidden" id="f_tujuan" value="' + (record ? escapeHtml(record.tujuan || '') : 'Semua Sekolah') + '"><input type="hidden" id="f_tujuan_id" value="' + (record ? (record.tujuan_id || '') : '') + '">'
+          :
+          '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_tujuan" value="' + (record ? escapeHtml(record.tujuan) : 'Koordinator Korwil Bidang Pendidikan Kec. Lemahabang') + '"' + (record ? '' : ' readonly style="background:#f0f4f8;"') + '><label>Tujuan</label></div></div>') +
         '<div class="col-12"><div class="form-floating"><textarea class="form-control" id="f_isi_surat" style="height:180px;" placeholder="Isi surat...">' + (record ? escapeHtml(record.isi_surat) : '') + '</textarea><label>Isi Surat</label></div></div>' +
         '<div class="col-md-6"><div class="form-floating"><select class="form-select" id="f_status_surat"><option value="Draft"' + (record && record.status==='Draft'?' selected':'') + '>Draft</option><option value="Kirim"' + (record && record.status==='Kirim'?' selected':'') + '>Kirim</option></select><label>Status</label></div></div>' +
         '<div class="col-12"><label class="form-label mb-1 fw-bold" style="font-size:13px;"><i class="bi bi-paperclip me-1"></i>Upload Dokumen (PDF/JPG/PNG, maks 2MB)</label>' +
@@ -2450,6 +2483,22 @@ function openModal(type, editId = null) {
     var docInput = document.getElementById('f_dokumen');
     if (docInput) {
       docInput.addEventListener('change', function() { handleDokumenUpload(this); });
+    }
+    // Attach tujuan custom input listener for admin
+    var customInput = document.getElementById('f_tujuan_custom');
+    if (customInput) {
+      customInput.addEventListener('input', function() {
+        var hiddenTujuan = document.getElementById('f_tujuan');
+        if (hiddenTujuan) hiddenTujuan.value = this.value;
+      });
+    }
+    // Trigger tujuan display for edit records (show/hide custom input)
+    var tujuanSelect = document.getElementById('f_tujuan_select');
+    if (tujuanSelect) {
+      var customWrap = document.getElementById('suratTujuanCustomWrap');
+      if (customWrap && tujuanSelect.value === '__custom__') {
+        customWrap.style.display = 'block';
+      }
     }
   }, 100);
 }
@@ -2608,6 +2657,7 @@ function saveCrudData() {
         tanggal_surat: _tanggalSurat,
         tujuan: document.getElementById('f_tujuan').value.trim(),
         isi_surat: document.getElementById('f_isi_surat').value.trim(),
+        tujuan_id: (document.getElementById('f_tujuan_id') ? document.getElementById('f_tujuan_id').value : '') || '',
         status: document.getElementById('f_status_surat').value
       };
       // Handle dokumen upload
@@ -2624,7 +2674,7 @@ function saveCrudData() {
         }
       }
       if (!data.nomor_surat || !data.perihal) { alert('Nomor surat dan perihal harus diisi!'); return; }
-      if (currentUser.role === 'admin' && !data.school_id) { alert('Pilih sekolah!'); return; }
+      if (currentUser.role === 'admin' && !data.school_id && data.tujuan !== 'Semua Sekolah') { alert('Pilih sekolah!'); return; }
       break;
   }
 

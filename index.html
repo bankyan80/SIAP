@@ -6190,13 +6190,16 @@ function cetakSuratPengantar() {
   // Bangun baris tabel
   var tableRows = '';
   _pengantarRows.forEach(function(row, i) {
-    // Ubah uraian menjadi dotted lines (seperti template)
-    var uraianLines = (row.uraian || '').split('\n');
+    // Uraian: jika ada isi tampilkan teks biasa, jika kosong tampilkan titik-titik
+    var uraianText = (row.uraian || '').trim();
     var dottedHtml = '';
-    uraianLines.forEach(function(line) {
-      dottedHtml += '<div style="border-bottom:1px dotted black;height:1.1em;margin-bottom:6px;min-height:1.1em;">' + escapeHtml(line) + '</div>';
-    });
-    if (!uraianLines.length || !uraianLines[0].trim()) {
+    if (uraianText) {
+      // Ada isi: tampilkan teks biasa tanpa titik-titik
+      dottedHtml = uraianText.split('\n').map(function(line) {
+        return '<div style="margin-bottom:2px;">' + escapeHtml(line) + '</div>';
+      }).join('');
+    } else {
+      // Kosong: tampilkan titik-titik garis bantu
       dottedHtml = '<div style="border-bottom:1px dotted black;height:1.1em;margin-bottom:6px;min-height:1.1em;"></div>' +
                    '<div style="border-bottom:1px dotted black;height:1.1em;margin-bottom:6px;min-height:1.1em;"></div>' +
                    '<div style="border-bottom:1px dotted black;height:1.1em;margin-bottom:6px;min-height:1.1em;"></div>' +
@@ -6235,7 +6238,7 @@ function cetakSuratPengantar() {
 * { margin: 0; padding: 0; box-sizing: border-box; }\
 body { font-family: "Times New Roman", Times, serif; width: 100%; margin: auto; font-size: 12pt; line-height: 1.5; color: #000; }\
 .sheet { width: 100%; padding: 0; }\
-.kop-surat { text-align: center; margin-bottom: 20px; border-bottom: 3px double black; padding-bottom: 10px; }\
+.kop-surat { text-align: center; margin-bottom: 20px; border-bottom: 3px double black; padding-bottom: 10px; }\n.kop-table { width: 100%; border-collapse: collapse; }\n.kop-table td { vertical-align: middle; }\n.kop-logo { width: 80px; vertical-align: middle; padding-right: 12px; }\n.kop-logo img { width: 80px; height: auto; display: block; }\n.kop-text-cell { text-align: center; vertical-align: middle; line-height: 1.3; }\
 .kop-text h1 { font-size: 10pt; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }\
 .kop-text h2 { font-size: 10pt; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }\
 .kop-text h3 { font-size: 12pt; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }\
@@ -6270,13 +6273,16 @@ table.sp-tbl th:nth-child(4) { width: 22%; }\
 <div class="sheet">\
 <!-- KOP SURAT -->\
 <header class="kop-surat">\
-<div class="kop-text">\
-<h1>PEMERINTAH KABUPATEN CIREBON</h1>\
-<h2>DINAS PENDIDIKAN</h2>\
-<h3>KOORDINATOR WILAYAH BIDANG PENDIDIKAN</h3>\
-<div class="kecamatan-text">KECAMATAN LEMAHABANG</div>\
-<p>Jl. Letjend MT. Haryono No.05 Sindanglaut Telp. (0231) 635285<br>Lemahabang 45183</p>\
-</div>\
+<table class="kop-table"><tr>\
+<td class="kop-logo"><img src="https://i.pinimg.com/1200x/76/39/2d/76392d91c9c22d8ec5563b1126cd55b8.jpg"></td>\
+<td class="kop-text-cell">\
+<div style="font-size:10pt;font-weight:bold;text-transform:uppercase;margin-bottom:2px;">PEMERINTAH KABUPATEN CIREBON</div>\
+<div style="font-size:10pt;font-weight:bold;text-transform:uppercase;margin-bottom:2px;">DINAS PENDIDIKAN</div>\
+<div style="font-size:12pt;font-weight:bold;text-transform:uppercase;margin-bottom:2px;">KOORDINATOR WILAYAH BIDANG PENDIDIKAN</div>\
+<div style="font-size:10pt;font-weight:bold;text-transform:uppercase;margin-bottom:5px;">KECAMATAN LEMAHABANG</div>\
+<div style="font-size:9pt;margin:0;">Jl. Letjend MT. Haryono No.05 Sindanglaut Telp. (0231) 635285<br>Lemahabang 45183</div>\
+</td>\
+</tr></table>\
 </header>\
 \
 <!-- ISI SURAT -->\

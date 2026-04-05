@@ -662,14 +662,8 @@
             </div>
           </div>
           <div class="card-body">
-            <div class="d-flex gap-2 mb-3 flex-wrap">
-              <button class="btn btn-sm btn-outline-secondary aktif-filter" onclick="filterSiswaKelas('semua', this)">Semua</button>
-              <button class="btn btn-sm btn-outline-secondary" onclick="filterSiswaKelas('1', this)">Kelas 1</button>
-              <button class="btn btn-sm btn-outline-secondary" onclick="filterSiswaKelas('2', this)">Kelas 2</button>
-              <button class="btn btn-sm btn-outline-secondary" onclick="filterSiswaKelas('3', this)">Kelas 3</button>
-              <button class="btn btn-sm btn-outline-secondary" onclick="filterSiswaKelas('4', this)">Kelas 4</button>
-              <button class="btn btn-sm btn-outline-secondary" onclick="filterSiswaKelas('5', this)">Kelas 5</button>
-              <button class="btn btn-sm btn-outline-secondary" onclick="filterSiswaKelas('6', this)">Kelas 6</button>
+            <div class="d-flex gap-2 mb-3 flex-wrap" id="kelasFilterContainer">
+              <!-- Kelas buttons loaded dynamically by buildKelasFilter() -->
             </div>
             <div class="search-bar"><i class="bi bi-search"></i><input type="text" placeholder="Cari siswa..." oninput="renderTableFiltered('siswa', this.value)"></div>
             <div class="table-container max-h-table">
@@ -902,6 +896,9 @@
               <div class="col-12"><div class="form-floating"><input type="text" class="form-control" id="ps_alamat" placeholder="Alamat"><label>Alamat Lengkap</label></div></div>
               <div class="col-md-6"><div class="form-floating">
                 <select class="form-select" id="ps_jenjang">
+                  <option value="PAUD">PAUD</option>
+                  <option value="TK">TK</option>
+                  <option value="Paket A">Paket A</option>
                   <option value="SD">SD</option>
                   <option value="SMP">SMP</option>
                   <option value="SMA">SMA</option>
@@ -1257,11 +1254,67 @@ function linkify(text) {
   return escaped;
 }
 
+// ============ JENJANG HELPERS ============
+function jenjangBadgeColor(j) {
+  var colors = {
+    'PAUD':  { bg: '#fef3c7', color: '#92400e' },
+    'TK':    { bg: '#fce7f3', color: '#9d174d' },
+    'RA':    { bg: '#fce7f3', color: '#9d174d' },
+    'Paket A': { bg: '#fdf2f8', color: '#be185d' },
+    'Paket B': { bg: '#f5f3ff', color: '#6d28d9' },
+    'SD':    { bg: '#ebf8ff', color: '#2b6cb0' },
+    'MI':    { bg: '#ebf8ff', color: '#2b6cb0' },
+    'SMP':   { bg: '#f0fff4', color: '#276749' },
+    'MTs':   { bg: '#f0fff4', color: '#276749' },
+    'SMA':   { bg: '#fffff0', color: '#975a16' },
+    'MA':    { bg: '#fffff0', color: '#975a16' },
+    'SMK':   { bg: '#fff1f2', color: '#be123c' },
+    'SLB':   { bg: '#f0fdf4', color: '#166534' }
+  };
+  var c = colors[j] || { bg: '#f1f5f9', color: '#475569' };
+  return 'background:' + c.bg + ';color:' + c.color;
+}
+
+function jenjangKelasList(j) {
+  if (j === 'PAUD' || j === 'TK' || j === 'RA') return ['A', 'B'];
+  if (j === 'Paket A') return ['1', '2', '3', '4', '5', '6'];
+  if (j === 'Paket B') return ['7', '8', '9'];
+  return ['1', '2', '3', '4', '5', '6'];
+}
+
+function jenjangLabel(j) {
+  if (j === 'PAUD' || j === 'TK' || j === 'RA') return 'Kelompok';
+  return 'Kelas';
+}
+
+function jenjangNaikKelas(j) {
+  if (j === 'PAUD' || j === 'TK' || j === 'RA') return { 'A': 'B' };
+  if (j === 'Paket A') return { 1:2, 2:3, 3:4, 4:5, 5:6 };
+  if (j === 'Paket B') return { 7:8, 8:9 };
+  return { 1:2, 2:3, 3:4, 4:5, 5:6 };
+}
+
+function jenjangLulusKelas(j) {
+  if (j === 'PAUD' || j === 'TK' || j === 'RA') return 'B';
+  if (j === 'Paket A') return 6;
+  if (j === 'Paket B') return 9;
+  return 6;
+}
+
+function jenjangLabelKelas(j, k) {
+  if (j === 'PAUD' || j === 'TK' || j === 'RA') return 'Kelompok ' + k;
+  return 'Kelas ' + k;
+}
+
+function isJenjangTK(j) {
+  return ['PAUD','TK','RA'].indexOf(j) >= 0;
+}
+
 // ============ PROPER CASE (Title Case) ============
 function toProper(str) {
   if (!str) return '';
   var result = String(str).toLowerCase().replace(/\b\w/g, function(c) { return c.toUpperCase(); });
-  var abbrevs = ['SD','SMP','SMA','SMK','MI','MTs','MA','TK','PAUD','RA','Sd','Smp','Sma','Smk'];
+  var abbrevs = ['SD','SMP','SMA','SMK','MI','MTs','MA','TK','PAUD','RA','Paket A','Paket B','Sd','Smp','Sma','Smk'];
   abbrevs.forEach(function(abbr) {
     var regex = new RegExp('\\b' + abbr + '\\b', 'g');
     result = result.replace(regex, abbr.toUpperCase());
@@ -1582,7 +1635,7 @@ function navigateTo(page) {
   if (page === 'pegawai-korwil') renderTable('pegawai_korwil');
   if (page === 'manajemen-pegawai') { populateSekolahFilter('filterPegawaiSekolah'); renderTable('pegawai'); }
   if (page === 'admin-sarpras') { populateSekolahFilter('filterSarprasSekolah'); renderTable('sarpras'); }
-  if (page === 'data-siswa') { activeKelasFilter = 'semua'; document.querySelectorAll('#page-data-siswa .d-flex.gap-2.mb-3 button').forEach(function(b) { b.classList.remove('aktif-filter'); }); var semBtn = document.querySelector('#page-data-siswa .d-flex.gap-2.mb-3 button'); if (semBtn) semBtn.classList.add('aktif-filter'); renderTable('siswa'); }
+  if (page === 'data-siswa') { activeKelasFilter = 'semua'; buildKelasFilter(); renderTable('siswa'); }
   if (page === 'siswa-lulusan') renderTable('siswa_lulusan');
   if (page === 'data-pegawai') renderTable('pegawai');
   if (page === 'data-sarpras') renderTable('sarpras');
@@ -1666,7 +1719,7 @@ function loadAdminDashboard() {
         <td class="center">${i + 1}</td>
         <td><strong>${escapeHtml(s.nama_sekolah)}</strong></td>
         <td>${escapeHtml(s.npsn)}</td>
-        <td><span class="badge-jenjang" style="background:${s.jenjang==='SD'?'#ebf8ff;color:#2b6cb0':s.jenjang==='SMP'?'#f0fff4;color:#276749':'#fffff0;color:#975a16'}">${escapeHtml(s.jenjang)}</span></td>
+        <td><span class="badge-jenjang" style="${jenjangBadgeColor(s.jenjang)}">${escapeHtml(s.jenjang)}</span></td>
         <td>${escapeHtml(s.kepala_sekolah)}</td>
       </tr>
     `).join('');
@@ -1777,7 +1830,7 @@ function renderTable(type, searchTerm = '') {
           <td>${escapeHtml(r.npsn)}</td>
           <td>${escapeHtml(r.alamat)}</td>
           <td>${escapeHtml(r.kepala_sekolah)}</td>
-          <td><span class="badge-jenjang" style="background:${r.jenjang==='SD'?'#ebf8ff;color:#2b6cb0':r.jenjang==='SMP'?'#f0fff4;color:#276749':'#fffff0;color:#975a16'}">${escapeHtml(r.jenjang)}</span></td>
+          <td><span class="badge-jenjang" style="${jenjangBadgeColor(r.jenjang)}">${escapeHtml(r.jenjang)}</span></td>
           <td>${escapeHtml(r.telepon)}</td>
           <td>${escapeHtml(r.email)}</td>
           <td class="action-btns">
@@ -1985,10 +2038,11 @@ function renderTable(type, searchTerm = '') {
       html = records.map((r, i) => {
         var statusBadge = r.status === 'Kirim' ? '<span class="badge bg-success">Kirim</span>' : '<span class="badge bg-warning text-dark">Draft</span>';
         var docBadge = r.dokumen_nama ? '<button class="btn btn-outline-primary btn-sm me-1" onclick="lihatDokumen(\'' + r.id + '\')" title="Lihat Dokumen"><i class="bi bi-file-earmark-pdf"></i></button><button class="btn btn-outline-danger btn-sm" onclick="hapusDokumen(\'' + r.id + '\')" title="Hapus Dokumen"><i class="bi bi-x-circle"></i></button>' : '<span class="text-muted" style="font-size:11px;">-</span>';
+        var kodeBadge = r.kode_klasifikasi ? '<span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600;white-space:nowrap;">' + escapeHtml(r.kode_klasifikasi) + '</span>' : '';
         return `
         <tr>
           <td class="center">${i+1}</td>
-          <td>${escapeHtml(r.nomor_surat)}</td>
+          <td>${kodeBadge} ${escapeHtml(r.nomor_surat)}</td>
           <td><strong>${escapeHtml(r.perihal)}</strong></td>
           <td>${escapeHtml(r.jenis_surat)}</td>
           <td>${escapeHtml(r.tanggal_surat)}</td>
@@ -2018,7 +2072,7 @@ function cetakSurat(id) {
   var tanggal = rec.tanggal_surat ? new Date(rec.tanggal_surat).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
   var html = '<div class="report-container">' +
     getKopHtml() +
-    buildJudul(escapeHtml(rec.jenis_surat || 'Surat'), 'Nomor: ' + escapeHtml(rec.nomor_surat), 'Perihal: ' + escapeHtml(rec.perihal)) +
+    buildJudul(escapeHtml(rec.jenis_surat || 'Surat'), 'Nomor: ' + escapeHtml(rec.nomor_surat), 'Perihal: ' + escapeHtml(rec.perihal) + (rec.kode_klasifikasi ? ' | Klasifikasi: ' + escapeHtml(rec.kode_klasifikasi) : '')) +
     '<table style="width:100%;font-size:13px;border-collapse:collapse;margin-bottom:24px;">' +
       '<tr><td style="width:140px;padding:4px 0;">Nomor</td><td style="padding:4px 0;">: ' + escapeHtml(rec.nomor_surat) + '</td><td style="padding:4px 0;width:140px;">Lampiran</td><td style="padding:4px 0;">: -</td></tr>' +
       '<tr><td style="padding:4px 0;">Perihal</td><td style="padding:4px 0;">: ' + escapeHtml(rec.perihal) + '</td><td style="padding:4px 0;">Hal</td><td style="padding:4px 0;">: 1 Lembar</td></tr>' +
@@ -2164,6 +2218,38 @@ function uploadTemplate(type, inputEl) {
   reader.readAsArrayBuffer(file);
 }
 
+// ============ SURAT AUTO NOMOR ============
+function suratAutoNomor() {
+  var kodeEl = document.getElementById('f_kode_klasifikasi');
+  var instansiEl = document.getElementById('f_kode_instansi');
+  var nomorEl = document.getElementById('f_nomor_surat');
+  var tanggalEl = document.getElementById('f_tanggal_surat');
+  if (!kodeEl || !nomorEl) return;
+
+  var kode = kodeEl.value;
+  var instansi = instansiEl ? instansiEl.value.trim().toUpperCase() : '';
+  var tahun = new Date().getFullYear();
+
+  if (!kode) {
+    nomorEl.value = '';
+    return;
+  }
+
+  // Hitung nomor urut: cari surat terakhir dengan kode yang sama tahun ini
+  var surats = getRecords('surat').filter(function(s) {
+    return s.kode_klasifikasi === kode && s.tahun_surat == tahun;
+  });
+  var nomorUrut = surats.length + 1;
+  var urutStr = String(nomorUrut).padStart(3, '0');
+
+  // Format: Kode / Urut / Instansi / Tahun
+  var nomor = kode + ' / ' + urutStr;
+  if (instansi) nomor += ' / ' + instansi;
+  nomor += ' / ' + tahun;
+
+  nomorEl.value = nomor;
+}
+
 // ============ CRUD MODAL ============
 function openModal(type, editId = null) {
   document.getElementById('crudModalSave').onclick = saveCrudData;
@@ -2186,7 +2272,7 @@ function openModal(type, editId = null) {
           <div class="col-12"><div class="form-floating"><input class="form-control" id="f_alamat" value="${record ? escapeHtml(record.alamat) : ''}"><label>Alamat</label></div></div>
           <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_kepala_sekolah" value="${record ? escapeHtml(record.kepala_sekolah) : ''}"><label>Kepala Sekolah</label></div></div>
           <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_nip_kepala" value="${record ? escapeHtml(record.nip_kepala) : ''}"><label>NIP Kepala Sekolah</label></div></div>
-          <div class="col-md-6"><div class="form-floating"><select class="form-select" id="f_jenjang"><option value="SD" ${record && record.jenjang==='SD'?'selected':''}>SD</option><option value="SMP" ${record && record.jenjang==='SMP'?'selected':''}>SMP</option><option value="SMA" ${record && record.jenjang==='SMA'?'selected':''}>SMA</option><option value="SMK" ${record && record.jenjang==='SMK'?'selected':''}>SMK</option><option value="Lainnya" ${record && record.jenjang==='Lainnya'?'selected':''}>Lainnya</option></select><label>Jenjang</label></div></div>
+          <div class="col-md-6"><div class="form-floating"><select class="form-select" id="f_jenjang"><option value="PAUD" ${record && record.jenjang==='PAUD'?'selected':''}>PAUD</option><option value="TK" ${record && record.jenjang==='TK'?'selected':''}>TK</option><option value="Paket A" ${record && record.jenjang==='Paket A'?'selected':''}>Paket A</option><option value="SD" ${record && record.jenjang==='SD'?'selected':''}>SD</option><option value="SMP" ${record && record.jenjang==='SMP'?'selected':''}>SMP</option><option value="SMA" ${record && record.jenjang==='SMA'?'selected':''}>SMA</option><option value="SMK" ${record && record.jenjang==='SMK'?'selected':''}>SMK</option><option value="Lainnya" ${record && record.jenjang==='Lainnya'?'selected':''}>Lainnya</option></select><label>Jenjang</label></div></div>
           <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_telepon" value="${record ? escapeHtml(record.telepon) : ''}"><label>Telepon</label></div></div>
           <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_email" type="email" value="${record ? escapeHtml(record.email) : ''}"><label>Email</label></div></div>
         </div>`;
@@ -2329,9 +2415,19 @@ function openModal(type, editId = null) {
       const suratSekolahOptions = getRecords('sekolah').map(function(s) {
         return '<option value="' + s.id + '"' + (record && record.school_id === s.id ? ' selected' : (!record && currentUser.schoolId === s.id ? ' selected' : '')) + '>' + escapeHtml(s.nama_sekolah) + '</option>';
       }).join('');
+      var selKode = record ? (record.kode_klasifikasi || '') : '';
+      var selInstansi = record ? (record.kode_instansi || '') : '';
       formHtml = '<div class="row g-3">' +
         (currentUser.role === 'admin' ? '<div class="col-md-6"><div class="form-floating"><select class="form-select" id="f_school_id"><option value="">Pilih Sekolah</option>' + suratSekolahOptions + '</select><label>Sekolah</label></div></div>' : '') +
-        '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_nomor_surat" value="' + (record ? escapeHtml(record.nomor_surat) : '') + '"><label>Nomor Surat</label></div></div>' +
+        '<div class="col-md-6"><div class="form-floating"><select class="form-select" id="f_kode_klasifikasi" onchange="suratAutoNomor()"><option value="">-- Pilih Kode Klasifikasi --</option>' +
+          '<optgroup label="A. PENDIDIKAN (420)"><option value="420"' + (selKode==='420'?' selected':'') + '>420 - Pendidikan (Umum)</option><option value="421"' + (selKode==='421'?' selected':'') + '>421 - Sekolah</option><option value="421.1"' + (selKode==='421.1'?' selected':'') + '>421.1 - Pra Sekolah / PAUD / TK</option><option value="421.2"' + (selKode==='421.2'?' selected':'') + '>421.2 - Sekolah Dasar (SD)</option><option value="421.3"' + (selKode==='421.3'?' selected':'') + '>421.3 - Sekolah Menengah (SMP / SMA)</option><option value="421.4"' + (selKode==='421.4'?' selected':'') + '>421.4 - Perguruan Tinggi</option><option value="421.5"' + (selKode==='421.5'?' selected':'') + '>421.5 - Sekolah Kejuruan (SMK)</option><option value="421.6"' + (selKode==='421.6'?' selected':'') + '>421.6 - Kegiatan Sekolah / Ekstrakurikuler</option><option value="421.7"' + (selKode==='421.7'?' selected':'') + '>421.7 - Kursus-kursus</option><option value="421.8"' + (selKode==='421.8'?' selected':'') + '>421.8 - Sekolah Luar Biasa (SLB)</option><option value="421.9"' + (selKode==='421.9'?' selected':'') + '>421.9 - Pendidikan Luar Sekolah / Masyarakat</option><option value="422"' + (selKode==='422'?' selected':'') + '>422 - Administrasi Sekolah</option><option value="422.1"' + (selKode==='422.1'?' selected':'') + '>422.1 - Persyaratan Masuk Sekolah (PPDB)</option><option value="422.2"' + (selKode==='422.2'?' selected':'') + '>422.2 - Hari Belajar / Kalender Pendidikan</option><option value="422.3"' + (selKode==='422.3'?' selected':'') + '>422.3 - Kurikulum / Silabus / Mata Pelajaran</option><option value="422.4"' + (selKode==='422.4'?' selected':'') + '>422.4 - Ujian / Ijazah / Sertifikat</option><option value="422.5"' + (selKode==='422.5'?' selected':'') + '>422.5 - Beasiswa / Bantuan Siswa</option><option value="423"' + (selKode==='423'?' selected':'') + '>423 - Tenaga Kependidikan (Guru & Pengawas)</option><option value="424"' + (selKode==='424'?' selected':'') + '>424 - Sarana Pendidikan (Gedung & Alat Peraga)</option><option value="425"' + (selKode==='425'?' selected':'') + '>425 - Perpustakaan Sekolah</option></optgroup>' +
+          '<optgroup label="B. KEPEGAWAIAN (800)"><option value="800.1.1"' + (selKode==='800.1.1'?' selected':'') + '>800.1.1 - Formasi Pegawai</option><option value="800.1.2"' + (selKode==='800.1.2'?' selected':'') + '>800.1.2 - Pengangkatan CPNS</option><option value="800.1.3"' + (selKode==='800.1.3'?' selected':'') + '>800.1.3 - Kenaikan Pangkat</option><option value="800.1.6"' + (selKode==='800.1.6'?' selected':'') + '>800.1.6 - Mutasi Pegawai</option><option value="800.1.9"' + (selKode==='800.1.9'?' selected':'') + '>800.1.9 - Kesejahteraan Pegawai</option><option value="800.1.10"' + (selKode==='800.1.10'?' selected':'') + '>800.1.10 - Cuti Pegawai</option><option value="800.1.11"' + (selKode==='800.1.11'?' selected':'') + '>800.1.11 - Surat Penugasan / Surat Tugas</option></optgroup>' +
+          '<optgroup label="C. KEUANGAN (900)"><option value="900.1.1"' + (selKode==='900.1.1'?' selected':'') + '>900.1.1 - Anggaran (RKA/DPA)</option><option value="900.1.3"' + (selKode==='900.1.3'?' selected':'') + '>900.1.3 - Bantuan Operasional Sekolah (BOS)</option><option value="900.1.7"' + (selKode==='900.1.7'?' selected':'') + '>900.1.7 - Perjalanan Dinas</option></optgroup>' +
+          '<optgroup label="D. UMUM (000)"><option value="000.1.1"' + (selKode==='000.1.1'?' selected':'') + '>000.1.1 - Program Kerja</option><option value="000.1.2"' + (selKode==='000.1.2'?' selected':'') + '>000.1.2 - Laporan Kegiatan</option><option value="000.1.5"' + (selKode==='000.1.5'?' selected':'') + '>000.1.5 - Rapat-rapat / Undangan</option><option value="000.8"' + (selKode==='000.8'?' selected':'') + '>000.8 - Perlengkapan / BMD</option></optgroup>' +
+        '</select><label>Kode Klasifikasi Surat</label></div></div>' +
+        '<div class="col-md-3"><div class="form-floating"><input class="form-control" id="f_kode_instansi" value="' + escapeHtml(selInstansi) + '" placeholder="cth: SD-NEGERI-01" style="text-transform:uppercase;"><label>Kode Instansi</label></div></div>' +
+        '<div class="col-md-3"><div class="form-floating"><button class="btn btn-success w-100 h-100" onclick="suratAutoNomor()" style="font-size:13px;font-weight:600;border-radius:8px;margin-top:8px;"><i class="bi bi-arrow-repeat me-1"></i>Auto Nomor</button></div></div>' +
+        '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_nomor_surat" value="' + (record ? escapeHtml(record.nomor_surat) : '') + '" placeholder="Otomatis atau manual"><label>Nomor Surat</label></div></div>' +
         '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_perihal" value="' + (record ? escapeHtml(record.perihal) : '') + '"><label>Perihal</label></div></div>' +
         '<div class="col-md-6"><div class="form-floating"><select class="form-select" id="f_jenis_surat"><option value="Undangan"' + (record && record.jenis_surat==='Undangan'?' selected':'') + '>Undangan</option><option value="Pemberitahuan"' + (record && record.jenis_surat==='Pemberitahuan'?' selected':'') + '>Pemberitahuan</option><option value="Permohonan"' + (record && record.jenis_surat==='Permohonan'?' selected':'') + '>Permohonan</option><option value="Keterangan"' + (record && record.jenis_surat==='Keterangan'?' selected':'') + '>Keterangan</option><option value="Lainnya"' + (record && record.jenis_surat==='Lainnya'?' selected':'') + '>Lainnya</option></select><label>Jenis Surat</label></div></div>' +
         '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_tanggal_surat" type="date" value="' + (record ? escapeHtml(record.tanggal_surat) : new Date().toISOString().split('T')[0]) + '"><label>Tanggal Surat</label></div></div>' +
@@ -2499,12 +2595,17 @@ function saveCrudData() {
       break;
 
     case 'surat':
+      var _tanggalSurat = document.getElementById('f_tanggal_surat').value;
+      var _tahunSurat = _tanggalSurat ? new Date(_tanggalSurat).getFullYear() : new Date().getFullYear();
       data = {
         school_id: currentUser.role === 'admin' ? document.getElementById('f_school_id').value : currentUser.schoolId,
+        kode_klasifikasi: document.getElementById('f_kode_klasifikasi').value,
+        kode_instansi: document.getElementById('f_kode_instansi').value.trim().toUpperCase(),
+        tahun_surat: _tahunSurat,
         nomor_surat: document.getElementById('f_nomor_surat').value.trim(),
         perihal: document.getElementById('f_perihal').value.trim(),
         jenis_surat: document.getElementById('f_jenis_surat').value,
-        tanggal_surat: document.getElementById('f_tanggal_surat').value,
+        tanggal_surat: _tanggalSurat,
         tujuan: document.getElementById('f_tujuan').value.trim(),
         isi_surat: document.getElementById('f_isi_surat').value.trim(),
         status: document.getElementById('f_status_surat').value
@@ -4596,8 +4697,7 @@ function unduhDocsLulusan() {
       '<td style="text-align:center;border:1px solid #000;padding:4px 6px;">' + jk + '</td>' +
       '<td style="border:1px solid #000;padding:4px 6px;">' + escapeHtml(r.tempat_lahir || '-') + '</td>' +
       '<td style="border:1px solid #000;padding:4px 6px;">' + escapeHtml(r.tanggal_lahir || '-') + '</td>' +
-      '<td style="border:1px solid #000;padding:4px 6px;">' + escapeHtml(r.melanjutkan_ke || '-') + '</td>' +
-      '<td style="border:1px solid #000;padding:4px 6px;">' + escapeHtml(r.alamat || '-') + '</td>' +
+      (isJenjangTK(jenjang) ? '' : '<td style="border:1px solid #000;padding:4px 6px;">' + escapeHtml(r.melanjutkan_ke || '-') + '</td><td style="border:1px solid #000;padding:4px 6px;">' + escapeHtml(r.alamat || '-') + '</td>') +
       '</tr>';
   }).join('');
 
@@ -4642,8 +4742,7 @@ function unduhDocsLulusan() {
   '<th style="width:30px;">JK</th>' +
   '<th style="width:100px;">TEMPAT LAHIR</th>' +
   '<th style="width:90px;">TANGGAL LAHIR</th>' +
-  '<th style="width:160px;">MELANJUTKAN KE</th>' +
-  '<th>ALAMAT SEKOLAH TUJUAN</th>' +
+  (isJenjangTK(jenjang) ? '' : '<th style="width:160px;">MELANJUTKAN KE</th><th>ALAMAT SEKOLAH TUJUAN</th>') +
   '</tr>' + rows + '</table>' +
   '<div class="clear"></div><br>' +
   '<div class="footer-row">' +
@@ -4674,6 +4773,22 @@ function unduhDocsLulusan() {
 
 // ============ NAIKAN KELAS & FILTER ============
 var activeKelasFilter = 'semua';
+
+// Build kelas filter buttons based on school jenjang
+function buildKelasFilter() {
+  var container = document.getElementById('kelasFilterContainer');
+  if (!container) return;
+  var school = currentUser && currentUser.schoolId ? getRecord('sekolah', currentUser.schoolId) : null;
+  var jenjang = school ? school.jenjang : 'SD';
+  var kelasList = jenjangKelasList(jenjang);
+  var label = jenjangLabel(jenjang);
+
+  var html = '<button class="btn btn-sm btn-outline-secondary aktif-filter" onclick="filterSiswaKelas(\'semua\', this)">Semua</button>';
+  kelasList.forEach(function(k) {
+    html += '<button class="btn btn-sm btn-outline-secondary" onclick="filterSiswaKelas(\'' + k + '\', this)">' + label + ' ' + k + '</button>';
+  });
+  container.innerHTML = html;
+}
 
 function filterSiswaKelas(kelas, btnEl) {
   activeKelasFilter = kelas;
@@ -4735,74 +4850,88 @@ function renderTableFiltered(type, searchTerm) {
 function naikanKelas() {
   var schoolId = currentUser.schoolId;
   var semuaSiswa = getRecords('siswa').filter(function(s) { return s.school_id === schoolId; });
+  var school = getRecord('sekolah', schoolId);
+  var jenjang = school ? school.jenjang : 'SD';
+  var kelasLulus = jenjangLulusKelas(jenjang);
+  var kelasNaik = jenjangNaikKelas(jenjang);
+  var labelKls = jenjangLabel(jenjang);
+  var isTK = isJenjangTK(jenjang);
 
   if (semuaSiswa.length === 0) {
     alert('Tidak ada data siswa untuk dinaikkan kelasnya.');
     return;
   }
 
-  // Helper: ambil angka depan kelas, misal '6A' → 6, '3B' → 3, '1' → 1
   function getAngkaKelas(kelasStr) {
     var m = String(kelasStr || '').trim().match(/^(\d+)/);
     return m ? parseInt(m[1]) : 0;
   }
 
-  var kelas6 = semuaSiswa.filter(function(s) { return getAngkaKelas(s.kelas) === 6; });
-  var lainnya = semuaSiswa.filter(function(s) { return getAngkaKelas(s.kelas) !== 6; });
+  function isKelasLulus(kelasStr) {
+    if (isTK) {
+      return String(kelasStr || '').trim().toUpperCase() === String(kelasLulus).toUpperCase();
+    }
+    return getAngkaKelas(kelasStr) === kelasLulus;
+  }
+
+  var siswaLulus = semuaSiswa.filter(function(s) { return isKelasLulus(s.kelas); });
+  var lainnya = semuaSiswa.filter(function(s) { return !isKelasLulus(s.kelas); });
 
   var daftarKenaikan = [];
-  var kelasNaik = { 1: 2, 2: 3, 3: 4, 4: 5, 5: 6 };
-
   lainnya.forEach(function(s) {
-    var angka = getAngkaKelas(s.kelas);
-    var rombel = String(s.kelas || '').trim().replace(/^(\d+)/, ''); // ambil huruf belakang, misal 'A' dari '5A'
-    if (kelasNaik[angka]) {
-      var kelasBaru = String(kelasNaik[angka]) + rombel;
-      daftarKenaikan.push({ id: s.id, nama: s.nama, dari: s.kelas, ke: kelasBaru });
+    var kls = String(s.kelas || '').trim();
+    var rombel = '';
+    if (isTK) {
+      // TK/PAUD: A → B
+      var klsUpper = kls.toUpperCase();
+      if (kelasNaik[klsUpper]) {
+        daftarKenaikan.push({ id: s.id, nama: s.nama, dari: s.kelas, ke: kelasNaik[klsUpper] });
+      }
+    } else {
+      var angka = getAngkaKelas(kls);
+      rombel = kls.replace(/^(\d+)/, '');
+      if (kelasNaik[angka]) {
+        daftarKenaikan.push({ id: s.id, nama: s.nama, dari: s.kelas, ke: String(kelasNaik[angka]) + rombel });
+      }
     }
   });
 
   var tahunLulus = new Date().getFullYear();
+  var lulusLabel = isTK ? ('Kelompok ' + kelasLulus) : ('Kelas ' + kelasLulus);
 
-  // Tampilkan konfirmasi
   var msg = '=== PROSES NAIKAN KELAS ===\n\n';
-  msg += 'Tahun Pelajaran: ' + (tahunLulus - 1) + '/' + tahunLulus + '\n\n';
-  msg += '📋 Siswa Naik Kelas (' + daftarKenaikan.length + ' siswa):\n';
+  msg += 'Tahun Pelajaran: ' + (tahunLulus - 1) + '/' + tahunLulus + '\n';
+  msg += 'Jenjang: ' + jenjang + '\n\n';
+  msg += 'Siswa Naik ' + labelKls + ' (' + daftarKenaikan.length + ' siswa):\n';
   daftarKenaikan.forEach(function(k) {
-    msg += '  • ' + k.nama + ' (Kelas ' + k.dari + ' → Kelas ' + k.ke + ')\n';
+    msg += '  \u2022 ' + k.nama + ' (' + labelKls + ' ' + k.dari + ' \u2192 ' + labelKls + ' ' + k.ke + ')\n';
   });
-  msg += '\n🎓 Siswa Lulus Kelas 6 (' + kelas6.length + ' siswa):\n';
-  kelas6.forEach(function(s) {
-    msg += '  • ' + s.nama + ' → Pindah ke Tabel Siswa Lulusan\n';
+  msg += '\nSiswa Lulus ' + lulusLabel + ' (' + siswaLulus.length + ' siswa):\n';
+  siswaLulus.forEach(function(s) {
+    msg += '  \u2022 ' + s.nama + ' \u2192 Pindah ke Tabel Siswa Lulusan\n';
   });
   msg += '\nApakah Anda yakin ingin melanjutkan?';
 
   if (!confirm(msg)) return;
 
-  // Proses kelas 6 → lulusan
-  kelas6.forEach(function(s) {
+  siswaLulus.forEach(function(s) {
     addRecord('siswa_lulusan', {
-      school_id: s.school_id,
-      nis_nisn: s.nis_nisn,
-      nama: s.nama,
-      jenis_kelamin: s.jenis_kelamin,
-      tempat_lahir: s.tempat_lahir,
-      tanggal_lahir: s.tanggal_lahir,
-      kelas: s.kelas,
-      alamat: s.alamat,
+      school_id: s.school_id, nis_nisn: s.nis_nisn, nama: s.nama,
+      jenis_kelamin: s.jenis_kelamin, tempat_lahir: s.tempat_lahir,
+      tanggal_lahir: s.tanggal_lahir, kelas: s.kelas, alamat: s.alamat,
       tahun_lulus: tahunLulus
     });
     deleteRecord('siswa', s.id);
   });
 
-  // Proses naik kelas lainnya
   daftarKenaikan.forEach(function(k) {
     updateRecord('siswa', k.id, { kelas: k.ke });
   });
 
-  alert('✅ Berhasil!\n\n• ' + daftarKenaikan.length + ' siswa berhasil dinaikkan kelas.\n• ' + kelas6.length + ' siswa kelas 6 dipindahkan ke Siswa Lulusan.');
+  alert('Berhasil!\n\n\u2022 ' + daftarKenaikan.length + ' siswa berhasil dinaikkan ' + labelKls.toLowerCase() + '.\n\u2022 ' + siswaLulus.length + ' siswa ' + lulusLabel + ' dipindahkan ke Siswa Lulusan.');
 
   activeKelasFilter = 'semua';
+  buildKelasFilter();
   renderTable('siswa');
 }
 

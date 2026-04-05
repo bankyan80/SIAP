@@ -711,6 +711,30 @@
         </div>
       </div>
 
+      <!-- ======== MANAJEMEN SISWA (Admin - all schools) ======== -->
+      <div id="page-manajemen-siswa" class="page-section">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h5><i class="bi bi-people me-2"></i>Manajemen Siswa</h5>
+            <div class="d-flex gap-2 flex-wrap">
+              <select class="form-select form-select-sm" id="filterSiswaSekolah" onchange="renderTable('siswa')" style="width:220px;border-radius:8px;">
+                <option value="">Semua Sekolah</option>
+              </select>
+              <button class="btn btn-accent btn-sm" onclick="openModal('siswa')"><i class="bi bi-plus-circle me-1"></i>Tambah Siswa</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="search-bar"><i class="bi bi-search"></i><input type="text" placeholder="Cari siswa..." oninput="renderTable('siswa', this.value)"></div>
+            <div class="table-container max-h-table">
+              <table class="table table-hover">
+                <thead><tr><th>No</th><th>NIS/NISN</th><th>Nama Siswa</th><th>Sekolah</th><th>JK</th><th>Tempat Lahir</th><th>Tanggal Lahir</th><th>Kelas</th><th>Alamat</th><th>Aksi</th></tr></thead>
+                <tbody id="table-siswa"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ======== DATA SARPRAS (Admin) ======== -->
       <div id="page-admin-sarpras" class="page-section">
         <div class="card">
@@ -1382,17 +1406,14 @@ function _migrateLocalStorageToFirebase() {
   }
 
   // Migrate admin profile (only if user was admin korwil)
-  if (!_dbCache['_admin_profile'] || Object.keys(_dbCache['_admin_profile']).length === 0) {
+  if (!_dbCache['_admin_profile_korwil'] || Object.keys(_dbCache['_admin_profile_korwil']).length === 0) {
     try {
       var aProfile = JSON.parse(localStorage.getItem('siap_admin_profile') || '{}');
-      // Only migrate to admin profile if it looks like a korwil profile (not school operator)
       if (aProfile && aProfile.nama && Object.keys(aProfile).length > 0) {
-        // Check if it was a school profile mistakenly saved as admin profile
-        // We only migrate if jabatan indicates korwil level
         var isKorwilProfile = aProfile.jabatan && (aProfile.jabatan.toLowerCase().indexOf('korwil') >= 0 || aProfile.jabatan.toLowerCase().indexOf('koordinator') >= 0 || aProfile.jabatan.toLowerCase().indexOf('pengawas') >= 0);
         if (isKorwilProfile) {
-          _dbCache['_admin_profile'] = aProfile;
-          dbRef.ref('siap_admin_profile').set(aProfile);
+          _dbCache['_admin_profile_korwil'] = aProfile;
+          dbRef.ref('siap_admin_profile_korwil').set(aProfile);
           migrated = true;
         }
       }
@@ -1500,9 +1521,23 @@ function initFirebaseData() {
     }
   });
 
-  // admin profile
+  // admin profile korwil
+  dbRef.ref('siap_admin_profile_korwil').on('value', function(snapshot) {
+    _dbCache['_admin_profile_korwil'] = snapshot.val() || {};
+  });
+
+  // admin profile operator
+  dbRef.ref('siap_admin_profile_operator').on('value', function(snapshot) {
+    _dbCache['_admin_profile_operator'] = snapshot.val() || {};
+  });
+
+  // legacy admin profile (fallback)
   dbRef.ref('siap_admin_profile').on('value', function(snapshot) {
-    _dbCache['_admin_profile'] = snapshot.val() || {};
+    var legacyProfile = snapshot.val() || {};
+    // Use legacy as fallback for korwil if korwil profile is empty
+    if (!_dbCache['_admin_profile_korwil'] || Object.keys(_dbCache['_admin_profile_korwil']).length === 0) {
+      _dbCache['_admin_profile_korwil'] = legacyProfile;
+    }
   });
 
   // school profiles
@@ -1547,11 +1582,15 @@ function firebaseGetLaporanStatus() {
 }
 
 // Admin profile (korwil only)
-function firebaseSaveAdminProfile(data) {
-  dbRef.ref('siap_admin_profile').set(data);
+function firebaseSaveAdminProfile(data, adminType) {
+  var suffix = adminType ? '_' + adminType : '';
+  dbRef.ref('siap_admin_profile' + suffix).set(data);
+  if (!_dbCache['_admin_profile_' + (adminType || 'korwil')]) _dbCache['_admin_profile_' + (adminType || 'korwil')] = {};
+  _dbCache['_admin_profile_' + (adminType || 'korwil')] = data;
 }
-function firebaseGetAdminProfile() {
-  return _dbCache['_admin_profile'] || {};
+function firebaseGetAdminProfile(adminType) {
+  var key = '_admin_profile_' + (adminType || 'korwil');
+  return _dbCache[key] || {};
 }
 // School profiles (separate per school)
 function firebaseSaveSchoolProfile(schoolId, data) {
@@ -1667,17 +1706,25 @@ function getKepalaSekolah(schoolId) {
 }
 
 function getAdminProfile() {
-  // Admin korwil reads from siap_admin_profile
-  if (currentUser && currentUser.role === 'admin') return firebaseGetAdminProfile();
+  // Admin korwil reads from siap_admin_profile_korwil
+  if (currentUser && currentUser.role === 'admin' && currentUser.adminLevel === 'full') return firebaseGetAdminProfile('korwil');
+  // Admin operator reads from siap_admin_profile_operator
+  if (currentUser && currentUser.role === 'admin' && currentUser.adminLevel === 'limited') return firebaseGetAdminProfile('operator');
   // Sekolah reads from siap_school_profiles/{schoolId}
   if (currentUser && currentUser.schoolId) return firebaseGetSchoolProfile(currentUser.schoolId);
-  return firebaseGetAdminProfile();
+  return firebaseGetAdminProfile('korwil');
 }
 function saveAdminProfile(p) {
-  // Admin korwil saves to siap_admin_profile
-  if (currentUser && currentUser.role === 'admin') {
-    firebaseSaveAdminProfile(p);
-    try { localStorage.setItem('siap_admin_profile', JSON.stringify(p)); } catch(e) {}
+  // Admin korwil saves to siap_admin_profile_korwil
+  if (currentUser && currentUser.role === 'admin' && currentUser.adminLevel === 'full') {
+    firebaseSaveAdminProfile(p, 'korwil');
+    try { localStorage.setItem('siap_admin_profile_korwil', JSON.stringify(p)); } catch(e) {}
+    return;
+  }
+  // Admin operator saves to siap_admin_profile_operator
+  if (currentUser && currentUser.role === 'admin' && currentUser.adminLevel === 'limited') {
+    firebaseSaveAdminProfile(p, 'operator');
+    try { localStorage.setItem('siap_admin_profile_operator', JSON.stringify(p)); } catch(e) {}
     return;
   }
   // Sekolah saves to siap_school_profiles/{schoolId}
@@ -1686,8 +1733,8 @@ function saveAdminProfile(p) {
     try { localStorage.setItem('siap_school_profile_' + currentUser.schoolId, JSON.stringify(p)); } catch(e) {}
     return;
   }
-  firebaseSaveAdminProfile(p);
-  try { localStorage.setItem('siap_admin_profile', JSON.stringify(p)); } catch(e) {}
+  firebaseSaveAdminProfile(p, 'korwil');
+  try { localStorage.setItem('siap_admin_profile_korwil', JSON.stringify(p)); } catch(e) {}
 }
 
 
@@ -2008,6 +2055,7 @@ function buildSidebarMenu() {
       <li><a href="#" data-page="manajemen-sekolah" onclick="navigateTo('manajemen-sekolah')"><i class="bi bi-building"></i>Manajemen Sekolah</a></li>
       <li><a href="#" data-page="pegawai-korwil" onclick="navigateTo('pegawai-korwil')"><i class="bi bi-person-gear"></i>Pegawai Korwil</a></li>
       <li><a href="#" data-page="manajemen-pegawai" onclick="navigateTo('manajemen-pegawai')"><i class="bi bi-person-badge"></i>Manajemen Pegawai</a></li>
+      <li><a href="#" data-page="manajemen-siswa" onclick="navigateTo('manajemen-siswa')"><i class="bi bi-people"></i>Manajemen Siswa</a></li>
       <li><a href="#" data-page="admin-sarpras" onclick="navigateTo('admin-sarpras')"><i class="bi bi-house-door"></i>Data Sarpras</a></li>
       <li class="menu-parent" onclick="toggleSubmenu(this)">
         <a><i class="bi bi-cash-coin"></i>Data PIP<i class="bi bi-chevron-right menu-arrow"></i></a>
@@ -2079,6 +2127,7 @@ function navigateTo(page) {
     'manajemen-sekolah': 'Manajemen Sekolah',
     'pegawai-korwil': 'Pegawai Korwil',
     'manajemen-pegawai': 'Manajemen Pegawai',
+    'manajemen-siswa': 'Manajemen Siswa',
     'admin-sarpras': 'Data Sarana & Prasarana',
     'data-siswa': 'Data Siswa',
     'siswa-lulusan': 'Siswa Lulusan',
@@ -2108,6 +2157,7 @@ function navigateTo(page) {
   if (page === 'manajemen-sekolah') renderTable('sekolah');
   if (page === 'pegawai-korwil') renderTable('pegawai_korwil');
   if (page === 'manajemen-pegawai') { populateSekolahFilter('filterPegawaiSekolah'); renderTable('pegawai'); }
+  if (page === 'manajemen-siswa') { populateSekolahFilter('filterSiswaSekolah'); renderTable('siswa'); }
   if (page === 'admin-sarpras') { populateSekolahFilter('filterSarprasSekolah'); renderTable('sarpras'); }
   if (page === 'data-siswa') { activeKelasFilter = 'semua'; buildKelasFilter(); renderTable('siswa'); }
   if (page === 'siswa-lulusan') renderTable('siswa_lulusan');
@@ -2257,6 +2307,10 @@ function renderTable(type, searchTerm = '') {
         records = records.filter(r => r.school_id === filterSchool);
       }
     }
+    if (type === 'siswa') {
+      const filterSchool = document.getElementById('filterSiswaSekolah')?.value;
+      if (filterSchool) records = records.filter(r => r.school_id === filterSchool);
+    }
     if (type === 'sarpras') {
       const filterSchool = document.getElementById('filterSarprasSekolah')?.value;
       if (filterSchool) records = records.filter(r => r.school_id === filterSchool);
@@ -2363,11 +2417,14 @@ function renderTable(type, searchTerm = '') {
       break;
 
     case 'siswa':
-      html = records.map((r, i) => `
+      html = records.map((r, i) => {
+        const school = isAdmin ? getRecord('sekolah', r.school_id) : null;
+        return `
         <tr>
           <td class="center">${i+1}</td>
           <td>${escapeHtml(r.nis_nisn)}</td>
           <td><strong>${escapeHtml(r.nama)}</strong></td>
+          ${isAdmin ? '<td>' + (school ? escapeHtml(school.nama_sekolah) : '-') + '</td>' : ''}
           <td>${escapeHtml(r.jenis_kelamin)}</td>
           <td>${escapeHtml(r.tempat_lahir)}</td>
           <td>${escapeHtml(r.tanggal_lahir)}</td>
@@ -2377,8 +2434,8 @@ function renderTable(type, searchTerm = '') {
             <button class="btn btn-warning btn-sm" onclick="editRecord('${type}','${r.id}')"><i class="bi bi-pencil"></i></button>
             <button class="btn btn-danger btn-sm" onclick="confirmDelete('${type}','${r.id}')"><i class="bi bi-trash"></i></button>
           </td>
-        </tr>
-      `).join('');
+        </tr>`;
+      }).join('');
       break;
 
     case 'siswa_lulusan':
@@ -2822,8 +2879,12 @@ function openModal(type, editId = null) {
 
     case 'siswa':
       title.textContent = record ? 'Edit Siswa' : 'Tambah Siswa';
+      const siswaSekolahOptions = getRecords('sekolah').map(s =>
+        `<option value="${s.id}" ${record && record.school_id===s.id ? 'selected' : (!record && currentUser.schoolId===s.id ? 'selected' : '')}>${escapeHtml(s.nama_sekolah)}</option>`
+      ).join('');
       formHtml = `
         <div class="row g-3">
+          ${currentUser.role === 'admin' ? `<div class="col-md-6"><div class="form-floating"><select class="form-select" id="f_school_id"><option value="">Pilih Sekolah</option>${siswaSekolahOptions}</select><label>Sekolah</label></div></div>` : ''}
           <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_nis_nisn" value="${record ? escapeHtml(record.nis_nisn) : ''}"><label>NIS / NISN</label></div></div>
           <div class="col-md-6"><div class="form-floating"><input class="form-control" id="f_nama" value="${record ? escapeHtml(record.nama) : ''}"><label>Nama Siswa</label></div></div>
           <div class="col-md-4"><div class="form-floating"><select class="form-select" id="f_jenis_kelamin"><option value="Laki-laki" ${record && record.jenis_kelamin==='Laki-laki'?'selected':''}>Laki-laki</option><option value="Perempuan" ${record && record.jenis_kelamin==='Perempuan'?'selected':''}>Perempuan</option></select><label>Jenis Kelamin</label></div></div>
@@ -3034,7 +3095,7 @@ function saveCrudData() {
 
     case 'siswa':
       data = {
-        school_id: currentUser.schoolId,
+        school_id: currentUser.role === 'admin' ? document.getElementById('f_school_id').value : currentUser.schoolId,
         nis_nisn: document.getElementById('f_nis_nisn').value.trim(),
         nama: document.getElementById('f_nama').value.trim(),
         jenis_kelamin: document.getElementById('f_jenis_kelamin').value,
@@ -3044,6 +3105,7 @@ function saveCrudData() {
         alamat: document.getElementById('f_alamat').value.trim()
       };
       if (!data.nama) { alert('Nama siswa harus diisi!'); return; }
+      if (currentUser.role === 'admin' && !data.school_id) { alert('Pilih sekolah!'); return; }
       break;
 
     case 'sarpras':
@@ -3846,7 +3908,9 @@ function exportDatabase() {
   });
   data['siap_pengaturan'] = _dbCache['_pengaturan'] || {};
   data['siap_laporan_status'] = _dbCache['_laporan_status'] || {};
-  data['siap_admin_profile'] = firebaseGetAdminProfile();
+  data['siap_admin_profile_korwil'] = firebaseGetAdminProfile('korwil');
+  data['siap_admin_profile_operator'] = firebaseGetAdminProfile('operator');
+  data['siap_school_profiles'] = _dbCache['_school_profiles'] || {};
   data['siap_admin_passwords'] = firebaseGetAdminPasswords();
   data._meta = { exported_at: new Date().toISOString(), app: 'SIAP', version: '2.0-firebase', source: 'firebase' };
   var json = JSON.stringify(data, null, 2);
@@ -3915,8 +3979,16 @@ function importDatabase(file) {
         } else if (key === 'siap_laporan_status') {
           dbRef.ref('siap_laporan_status').set(incoming);
           _dbCache['_laporan_status'] = incoming;
+        } else if (key === 'siap_admin_profile_korwil') {
+          firebaseSaveAdminProfile(incoming, 'korwil');
+        } else if (key === 'siap_admin_profile_operator') {
+          firebaseSaveAdminProfile(incoming, 'operator');
         } else if (key === 'siap_admin_profile') {
-          firebaseSaveAdminProfile(incoming);
+          // Legacy: import to korwil profile
+          firebaseSaveAdminProfile(incoming, 'korwil');
+        } else if (key === 'siap_school_profiles') {
+          dbRef.ref('siap_school_profiles').set(incoming);
+          _dbCache['_school_profiles'] = incoming;
         } else if (key === 'siap_admin_passwords') {
           firebaseSaveAdminPasswords(incoming);
         }

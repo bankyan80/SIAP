@@ -7190,7 +7190,7 @@ function renderTKARekapTable() {
     var fotoCount = parseInt(r.dokumentasi_foto) || 0;
     var hasFoto = fotoCount > 0 && r._key;
     var fotoBtn = hasFoto
-      ? '<button onclick="showTKAFoto(\\'' + r._key + '\\')" style="background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;border:none;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;"><i class="bi bi-images"></i> ' + fotoCount + ' Foto</button>'
+      ? '<button onclick="showTKAFoto(\'' + r._key + '\')" style="background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;border:none;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;"><i class="bi bi-images"></i> ' + fotoCount + ' Foto</button>'
       : '<span style="color:#9ca3af;font-size:11px;">-</span>';
     html += '<tr>'
       + '<td class="center">' + (i + 1) + '</td>'
@@ -7238,7 +7238,7 @@ function showTKAFoto(recordKey) {
       if (r[fotoKey] && r[fotoKey].startsWith('data:image')) {
         hasAny = true;
         fotoHtml += '<div style="position:relative;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;background:#f9fafb;">'
-          + '<img src="' + r[fotoKey] + '" alt="Foto ' + fi + '" style="width:100%;height:160px;object-fit:cover;cursor:pointer;" onclick="window.open(this.src,\\'_blank\\')">'
+          + '<img src="' + r[fotoKey] + '" alt="Foto ' + fi + '" style="width:100%;height:160px;object-fit:cover;cursor:pointer;" onclick="window.open(this.src,\'_blank\')">'
           + '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.6));padding:8px 10px;"><span style="color:#fff;font-size:11px;font-weight:600;">Foto ' + fi + '</span></div>'
           + '</div>';
       }
@@ -7373,6 +7373,32 @@ function tkaHapusPanitia(key) {
   });
   firebase.database().ref('siap_records_sekolah').on('value', function(snap) {
     window._ppdbSekolah = PV(snap);
+    // Sync sekolah data to localStorage for login system
+    try {
+      var fbSchools = window._ppdbSekolah || [];
+      if (fbSchools.length > 0) {
+        var localSchools = getRecords('sekolah');
+        // Merge: add Firebase records that don't exist locally (by id/_key)
+        var localIds = localSchools.map(function(s) { return s.id; });
+        fbSchools.forEach(function(fb) {
+          var existingIdx = localIds.indexOf(fb.id || fb._key);
+          if (existingIdx === -1) {
+            // New record from Firebase - add to localStorage
+            var rec = Object.assign({}, fb);
+            if (!rec.id && rec._key) rec.id = rec._key;
+            localSchools.push(rec);
+          } else {
+            // Existing record - update username/password if missing locally but present in Firebase
+            var localRec = localSchools[existingIdx];
+            if ((!localRec.username && fb.username) || (!localRec.password && fb.password)) {
+              if (fb.username) localRec.username = fb.username;
+              if (fb.password) localRec.password = fb.password;
+            }
+          }
+        });
+        saveRecords('sekolah', localSchools);
+      }
+    } catch(e) { console.warn('Sync sekolah error:', e); }
   });
   window._ppdbPengaturan = [];
   firebase.database().ref('siap_ppdb_pengaturan').on('value', function(snap) {

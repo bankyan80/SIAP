@@ -1220,10 +1220,29 @@
                     <th>Progress</th>
                     <th>Status</th>
                     <th>Tanggal</th>
+                    <th style="text-align:center;">Dokumentasi</th>
                   </tr>
                 </thead>
                 <tbody id="tkaRekapBody"></tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ MODAL FOTO DOKUMENTASI TKA ============ -->
+      <div class="modal fade" id="tkaFotoModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content" style="border-radius:16px;border:none;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;border-radius:16px 16px 0 0;">
+              <h5 class="modal-title" style="font-size:15px;font-weight:700;"><i class="bi bi-images me-2"></i>Dokumentasi Foto Kegiatan TKA</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding:20px;max-height:70vh;overflow-y:auto;">
+              <p id="tkaFotoSchool" style="font-size:14px;font-weight:600;margin-bottom:4px;"></p>
+              <p id="tkaFotoSession" style="font-size:12px;color:#6b7280;margin-bottom:16px;"></p>
+              <div id="tkaFotoGallery" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;"></div>
+              <p id="tkaFotoEmpty" class="text-center text-muted py-4" style="display:none;">Tidak ada foto dokumentasi.</p>
             </div>
           </div>
         </div>
@@ -7156,7 +7175,7 @@ function renderTKARekapTable() {
     return (a.wave || '').localeCompare(b.wave || '');
   });
   if (data.length === 0) {
-    body.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-4">Belum ada data monitoring TKA.</td></tr>';
+    body.innerHTML = '<tr><td colspan="11" class="text-center text-muted py-4">Belum ada data monitoring TKA.</td></tr>';
     return;
   }
   var html = '';
@@ -7168,6 +7187,11 @@ function renderTKARekapTable() {
     var progressVal = r.progress_persen || 0;
     var progressColor = progressVal >= 80 ? '#10b981' : progressVal >= 40 ? '#f59e0b' : '#ef4444';
     var tgl = r.last_update ? new Date(r.last_update).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
+    var fotoCount = parseInt(r.dokumentasi_foto) || 0;
+    var hasFoto = fotoCount > 0 && r._key;
+    var fotoBtn = hasFoto
+      ? '<button onclick="showTKAFoto(\\'' + r._key + '\\')" style="background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;border:none;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;"><i class="bi bi-images"></i> ' + fotoCount + ' Foto</button>'
+      : '<span style="color:#9ca3af;font-size:11px;">-</span>';
     html += '<tr>'
       + '<td class="center">' + (i + 1) + '</td>'
       + '<td><strong>' + escapeHtml(r.school || '-') + '</strong></td>'
@@ -7179,9 +7203,62 @@ function renderTKARekapTable() {
       + '<td><div style="display:flex;align-items:center;gap:6px;"><div style="flex:1;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;"><div style="height:100%;width:' + progressVal + '%;background:' + progressColor + ';border-radius:4px;"></div></div><span style="font-size:11px;font-weight:600;color:' + progressColor + ';">' + progressVal + '%</span></div></td>'
       + '<td>' + statusBadge + '</td>'
       + '<td style="font-size:11px;">' + tgl + '</td>'
+      + '<td style="text-align:center;">' + fotoBtn + '</td>'
       + '</tr>';
   });
   body.innerHTML = html;
+}
+
+// Menampilkan modal foto dokumentasi TKA dari Firebase
+function showTKAFoto(recordKey) {
+  var gallery = document.getElementById('tkaFotoGallery');
+  var schoolEl = document.getElementById('tkaFotoSchool');
+  var sessionEl = document.getElementById('tkaFotoSession');
+  var emptyEl = document.getElementById('tkaFotoEmpty');
+
+  gallery.innerHTML = '<div style="text-align:center;padding:20px;"><span class="spinner" style="border-top-color:#6366f1;width:24px;height:24px;border-width:3px;"></span><br><small style="color:#6b7280;margin-top:8px;display:inline-block;">Memuat foto...</small></div>';
+  emptyEl.style.display = 'none';
+
+  firebase.database().ref('siap_tka_monitoring/' + recordKey).once('value').then(function(snap) {
+    var r = snap.val();
+    if (!r) {
+      gallery.innerHTML = '';
+      emptyEl.textContent = 'Data tidak ditemukan.';
+      emptyEl.style.display = 'block';
+      return;
+    }
+
+    schoolEl.textContent = r.school || '-';
+    sessionEl.textContent = (r.wave || '') + ' • ' + (r.session || '') + ' • ' + (r.date || '');
+
+    var fotoHtml = '';
+    var hasAny = false;
+    for (var fi = 1; fi <= 5; fi++) {
+      var fotoKey = 'foto_' + fi;
+      if (r[fotoKey] && r[fotoKey].startsWith('data:image')) {
+        hasAny = true;
+        fotoHtml += '<div style="position:relative;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;background:#f9fafb;">'
+          + '<img src="' + r[fotoKey] + '" alt="Foto ' + fi + '" style="width:100%;height:160px;object-fit:cover;cursor:pointer;" onclick="window.open(this.src,\\'_blank\\')">'
+          + '<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.6));padding:8px 10px;"><span style="color:#fff;font-size:11px;font-weight:600;">Foto ' + fi + '</span></div>'
+          + '</div>';
+      }
+    }
+
+    if (!hasAny) {
+      gallery.innerHTML = '';
+      emptyEl.textContent = 'Tidak ada foto dokumentasi untuk laporan ini.';
+      emptyEl.style.display = 'block';
+    } else {
+      gallery.innerHTML = fotoHtml;
+    }
+
+    var modal = new bootstrap.Modal(document.getElementById('tkaFotoModal'));
+    modal.show();
+  }).catch(function(err) {
+    gallery.innerHTML = '';
+    emptyEl.textContent = 'Gagal memuat foto: ' + err.message;
+    emptyEl.style.display = 'block';
+  });
 }
 
 function tkaAddPanitia() {

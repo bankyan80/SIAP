@@ -36,6 +36,90 @@
     #loginPage::before { content: ''; position: absolute; inset: 0; background: rgba(15,27,61,0.88); z-index: 0; }
     .login-container { background: #fff; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.35); padding: 40px; width: 420px; max-width: 95vw; position: relative; z-index: 1; }
     .login-logo { text-align: center; margin-bottom: 28px; }
+
+    /* PUBLIC PAGE */
+    #publicPage { display: none; min-height: 100vh; background: #f0f4f8; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+    .pub-header { background: linear-gradient(135deg, #0f1b3d 0%, #1e3a5f 50%, #0f1b3d 100%); color: #fff; padding: 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+    .pub-header-inner { display: flex; align-items: center; justify-content: space-between; max-width: 1400px; margin: 0 auto; padding: 16px 24px; }
+    .pub-header-left { display: flex; align-items: center; gap: 14px; }
+    .pub-header-left img { width: 52px; height: 52px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); object-fit: cover; }
+    .pub-header-left .pub-title { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
+    .pub-header-left .pub-subtitle { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+    .pub-header-right { display: flex; align-items: center; gap: 12px; }
+    .pub-btn-login { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .pub-btn-login:hover { background: rgba(255,255,255,0.25); }
+    .pub-content { max-width: 1400px; margin: 0 auto; padding: 24px; }
+    .pub-hero { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); border-radius: 20px; padding: 36px 32px; color: #fff; margin-bottom: 28px; position: relative; overflow: hidden; }
+    .pub-hero::after { content: ''; position: absolute; right: -40px; top: -40px; width: 200px; height: 200px; background: rgba(255,255,255,0.08); border-radius: 50%; }
+    .pub-hero h2 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+    .pub-hero p { font-size: 14px; opacity: 0.9; line-height: 1.6; }
+    .pub-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .pub-stat-card { background: #fff; border-radius: 14px; padding: 20px 22px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); display: flex; align-items: center; gap: 16px; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid #e8edf2; }
+    .pub-stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+    .pub-stat-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff; flex-shrink: 0; }
+    .pub-stat-icon.blue { background: linear-gradient(135deg, #1e40af, #3b82f6); }
+    .pub-stat-icon.green { background: linear-gradient(135deg, #047857, #10b981); }
+    .pub-stat-icon.orange { background: linear-gradient(135deg, #c2410c, #f97316); }
+    .pub-stat-icon.purple { background: linear-gradient(135deg, #6d28d9, #8b5cf6); }
+    .pub-stat-icon.teal { background: linear-gradient(135deg, #0f766e, #14b8a6); }
+    .pub-stat-icon.red { background: linear-gradient(135deg, #b91c1c, #ef4444); }
+    .pub-stat-value { font-size: 28px; font-weight: 800; color: #1a202c; line-height: 1.1; }
+    .pub-stat-label { font-size: 13px; color: #718096; margin-top: 2px; }
+    .pub-section { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 28px; overflow: hidden; border: 1px solid #e8edf2; }
+    .pub-section-header { padding: 18px 24px; border-bottom: 1px solid #e8edf2; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .pub-section-header h5 { font-size: 16px; font-weight: 700; color: #1a202c; margin: 0; display: flex; align-items: center; gap: 8px; }
+    .pub-section-body { padding: 20px 24px; }
+    .pub-search { position: relative; }
+    .pub-search input { border: 1px solid #d1d5db; border-radius: 8px; padding: 8px 14px 8px 36px; font-size: 13px; width: 260px; max-width: 100%; }
+    .pub-search input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+    .pub-search i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 14px; }
+    .pub-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .pub-table thead th { background: #f8fafc; color: #4a5568; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; padding: 12px 14px; border-bottom: 2px solid #e2e8f0; white-space: nowrap; text-align: left; }
+    .pub-table tbody td { padding: 12px 14px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+    .pub-table tbody tr:hover { background: #f8fafc; }
+    .pub-table .school-name { font-weight: 600; color: #1a202c; }
+    .pub-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .pub-badge-blue { background: #dbeafe; color: #1d4ed8; }
+    .pub-badge-green { background: #d1fae5; color: #047857; }
+    .pub-badge-orange { background: #ffedd5; color: #c2410c; }
+    .pub-badge-purple { background: #ede9fe; color: #6d28d9; }
+    .pub-progress-bar { width: 100%; height: 8px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
+    .pub-progress-fill { height: 100%; border-radius: 10px; transition: width 0.5s ease; }
+    .pub-empty { text-align: center; padding: 48px 24px; color: #9ca3af; }
+    .pub-empty i { font-size: 48px; display: block; margin-bottom: 12px; }
+    .pub-jenjang-filter { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pub-jenjang-btn { padding: 6px 16px; border-radius: 20px; border: 1px solid #d1d5db; background: #fff; color: #4a5568; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .pub-jenjang-btn:hover, .pub-jenjang-btn.active { background: #1e40af; color: #fff; border-color: #1e40af; }
+    .pub-detail-row { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 12px; }
+    .pub-detail-item { flex: 1; min-width: 140px; background: #f8fafc; border-radius: 10px; padding: 14px 16px; text-align: center; border: 1px solid #e8edf2; }
+    .pub-detail-item .pub-di-value { font-size: 22px; font-weight: 800; color: #1e40af; }
+    .pub-detail-item .pub-di-label { font-size: 11px; color: #718096; margin-top: 2px; }
+    .pub-footer { text-align: center; padding: 24px; color: #9ca3af; font-size: 12px; }
+    .pub-pengumuman-item { padding: 18px 20px; border-bottom: 1px solid #f0f0f0; transition: background 0.2s; }
+    .pub-pengumuman-item:last-child { border-bottom: none; }
+    .pub-pengumuman-item:hover { background: #f8fafc; }
+    .pub-pengumuman-item.prioritas-penting { border-left: 4px solid #e67e22; }
+    .pub-pengumuman-item.prioritas-sangat-penting { border-left: 4px solid #ef4444; background: #fff5f5; }
+    .pub-pengumuman-item.prioritas-sangat-penting:hover { background: #fef2f2; }
+    .pub-pengumuman-judul { font-size: 15px; font-weight: 700; color: #1a202c; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .pub-pengumuman-isi { font-size: 13px; color: #555; line-height: 1.7; white-space: pre-wrap; }
+    .pub-pengumuman-meta { font-size: 11px; color: #9ca3af; margin-top: 10px; display: flex; align-items: center; gap: 6px; }
+    .pub-pengumuman-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+    .pub-pengumuman-badge.biasa { background: #e2e8f0; color: #4a5568; }
+    .pub-pengumuman-badge.penting { background: #fff3cd; color: #856404; }
+    .pub-pengumuman-badge.sangat-penting { background: #f8d7da; color: #721c24; }
+    .pub-pengumuman-empty { text-align: center; padding: 32px 20px; color: #9ca3af; }
+    .pub-pengumuman-empty i { font-size: 36px; display: block; margin-bottom: 10px; opacity: 0.4; }
+    .pub-pengumuman-toggle { font-size: 13px; color: #3b82f6; cursor: pointer; font-weight: 600; border: none; background: none; padding: 4px 0; margin-top: 4px; }
+    .pub-pengumuman-toggle:hover { text-decoration: underline; }
+    @media (max-width: 768px) {
+      .pub-header-inner { flex-direction: column; gap: 12px; text-align: center; }
+      .pub-stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .pub-content { padding: 16px; }
+      .pub-hero { padding: 24px 20px; }
+      .pub-hero h2 { font-size: 18px; }
+      .pub-search input { width: 100%; }
+    }
     .login-logo .logo-icon { font-size: 52px; display: block; margin-bottom: 10px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15)); }
     .login-logo h4 { color: var(--primary); font-weight: 800; margin: 0; font-size: 28px; letter-spacing: 1px; }
     .login-logo small { color: var(--text-muted); font-size: 12px; }
@@ -368,6 +452,8 @@
         <a href="javascript:void(0)" onclick="showForm('registerForm')" class="text-decoration-none" style="font-size:13px;color:var(--accent);font-weight:500;"><i class="bi bi-person-plus me-1"></i>Daftar Akun Baru</a>
         <a href="javascript:void(0)" onclick="showForm('forgotForm')" class="text-decoration-none" style="font-size:13px;color:var(--text-muted);">Lupa Kata Sandi?</a>
       </div>
+      <hr style="margin:20px 0;border-color:#e8edf2;">
+      <button class="btn w-100" onclick="openPublicPage()" style="background:linear-gradient(135deg,#047857,#10b981);color:#fff;font-weight:700;font-size:14px;padding:12px;border-radius:10px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s;"><i class="bi bi-globe2"></i>Lihat Portal Publik</button>
     </div>
 
     <!-- ===== REGISTER FORM ===== -->
@@ -1173,7 +1259,33 @@
   </div>
 </div>
 
+<!-- ===== PUBLIC PAGE ===== -->
+<div id="publicPage">
+  <header class="pub-header">
+    <div class="pub-header-inner">
+      <div class="pub-header-left">
+        <img src="https://i.pinimg.com/1200x/76/39/2d/76392d91c9c22d8ec5563b1126cd55b8.jpg" alt="Logo">
+        <div>
+          <div class="pub-title">Portal Publik SIAP</div>
+          <div class="pub-subtitle">Korwil Bidang Pendidikan Kec. Lemahabang &mdash; Kabupaten Cirebon</div>
+        </div>
+      </div>
+      <div class="pub-header-right">
+        <button class="pub-btn-login" onclick="closePublicPage()"><i class="bi bi-box-arrow-in-right"></i> Masuk Operator</button>
+      </div>
+    </div>
+  </header>
+  <div class="pub-content" id="pubContent">
+    <!-- Filled by JS -->
+  </div>
+  <div class="pub-footer">
+    &copy; 2026 Korwil Bidang Pendidikan Kecamatan Lemahabang &mdash; Dinas Pendidikan Kabupaten Cirebon
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
 // ============ GLOBAL STATE ============
 let currentUser = null; // { role: 'admin'|'sekolah', name: string, schoolId?: string, adminLevel?: 'full'|'limited' }
@@ -1182,16 +1294,152 @@ let currentEditId = null;
 let currentDokumenData = null; // { nama: string, data: base64, tipe: string }
 const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 
+// ============ FIREBASE CONFIGURATION ============
+const firebaseConfig = {
+  apiKey: "AIzaSyDFadEnVo9fX64tw7uDTzT0ESoE5JAcx6c",
+  authDomain: "aplikasi-siap-ef85e.firebaseapp.com",
+  databaseURL: "https://aplikasi-siap-ef85e-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "aplikasi-siap-ef85e",
+  storageBucket: "aplikasi-siap-ef85e.firebasestorage.app",
+  messagingSenderId: "209198927274",
+  appId: "1:209198927274:web:2145b0e6803d5ff98b6fd3",
+  measurementId: "G-Z527S174DC"
+};
+firebase.initializeApp(firebaseConfig);
+const dbRef = firebase.database();
+
+// ============ FIREBASE DATA LAYER ============
+// In-memory cache for all record types
+var _dbCache = {};
+var _dbListeners = {};
+var _firebaseReady = false;
+var _firebaseCallbacks = [];
+
+function isFirebaseReady() { return _firebaseReady; }
+
+function onFirebaseReady(callback) {
+  if (_firebaseReady) { callback(); return; }
+  _firebaseCallbacks.push(callback);
+}
+
+function _notifyFirebaseReady() {
+  _firebaseReady = true;
+  _firebaseCallbacks.forEach(function(cb) { try { cb(); } catch(e) { console.error(e); } });
+  _firebaseCallbacks = [];
+}
+
+// Initialize Firebase data - call once at startup
+function initFirebaseData() {
+  var types = ['sekolah','siswa','pegawai','pegawai_korwil','sarpras','surat','siswa_lulusan','pengumuman','pip_verval','pip_aktivasi'];
+
+  var loaded = 0;
+  var total = types.length + 2; // +2 for pengaturan and laporan_status
+
+  types.forEach(function(type) {
+    var ref = dbRef.ref('siap_records_' + type);
+    ref.on('value', function(snapshot) {
+      var val = snapshot.val();
+      if (val && typeof val === 'object' && !Array.isArray(val)) {
+        _dbCache[type] = Object.values(val);
+      } else if (Array.isArray(val)) {
+        _dbCache[type] = val;
+      } else {
+        _dbCache[type] = [];
+      }
+      loaded++;
+      if (loaded >= total) _notifyFirebaseReady();
+    }, function(err) {
+      console.error('Firebase read error for ' + type + ':', err);
+      _dbCache[type] = _dbCache[type] || [];
+      loaded++;
+      if (loaded >= total) _notifyFirebaseReady();
+    });
+    _dbListeners[type] = ref;
+  });
+
+  // pengaturan
+  dbRef.ref('siap_pengaturan').on('value', function(snapshot) {
+    _dbCache['_pengaturan'] = snapshot.val() || {};
+    loaded++;
+    if (loaded >= total) _notifyFirebaseReady();
+  });
+
+  // laporan_status
+  dbRef.ref('siap_laporan_status').on('value', function(snapshot) {
+    _dbCache['_laporan_status'] = snapshot.val() || {};
+    loaded++;
+    if (loaded >= total) _notifyFirebaseReady();
+  });
+
+  // admin profile
+  dbRef.ref('siap_admin_profile').on('value', function(snapshot) {
+    _dbCache['_admin_profile'] = snapshot.val() || {};
+  });
+
+  // admin passwords
+  dbRef.ref('siap_admin_passwords').on('value', function(snapshot) {
+    _dbCache['_admin_passwords'] = snapshot.val() || {};
+  });
+}
+
+// Save records to Firebase
+function firebaseSaveRecords(type, records) {
+  if (!records || !Array.isArray(records)) return;
+  var data = {};
+  records.forEach(function(r) {
+    if (r && r.id) { data[r.id] = r; }
+  });
+  dbRef.ref('siap_records_' + type).set(data);
+}
+
+// Save pengaturan to Firebase
+function firebaseSavePengaturan(schoolId, data) {
+  dbRef.ref('siap_pengaturan/' + schoolId).set(data);
+}
+
+// Get pengaturan from Firebase (sync from cache)
+function firebaseGetPengaturan(schoolId) {
+  return (_dbCache['_pengaturan'] || {})[schoolId] || {};
+}
+
+// Save laporan_status to Firebase
+function firebaseSaveLaporanStatus(data) {
+  dbRef.ref('siap_laporan_status').set(data);
+}
+
+// Get laporan_status from cache
+function firebaseGetLaporanStatus() {
+  return _dbCache['_laporan_status'] || {};
+}
+
+// Admin profile
+function firebaseSaveAdminProfile(data) {
+  dbRef.ref('siap_admin_profile').set(data);
+}
+function firebaseGetAdminProfile() {
+  return _dbCache['_admin_profile'] || {};
+}
+
+// Admin passwords
+function firebaseSaveAdminPasswords(data) {
+  dbRef.ref('siap_admin_passwords').set(data);
+}
+function firebaseGetAdminPasswords() {
+  return _dbCache['_admin_passwords'] || {};
+}
+
 // ============ UTILITY FUNCTIONS ============
 function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 9); }
 function now() { return new Date().toISOString(); }
 
 function getRecords(type) {
-  try { return JSON.parse(localStorage.getItem('siap_records_' + type) || '[]'); }
-  catch { return []; }
+  return _dbCache[type] || [];
 }
 function saveRecords(type, records) {
-  localStorage.setItem('siap_records_' + type, JSON.stringify(records));
+  _dbCache[type] = records;
+  firebaseSaveRecords(type, records);
+  // Also keep localStorage as backup
+  try { localStorage.setItem('siap_records_' + type, JSON.stringify(records)); } catch(e) {}
 }
 
 function addRecord(type, data) {
@@ -1229,10 +1477,12 @@ function getKepalaSekolah(schoolId) {
 }
 
 function getAdminProfile() {
-  try { return JSON.parse(localStorage.getItem('siap_admin_profile') || '{}'); }
-  catch { return {}; }
+  return firebaseGetAdminProfile();
 }
-function saveAdminProfile(p) { localStorage.setItem('siap_admin_profile', JSON.stringify(p)); }
+function saveAdminProfile(p) {
+  firebaseSaveAdminProfile(p);
+  try { localStorage.setItem('siap_admin_profile', JSON.stringify(p)); } catch(e) {}
+}
 
 
 function escapeHtml(str) {
@@ -1373,6 +1623,12 @@ function showForm(formId) {
 
 // ============ REGISTER ============
 function handleRegister() {
+  if (!isFirebaseReady()) {
+    document.getElementById('registerError').textContent = 'Memuat data... harap tunggu.';
+    document.getElementById('registerError').style.display = 'block';
+    return;
+  }
+
   const nama = document.getElementById('regNamaSekolah').value.trim();
   const npsn = document.getElementById('regNpsn').value.trim();
   const username = document.getElementById('regUsername').value.trim();
@@ -1426,6 +1682,12 @@ function handleRegister() {
 
 // ============ FORGOT PASSWORD ============
 function handleForgotPassword() {
+  if (!isFirebaseReady()) {
+    document.getElementById('forgotError').textContent = 'Memuat data... harap tunggu.';
+    document.getElementById('forgotError').style.display = 'block';
+    return;
+  }
+
   const username = document.getElementById('forgotUsername').value.trim();
   const errorEl = document.getElementById('forgotError');
   const resultEl = document.getElementById('forgotResult');
@@ -1463,6 +1725,12 @@ function handleForgotPassword() {
 }
 
 function handleLogin() {
+  if (!isFirebaseReady()) {
+    document.getElementById('loginError').textContent = 'Memuat data... harap tunggu.';
+    document.getElementById('loginError').style.display = 'block';
+    return;
+  }
+
   const username = document.getElementById('loginUsername').value.trim();
   const password = document.getElementById('loginPassword').value.trim();
   const errorEl = document.getElementById('loginError');
@@ -2828,7 +3096,7 @@ var settingMarginRight = 2;
 function loadPengaturan() {
   var school = getRecord('sekolah', currentUser.schoolId) || {};
   // Load saved settings
-  var saved = JSON.parse(localStorage.getItem('siap_pengaturan_' + currentUser.schoolId) || '{}');
+  var saved = firebaseGetPengaturan(currentUser.schoolId);
   if (saved.kopType) settingKopType = saved.kopType;
   if (saved.marginTop) settingMarginTop = saved.marginTop;
   if (saved.marginBottom) settingMarginBottom = saved.marginBottom;
@@ -2957,13 +3225,14 @@ function simpanPengaturan() {
     marginLeft: settingMarginLeft,
     marginRight: settingMarginRight
   };
-  localStorage.setItem('siap_pengaturan_' + currentUser.schoolId, JSON.stringify(data));
+  firebaseSavePengaturan(currentUser.schoolId, data);
+  try { localStorage.setItem('siap_pengaturan_' + currentUser.schoolId, JSON.stringify(data)); } catch(e) {}
   // Update global kop functions
   updateGlobalKop();
 }
 
 function loadPengaturanValues() {
-  var saved = JSON.parse(localStorage.getItem('siap_pengaturan_' + currentUser.schoolId) || '{}');
+  var saved = firebaseGetPengaturan(currentUser.schoolId);
   if (saved.kopType) settingKopType = saved.kopType;
   if (saved.marginTop) settingMarginTop = saved.marginTop;
   if (saved.marginBottom) settingMarginBottom = saved.marginBottom;
@@ -3030,17 +3299,25 @@ function buildFullKopHtml() {
 
 // ============ ADMIN PASSWORD HELPERS ============
 function getAdminPassword() {
-  var saved = localStorage.getItem('siap_admin_password');
-  return saved || 's.123456';
+  var pw = firebaseGetAdminPasswords().admin1;
+  if (!pw) { pw = localStorage.getItem('siap_admin_password') || 's.123456'; }
+  return pw;
 }
 function setAdminPassword(pw) {
+  var data = firebaseGetAdminPasswords();
+  data.admin1 = pw;
+  firebaseSaveAdminPasswords(data);
   localStorage.setItem('siap_admin_password', pw);
 }
 function getAdmin2Password() {
-  var saved = localStorage.getItem('siap_admin2_password');
-  return saved || 's.123456';
+  var pw = firebaseGetAdminPasswords().admin2;
+  if (!pw) { pw = localStorage.getItem('siap_admin2_password') || 's.123456'; }
+  return pw;
 }
 function setAdmin2Password(pw) {
+  var data = firebaseGetAdminPasswords();
+  data.admin2 = pw;
+  firebaseSaveAdminPasswords(data);
   localStorage.setItem('siap_admin2_password', pw);
 }
 
@@ -3222,7 +3499,9 @@ function resetDataSekolah(schoolId, namaSekolah) {
   deleted['sekolah'] = sekolahs.length - filteredSekolah.length;
 
   // Hapus pengaturan cetak sekolah
-  var settingKey = 'siap_pengaturan_' + schoolId;
+  dbRef.ref('siap_pengaturan/' + schoolId).remove();
+  if (_dbCache['_pengaturan']) delete _dbCache['_pengaturan'][schoolId];
+ var settingKey = 'siap_pengaturan_' + schoolId;
   if (localStorage.getItem(settingKey)) {
     localStorage.removeItem(settingKey);
     deleted['pengaturan'] = 1;
@@ -3230,10 +3509,11 @@ function resetDataSekolah(schoolId, namaSekolah) {
 
   // Hapus status laporan sekolah
   try {
-    var laporanStatus = JSON.parse(localStorage.getItem('siap_laporan_status') || '{}');
+    var laporanStatus = firebaseGetLaporanStatus();
     if (laporanStatus[schoolId]) {
       delete laporanStatus[schoolId];
-      localStorage.setItem('siap_laporan_status', JSON.stringify(laporanStatus));
+      firebaseSaveLaporanStatus(laporanStatus);
+      try { localStorage.setItem('siap_laporan_status', JSON.stringify(laporanStatus)); } catch(e) {}
       deleted['laporan_status'] = 1;
     }
   } catch(e) {}
@@ -3257,21 +3537,13 @@ function resetDataSekolah(schoolId, namaSekolah) {
 
 // ============ EXPORT/IMPORT DATABASE ============
 function loadDatabasePage() {
-  var siapKeys = [];
-  for (var i = 0; i < localStorage.length; i++) {
-    var key = localStorage.key(i);
-    if (key.indexOf('siap_') === 0) siapKeys.push(key);
-  }
-
   var summaryRows = '';
   var totalRecords = 0;
-  siapKeys.forEach(function(key) {
-    var count = 0;
-    try {
-      var val = JSON.parse(localStorage.getItem(key) || '[]');
-      if (Array.isArray(val)) count = val.length;
-      else count = 1;
-    } catch(e) { count = 1; }
+  var types = ['sekolah','siswa','pegawai','pegawai_korwil','sarpras','surat','siswa_lulusan','pengumuman','pip_verval','pip_aktivasi'];
+  types.forEach(function(type) {
+    var key = 'siap_records_' + type;
+    var val = getRecords(type);
+    var count = Array.isArray(val) ? val.length : 1;
     totalRecords += count;
     var label = key.replace('siap_', '').replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
     var icon = 'bi-file-earmark-text';
@@ -3282,12 +3554,7 @@ function loadDatabasePage() {
     else if (key.indexOf('pip') > -1) icon = 'bi-cash-coin';
     else if (key.indexOf('arsip') > -1) icon = 'bi-archive';
     else if (key.indexOf('surat') > -1) icon = 'bi-envelope';
-    else if (key.indexOf('session') > -1) icon = 'bi-key';
     else if (key.indexOf('pengumuman') > -1) icon = 'bi-megaphone';
-    else if (key.indexOf('pengaturan') > -1) icon = 'bi-gear';
-    else if (key.indexOf('profile') > -1) icon = 'bi-person-circle';
-    else if (key.indexOf('password') > -1) icon = 'bi-shield-lock';
-    else if (key.indexOf('laporan') > -1) icon = 'bi-file-earmark-bar-graph';
 
     summaryRows += '<div class="col-md-4 col-sm-6 mb-2"><div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;">' +
       '<i class="bi ' + icon + '" style="font-size:18px;color:#3b82f6;"></i>' +
@@ -3306,7 +3573,7 @@ function loadDatabasePage() {
           '</div>' +
           '<div class="card-body">' +
             '<p style="font-size:13px;color:#64748b;margin-bottom:16px;">Unduh seluruh data aplikasi sebagai file backup. File berisi semua data sekolah, siswa, pegawai, surat, dan pengaturan.</p>' +
-            '<div class="alert" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 14px;font-size:12px;color:#166534;"><i class="bi bi-info-circle me-1"></i><b>' + siapKeys.length + '</b> kategori data &bull; <b>' + totalRecords + '</b> total item tersimpan</div>' +
+            '<div class="alert" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 14px;font-size:12px;color:#166534;"><i class="bi bi-info-circle me-1"></i><b>' + types.length + '</b> kategori data &bull; <b>' + totalRecords + '</b> total item tersimpan</div>' +
             '<button class="btn w-100" style="background:linear-gradient(135deg,#047857,#10b981);color:#fff;border-radius:8px;padding:12px;font-weight:600;border:none;" onclick="exportDatabase()"><i class="bi bi-cloud-download me-2"></i>Export Database (JSON)</button>' +
           '</div>' +
         '</div>' +
@@ -3336,7 +3603,7 @@ function loadDatabasePage() {
         '<div class="card">' +
           '<div class="card-header d-flex align-items-center justify-content-between">' +
             '<h5 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Ringkasan Data Tersimpan</h5>' +
-            '<span class="badge" style="background:#f1f5f9;color:#475569;font-size:12px;">' + siapKeys.length + ' kategori</span>' +
+            '<span class="badge" style="background:#f1f5f9;color:#475569;font-size:12px;">' + types.length + ' kategori</span>' +
           '</div>' +
           '<div class="card-body">' +
             '<div class="row g-2">' + summaryRows + '</div>' +
@@ -3367,15 +3634,15 @@ function loadDatabasePage() {
 
 function exportDatabase() {
   var data = {};
-  var siapKeys = [];
-  for (var i = 0; i < localStorage.length; i++) {
-    var key = localStorage.key(i);
-    if (key.indexOf('siap_') === 0) {
-      siapKeys.push(key);
-      try { data[key] = JSON.parse(localStorage.getItem(key)); } catch(e) { data[key] = localStorage.getItem(key); }
-    }
-  }
-  data._meta = { exported_at: new Date().toISOString(), app: 'SIAP', version: '1.0', total_keys: siapKeys.length };
+  var types = ['sekolah','siswa','pegawai','pegawai_korwil','sarpras','surat','siswa_lulusan','pengumuman','pip_verval','pip_aktivasi'];
+  types.forEach(function(type) {
+    data['siap_records_' + type] = getRecords(type);
+  });
+  data['siap_pengaturan'] = _dbCache['_pengaturan'] || {};
+  data['siap_laporan_status'] = _dbCache['_laporan_status'] || {};
+  data['siap_admin_profile'] = firebaseGetAdminProfile();
+  data['siap_admin_passwords'] = firebaseGetAdminPasswords();
+  data._meta = { exported_at: new Date().toISOString(), app: 'SIAP', version: '2.0-firebase', source: 'firebase' };
   var json = JSON.stringify(data, null, 2);
   var blob = new Blob([json], { type: 'application/json' });
   var url = URL.createObjectURL(blob);
@@ -3388,7 +3655,7 @@ function exportDatabase() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  alert('Database berhasil di-export!\n\nFile: ' + namaFile + '\nJumlah kategori: ' + siapKeys.length);
+  alert('Database berhasil di-export!\n\nFile: ' + namaFile);
 }
 
 function handleImportFile(input) {
@@ -3421,20 +3688,31 @@ function importDatabase(file) {
       var replaceCount = 0;
 
       siapKeys.forEach(function(key) {
-        var existingRaw = localStorage.getItem(key);
-        var existing = [];
-        try { existing = JSON.parse(existingRaw || '[]'); } catch(ev) { existing = existingRaw || ''; }
         var incoming = data[key];
 
-        if (Array.isArray(existing) && Array.isArray(incoming)) {
-          var existingIds = existing.map(function(r) { return r.id; });
-          var newItems = incoming.filter(function(r) { return !existingIds.includes(r.id); });
-          var total = existing.concat(newItems);
-          localStorage.setItem(key, JSON.stringify(total));
-          mergeCount += newItems.length;
-        } else {
-          localStorage.setItem(key, typeof incoming === 'string' ? incoming : JSON.stringify(incoming));
-          replaceCount++;
+        if (key.indexOf('siap_records_') === 0) {
+          var type = key.replace('siap_records_', '');
+          var existing = getRecords(type);
+          if (Array.isArray(existing) && Array.isArray(incoming)) {
+            var existingIds = existing.map(function(r) { return r.id; });
+            var newItems = incoming.filter(function(r) { return !existingIds.includes(r.id); });
+            var total = existing.concat(newItems);
+            saveRecords(type, total);
+            mergeCount += newItems.length;
+          } else {
+            saveRecords(type, incoming);
+            replaceCount++;
+          }
+        } else if (key === 'siap_pengaturan') {
+          dbRef.ref('siap_pengaturan').set(incoming);
+          _dbCache['_pengaturan'] = incoming;
+        } else if (key === 'siap_laporan_status') {
+          dbRef.ref('siap_laporan_status').set(incoming);
+          _dbCache['_laporan_status'] = incoming;
+        } else if (key === 'siap_admin_profile') {
+          firebaseSaveAdminProfile(incoming);
+        } else if (key === 'siap_admin_passwords') {
+          firebaseSaveAdminPasswords(incoming);
         }
       });
 
@@ -3746,8 +4024,8 @@ function generateAdminLaporan() {
   const bulanName = MONTHS[parseInt(bulan) - 1];
   const sekolahs = getRecords('sekolah');
 
-  // Ambil status laporan dari localStorage
-  var laporanStatus = JSON.parse(localStorage.getItem('siap_laporan_status') || '{}');
+  // Ambil status laporan dari Firebase
+  var laporanStatus = firebaseGetLaporanStatus();
   var keyBulan = tahun + '-' + bulan;
 
   // Hitung progres
@@ -3880,25 +4158,27 @@ function generateAdminLaporan() {
 
 function approveLaporan(sk, namaSekolah) {
   if (!confirm('Tandai "' + namaSekolah + '" sudah melaporkan?')) return;
-  var laporanStatus = JSON.parse(localStorage.getItem('siap_laporan_status') || '{}');
+  var laporanStatus = firebaseGetLaporanStatus();
   var now = new Date();
   var tglStr = now.getDate() + ' ' + MONTHS[now.getMonth()] + ' ' + now.getFullYear();
   laporanStatus[sk] = { status: 'lapor', tanggal: tglStr };
-  localStorage.setItem('siap_laporan_status', JSON.stringify(laporanStatus));
+  firebaseSaveLaporanStatus(laporanStatus);
+  try { localStorage.setItem('siap_laporan_status', JSON.stringify(laporanStatus)); } catch(e) {}
   generateAdminLaporan();
 }
 
 function batalkanLaporan(sk) {
   if (!confirm('Batalkan status laporan sekolah ini?')) return;
-  var laporanStatus = JSON.parse(localStorage.getItem('siap_laporan_status') || '{}');
+  var laporanStatus = firebaseGetLaporanStatus();
   delete laporanStatus[sk];
-  localStorage.setItem('siap_laporan_status', JSON.stringify(laporanStatus));
+  firebaseSaveLaporanStatus(laporanStatus);
+  try { localStorage.setItem('siap_laporan_status', JSON.stringify(laporanStatus)); } catch(e) {}
   generateAdminLaporan();
 }
 
 function approveSemua(keyBulan) {
   if (!confirm('Tandai semua sekolah sudah melaporkan untuk bulan ini?')) return;
-  var laporanStatus = JSON.parse(localStorage.getItem('siap_laporan_status') || '{}');
+  var laporanStatus = firebaseGetLaporanStatus();
   var sekolahs = getRecords('sekolah');
   var now = new Date();
   var tglStr = now.getDate() + ' ' + MONTHS[now.getMonth()] + ' ' + now.getFullYear();
@@ -3908,14 +4188,15 @@ function approveSemua(keyBulan) {
       laporanStatus[sk] = { status: 'lapor', tanggal: tglStr };
     }
   });
-  localStorage.setItem('siap_laporan_status', JSON.stringify(laporanStatus));
+  firebaseSaveLaporanStatus(laporanStatus);
+  try { localStorage.setItem('siap_laporan_status', JSON.stringify(laporanStatus)); } catch(e) {}
   generateAdminLaporan();
 }
 
 function cetakRekapLaporan(keyBulan) {
   showCetakDialog(function(s) {
     var sekolahs = getRecords('sekolah');
-    var laporanStatus = JSON.parse(localStorage.getItem('siap_laporan_status') || '{}');
+    var laporanStatus = firebaseGetLaporanStatus();
     var tahun = keyBulan.split('-')[0];
     var bulan = keyBulan.split('-')[1];
     var bulanName = MONTHS[parseInt(bulan) - 1];
@@ -7208,27 +7489,285 @@ function cetakTandaTerimaPIP() {
   });
   }, { paper: 'A4', orientasi: 'portrait', mt: 2.5, mb: 2, ml: 3, mr: 2 });
 }
-(function init() {
-  // Check for existing session
+
+// ============ PUBLIC PAGE ============
+var _pubJenjangFilter = 'Semua';
+var _pubPengShowAll = false;
+
+function openPublicPage() {
+  if (!isFirebaseReady()) {
+    alert('Data sedang dimuat dari server... harap tunggu sebentar.');
+    return;
+  }
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('publicPage').style.display = 'block';
+  _pubJenjangFilter = 'Semua';
+  renderPublicDashboard();
+}
+
+function closePublicPage() {
+  document.getElementById('publicPage').style.display = 'none';
+  // Check if there's an active session
   try {
-    const session = JSON.parse(localStorage.getItem('siap_session'));
+    var session = JSON.parse(localStorage.getItem('siap_session'));
     if (session && session.role) {
       currentUser = session;
       showMainApp();
       return;
     }
   } catch(e) {}
-
-  // Set current month in report selectors
-  const currentMonth = new Date().getMonth() + 1;
-  const laporanBulan = document.getElementById('laporanBulan');
-  const laporanSekolahBulan = document.getElementById('laporanSekolahBulan');
-  if (laporanBulan) laporanBulan.value = currentMonth;
-  if (laporanSekolahBulan) laporanSekolahBulan.value = currentMonth;
-
-  // Show login page
   document.getElementById('loginPage').style.display = 'flex';
   document.getElementById('mainApp').style.display = 'none';
+}
+
+function renderPublicDashboard() {
+  var sekolahs = getRecords('sekolah');
+  var allSiswa = getRecords('siswa');
+  var allPegawai = getRecords('pegawai');
+  var allSarpras = getRecords('sarpras');
+  var container = document.getElementById('pubContent');
+  if (!container) return;
+
+  // Pengumuman / Berita Terbaru
+  var allPengumuman = getRecords('pengumuman').sort(function(a, b) { return (b.created_at || '').localeCompare(a.created_at || ''); });
+  var pubPengumumanHtml = '';
+  if (allPengumuman.length > 0) {
+    var pengumumanItems = '';
+    var maxShow = 5;
+    allPengumuman.forEach(function(r, idx) {
+      var prioritasClass = r.prioritas === 'Penting' ? 'prioritas-penting' : r.prioritas === 'Sangat Penting' ? 'prioritas-sangat-penting' : '';
+      var badgeClass = r.prioritas === 'Sangat Penting' ? 'sangat-penting' : r.prioritas === 'Penting' ? 'penting' : 'biasa';
+      var tanggal = r.created_at ? new Date(r.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+      var isiText = r.isi || '';
+      var isLong = isiText.length > 200;
+      var shortIsi = isLong ? isiText.substring(0, 200) + '...' : isiText;
+      var uid = 'pub_peng_' + idx;
+      var toggleBtn = isLong ? '<button class="pub-pengumuman-toggle" onclick="var el=document.getElementById(\'' + uid + '\');var btn=this;el.style.display=el.style.display===\'none\'?\'block\':\'none\';btn.textContent=el.style.display===\'none\'?\'Baca selengkapnya\':\'Tutup\';">Baca selengkapnya</button>' : '';
+      pengumumanItems += '<div class="pub-pengumuman-item ' + prioritasClass + '">' +
+        '<div class="pub-pengumuman-judul">' +
+          '<span class="pub-pengumuman-badge ' + badgeClass + '">' + escapeHtml(r.prioritas || 'Biasa') + '</span>' +
+          '<span>' + escapeHtml(r.judul) + '</span>' +
+        '</div>' +
+        '<div class="pub-pengumuman-isi">' + linkify(shortIsi) + '</div>' +
+        (isLong ? '<div id="' + uid + '" style="display:none;" class="pub-pengumuman-isi">' + linkify(isiText) + '</div>' : '') +
+        toggleBtn +
+        '<div class="pub-pengumuman-meta"><i class="bi bi-clock"></i>' + tanggal + '</div>' +
+        '</div>';
+    });
+    var showMoreBtn = allPengumuman.length > maxShow ?
+      '<div style="text-align:center;padding:12px;border-top:1px solid #f0f0f0;">' +
+        '<button class="pub-jenjang-btn" id="pubPengToggleBtn" onclick="_pubPengShowAll=!_pubPengShowAll;renderPublicDashboard();">' +
+          (_pubPengShowAll ? 'Tampilkan Sedikit <i class="bi bi-chevron-up ms-1"></i>' : 'Lihat Semua Pengumuman (' + allPengumuman.length + ') <i class="bi bi-chevron-down ms-1"></i>') +
+        '</button>' +
+      '</div>' : '';
+    var displayItems = _pubPengShowAll ? pengumumanItems : allPengumuman.slice(0, maxShow).map(function(r, idx) {
+      var prioritasClass = r.prioritas === 'Penting' ? 'prioritas-penting' : r.prioritas === 'Sangat Penting' ? 'prioritas-sangat-penting' : '';
+      var badgeClass = r.prioritas === 'Sangat Penting' ? 'sangat-penting' : r.prioritas === 'Penting' ? 'penting' : 'biasa';
+      var tanggal = r.created_at ? new Date(r.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+      var isiText = r.isi || '';
+      var isLong = isiText.length > 200;
+      var shortIsi = isLong ? isiText.substring(0, 200) + '...' : isiText;
+      var uid = 'pub_peng_' + idx;
+      var toggleBtn = isLong ? '<button class="pub-pengumuman-toggle" onclick="var el=document.getElementById(\'' + uid + '\');var btn=this;el.style.display=el.style.display===\'none\'?\'block\':\'none\';btn.textContent=el.style.display===\'none\'?\'Baca selengkapnya\':\'Tutup\';">Baca selengkapnya</button>' : '';
+      return '<div class="pub-pengumuman-item ' + prioritasClass + '">' +
+        '<div class="pub-pengumuman-judul">' +
+          '<span class="pub-pengumuman-badge ' + badgeClass + '">' + escapeHtml(r.prioritas || 'Biasa') + '</span>' +
+          '<span>' + escapeHtml(r.judul) + '</span>' +
+        '</div>' +
+        '<div class="pub-pengumuman-isi">' + linkify(shortIsi) + '</div>' +
+        (isLong ? '<div id="' + uid + '" style="display:none;" class="pub-pengumuman-isi">' + linkify(isiText) + '</div>' : '') +
+        toggleBtn +
+        '<div class="pub-pengumuman-meta"><i class="bi bi-clock"></i>' + tanggal + '</div>' +
+        '</div>';
+    }).join('');
+    pubPengumumanHtml = '<div class="pub-section">' +
+      '<div class="pub-section-header">' +
+        '<h5><i class="bi bi-megaphone"></i>Berita & Pengumuman</h5>' +
+        '<span style="font-size:12px;color:#718096;">' + allPengumuman.length + ' pengumuman</span>' +
+      '</div>' +
+      displayItems +
+      showMoreBtn +
+    '</div>';
+  } else {
+    pubPengumumanHtml = '<div class="pub-section">' +
+      '<div class="pub-section-header">' +
+        '<h5><i class="bi bi-megaphone"></i>Berita & Pengumuman</h5>' +
+      '</div>' +
+      '<div class="pub-pengumuman-empty"><i class="bi bi-megaphone"></i><p style="margin:0;font-size:13px;">Belum ada pengumuman terbaru.</p></div>' +
+    '</div>';
+  }
+
+  // Build jenjang list
+  var jenjangList = [];
+  sekolahs.forEach(function(s) {
+    var j = (s.jenjang || 'Lainnya').toUpperCase();
+    if (jenjangList.indexOf(j) === -1) jenjangList.push(j);
+  });
+  jenjangList.sort();
+
+  // Stats
+  var totalSiswa = allSiswa.length;
+  var totalPegawai = allPegawai.length;
+  var totalSekolah = sekolahs.length;
+  var totalLulusan = getRecords('siswa_lulusan').length;
+
+  // Jenjang filter buttons
+  var filterBtns = '<button class="pub-jenjang-btn ' + (_pubJenjangFilter === 'Semua' ? 'active' : '') + '" onclick="_pubJenjangFilter=\'Semua\';renderPublicDashboard();">Semua (' + totalSekolah + ')</button>';
+  jenjangList.forEach(function(j) {
+    var cnt = sekolahs.filter(function(s) { return (s.jenjang || '').toUpperCase() === j; }).length;
+    filterBtns += '<button class="pub-jenjang-btn ' + (_pubJenjangFilter === j ? 'active' : '') + '" onclick="_pubJenjangFilter=\'' + j + '\';renderPublicDashboard();">' + j + ' (' + cnt + ')</button>';
+  });
+
+  // Filter sekolahs
+  var filteredSekolah = sekolahs;
+  if (_pubJenjangFilter !== 'Semua') {
+    filteredSekolah = sekolahs.filter(function(s) { return (s.jenjang || '').toUpperCase() === _pubJenjangFilter; });
+  }
+
+  // Build jenjang badge color map
+  var jenjangColors = {
+    'SD': 'pub-badge-blue',
+    'SMP': 'pub-badge-green',
+    'SMA': 'pub-badge-orange',
+    'SMK': 'pub-badge-purple',
+    'TK': 'pub-badge-green',
+    'PAUD': 'pub-badge-green',
+    'RA': 'pub-badge-green'
+  };
+
+  // Build school rows
+  var schoolRows = '';
+  filteredSekolah.forEach(function(s, idx) {
+    var siswaCount = allSiswa.filter(function(sw) { return sw.school_id === s.id; }).length;
+    var pegawaiCount = allPegawai.filter(function(p) { return p.school_id === s.id; }).length;
+    var lulusanCount = getRecords('siswa_lulusan').filter(function(l) { return l.school_id === s.id; }).length;
+    var sarprasCount = allSarpras.filter(function(sr) { return sr.school_id === s.id; }).length;
+    var jenjang = (s.jenjang || 'Lainnya').toUpperCase();
+    var badgeClass = jenjangColors[jenjang] || 'pub-badge-blue';
+
+    // Progress: based on how much data is filled
+    var filledFields = 0;
+    var totalFields = 6;
+    if (s.nama_sekolah) filledFields++;
+    if (s.npsn) filledFields++;
+    if (s.alamat) filledFields++;
+    if (s.kepala_sekolah) filledFields++;
+    if (siswaCount > 0) filledFields++;
+    if (pegawaiCount > 0) filledFields++;
+    var progressPct = Math.round((filledFields / totalFields) * 100);
+    var progressColor = progressPct >= 80 ? '#10b981' : progressPct >= 50 ? '#f59e0b' : '#ef4444';
+
+    schoolRows += '<tr>' +
+      '<td style="text-align:center;width:40px;">' + (idx + 1) + '</td>' +
+      '<td class="school-name">' + escapeHtml(s.nama_sekolah || '-') + '</td>' +
+      '<td><span class="pub-badge ' + badgeClass + '">' + jenjang + '</span></td>' +
+      '<td style="text-align:center;"><strong>' + siswaCount + '</strong></td>' +
+      '<td style="text-align:center;"><strong>' + pegawaiCount + '</strong></td>' +
+      '<td style="text-align:center;">' + lulusanCount + '</td>' +
+      '<td style="text-align:center;">' + sarprasCount + '</td>' +
+      '<td style="width:150px;">' +
+        '<div style="display:flex;align-items:center;gap:8px;">' +
+          '<div class="pub-progress-bar" style="flex:1;"><div class="pub-progress-fill" style="width:' + progressPct + '%;background:' + progressColor + ';"></div></div>' +
+          '<span style="font-size:11px;font-weight:700;color:' + progressColor + ';">' + progressPct + '%</span>' +
+        '</div>' +
+      '</td>' +
+      '</tr>';
+  });
+
+  var tableHtml = '';
+  if (filteredSekolah.length === 0) {
+    tableHtml = '<div class="pub-empty"><i class="bi bi-inbox"></i><p>Belum ada data sekolah</p></div>';
+  } else {
+    tableHtml = '<div class="table-container" style="overflow-x:auto;"><table class="pub-table"><thead><tr>' +
+      '<th style="text-align:center;">No</th>' +
+      '<th>Nama Sekolah</th>' +
+      '<th>Jenjang</th>' +
+      '<th style="text-align:center;">Siswa</th>' +
+      '<th style="text-align:center;">Pegawai</th>' +
+      '<th style="text-align:center;">Lulusan</th>' +
+      '<th style="text-align:center;">Sarpras</th>' +
+      '<th>Progres Data</th>' +
+      '</tr></thead><tbody>' + schoolRows + '</tbody></table></div>';
+  }
+
+  // Per-jenjang summary
+  var jenjangSummaryHtml = '';
+  var jenjangData = {};
+  sekolahs.forEach(function(s) {
+    var j = (s.jenjang || 'Lainnya').toUpperCase();
+    if (!jenjangData[j]) jenjangData[j] = { count: 0, siswa: 0, pegawai: 0 };
+    jenjangData[j].count++;
+    jenjangData[j].siswa += allSiswa.filter(function(sw) { return sw.school_id === s.id; }).length;
+    jenjangData[j].pegawai += allPegawai.filter(function(p) { return p.school_id === s.id; }).length;
+  });
+  var jKeys = Object.keys(jenjangData).sort();
+  jKeys.forEach(function(j) {
+    var d = jenjangData[j];
+    var bClass = jenjangColors[j] || 'pub-badge-blue';
+    jenjangSummaryHtml += '<div class="pub-detail-item">' +
+      '<div class="pub-di-value">' + d.count + '</div>' +
+      '<div class="pub-di-label">Sekolah ' + j + '</div>' +
+      '<div style="margin-top:6px;font-size:11px;color:#718096;">' + d.siswa + ' siswa &bull; ' + d.pegawai + ' pegawai</div>' +
+      '</div>';
+  });
+
+  container.innerHTML =
+    '<div class="pub-hero">' +
+      '<h2><i class="bi bi-mortarboard me-2"></i>Portal Informasi Pendidikan</h2>' +
+      '<p>Korwil Bidang Pendidikan Kecamatan Lemahabang, Kabupaten Cirebon. Halaman ini menampilkan data statistik dan progres pengisian data seluruh sekolah di wilayah Kecamatan Lemahabang secara transparan.</p>' +
+    '</div>' +
+    pubPengumumanHtml +
+    '<div class="pub-stats-grid">' +
+      '<div class="pub-stat-card"><div class="pub-stat-icon blue"><i class="bi bi-building"></i></div><div><div class="pub-stat-value">' + totalSekolah + '</div><div class="pub-stat-label">Total Sekolah</div></div></div>' +
+      '<div class="pub-stat-card"><div class="pub-stat-icon green"><i class="bi bi-people"></i></div><div><div class="pub-stat-value">' + totalSiswa + '</div><div class="pub-stat-label">Total Siswa</div></div></div>' +
+      '<div class="pub-stat-card"><div class="pub-stat-icon orange"><i class="bi bi-person-badge"></i></div><div><div class="pub-stat-value">' + totalPegawai + '</div><div class="pub-stat-label">Total Pegawai</div></div></div>' +
+      '<div class="pub-stat-card"><div class="pub-stat-icon purple"><i class="bi bi-mortarboard"></i></div><div><div class="pub-stat-value">' + totalLulusan + '</div><div class="pub-stat-label">Total Lulusan</div></div></div>' +
+    '</div>' +
+    '<div class="pub-section">' +
+      '<div class="pub-section-header">' +
+        '<h5><i class="bi bi-pie-chart"></i>Ringkasan per Jenjang</h5>' +
+      '</div>' +
+      '<div class="pub-section-body">' +
+        '<div class="pub-detail-row">' + jenjangSummaryHtml + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="pub-section">' +
+      '<div class="pub-section-header">' +
+        '<h5><i class="bi bi-table"></i>Data Sekolah</h5>' +
+        '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">' +
+          '<div class="pub-jenjang-filter">' + filterBtns + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="pub-section-body" style="padding:0;">' +
+        tableHtml +
+      '</div>' +
+    '</div>';
+}
+
+(function init() {
+  // Initialize Firebase data first
+  initFirebaseData();
+
+  // Wait for Firebase to be ready before showing UI
+  onFirebaseReady(function() {
+    // Check for existing session
+    try {
+      const session = JSON.parse(localStorage.getItem('siap_session'));
+      if (session && session.role) {
+        currentUser = session;
+        showMainApp();
+        return;
+      }
+    } catch(e) {}
+
+    // Set current month in report selectors
+    const currentMonth = new Date().getMonth() + 1;
+    const laporanBulan = document.getElementById('laporanBulan');
+    const laporanSekolahBulan = document.getElementById('laporanSekolahBulan');
+    if (laporanBulan) laporanBulan.value = currentMonth;
+    if (laporanSekolahBulan) laporanSekolahBulan.value = currentMonth;
+  });
 })();
 </script>
 </body>

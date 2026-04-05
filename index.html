@@ -1428,6 +1428,52 @@ function firebaseGetAdminPasswords() {
   return _dbCache['_admin_passwords'] || {};
 }
 
+// ============ GOOGLE SHEETS SYNC ============
+// =====================================================
+// CARA SETUP:
+// 1. Buka Google Sheets baru
+// 2. Klik Extensions > Apps Script
+// 3. Tempel script yang diberikan (lihat panduan)
+// 4. Deploy sebagai Web App (Anyone can access)
+// 5. Copy URL deploy, paste di bawah ini:
+// =====================================================
+var GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxfVw7EyxErZL3Qm95slsce_jx6qBiO5cgQKxZtm_bhFTvwX8-m5PdP2WSJiM05lG3x/exec';
+// Contoh: var GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/xxxxxx/exec';
+
+var _gsSyncQueue = {};
+var _gsSyncTimer = null;
+
+function syncToGoogleSheets(type, records) {
+  if (!GOOGLE_SCRIPT_URL) return;
+  _gsSyncQueue[type] = records;
+  if (_gsSyncTimer) clearTimeout(_gsSyncTimer);
+  _gsSyncTimer = setTimeout(function() {
+    _doSyncToSheets();
+  }, 1500);
+}
+
+function _doSyncToSheets() {
+  var types = Object.keys(_gsSyncQueue);
+  if (types.length === 0) return;
+  var payload = {};
+  types.forEach(function(t) {
+    payload[t] = _gsSyncQueue[t];
+  });
+  _gsSyncQueue = {};
+  try {
+    fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(function(e) {
+      console.error('Google Sheets sync error:', e);
+    });
+  } catch(e) {
+    console.error('Google Sheets sync error:', e);
+  }
+}
+
 // ============ UTILITY FUNCTIONS ============
 function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 9); }
 function now() { return new Date().toISOString(); }
@@ -1438,6 +1484,7 @@ function getRecords(type) {
 function saveRecords(type, records) {
   _dbCache[type] = records;
   firebaseSaveRecords(type, records);
+  syncToGoogleSheets(type, records);
   // Also keep localStorage as backup
   try { localStorage.setItem('siap_records_' + type, JSON.stringify(records)); } catch(e) {}
 }

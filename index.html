@@ -1471,6 +1471,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 // ============ GLOBAL STATE ============
@@ -1688,12 +1689,26 @@ function syncPengumumanToFirebase() {
     records.forEach(function(r) {
       var key = r.id || r._key;
       if (!key) return;
+      // For lampiran: only store metadata + URL (no base64 data to avoid size limits)
+      var lampiranLight = [];
+      if (r.lampiran && r.lampiran.length > 0) {
+        r.lampiran.forEach(function(f) {
+          // Only include if data is a URL (from Storage), not base64
+          var isUrl = f.data && !f.data.startsWith('data:');
+          if (isUrl) {
+            lampiranLight.push({ nama: f.nama, tipe: f.tipe, mime: f.mime, data: f.data });
+          } else if (f.tipe !== 'image') {
+            // Keep small document files as base64
+            lampiranLight.push({ nama: f.nama, tipe: f.tipe, mime: f.mime, data: f.data });
+          }
+        });
+      }
       dataObj[key] = {
         id: key,
         judul: r.judul || '',
         isi: r.isi || '',
         prioritas: r.prioritas || 'Biasa',
-        lampiran: r.lampiran || [],
+        lampiran: lampiranLight,
         created_at: r.created_at || '',
         updated_at: r.updated_at || ''
       };
@@ -4629,7 +4644,72 @@ function renderPengumumanPreview() {
   container.innerHTML = html;
 }
 
-// Drag & drop support
+// Upload file to Firebase Storage, return download URL
+function uploadToFirebaseStorage(base64Data, fileName) {
+  return new Promise(function(resolve, reject) {
+    if (!firebase.storage) {
+      // Fallback: return base64 if Storage not available
+      resolve(base64Data);
+      return;
+    }
+    try {
+      var storageRef = firebase.storage().ref('pengumuman_lampiran/' + Date.now() + '_' + fileName);
+      // Convert base64 to Blob
+      var mimeMatch = base64Data.match(/^data:([^;]+);base64,/);
+      var mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+      var byteString = atob(base64Data.split(',')[1]);
+      var ab = new ArrayBuffer(byteString.length);
+      var ia = new Uint8Array(ab);
+      for (var i = 0; i < byteString.length; i++) { ia[i] = byteString.charCodeAt(i); }
+      var blob = new Blob([ab], { type: mime });
+
+      var uploadTask = storageRef.put(blob);
+      uploadTask.on('state_changed',
+        function(snapshot) { /* progress */ },
+        function(error) {
+          console.warn('[SIAP] Storage upload error:', error);
+          resolve(base64Data); // fallback to base64
+        },
+        function() {
+          uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+            resolve(downloadURL);
+          }).catch(function(err) {
+            console.warn('[SIAP] getDownloadURL error:', err);
+            resolve(base64Data);
+          });
+        }
+      );
+    } catch(e) {
+      console.warn('[SIAP] Storage upload exception:', e);
+      resolve(base64Data);
+    }
+  });
+}
+
+// Upload all lampiran files to Firebase Storage (for images) or keep as base64 (for docs)
+async function uploadLampiranToStorage(files) {
+  var results = [];
+  for (var i = 0; i < files.length; i++) {
+    var f = files[i];
+    if (f.tipe === 'image' && f.data && f.data.startsWith('data:')) {
+      // Upload image to Storage
+      var url = await uploadToFirebaseStorage(f.data, f.nama);
+      results.push({
+        nama: f.nama,
+        tipe: 'image',
+        mime: f.mime,
+        data: url,
+        ukuran: f.ukuran
+      });
+    } else {
+      // Keep document files as base64 (they're usually smaller)
+      results.push(Object.assign({}, f));
+    }
+  }
+  return results;
+}
+
+// ============ DRAG & DROP SUPPORT ============
 (function() {
   document.addEventListener('DOMContentLoaded', function() {
     var area = document.getElementById('pengumumanUploadArea');
@@ -4732,14 +4812,37 @@ function savePengumuman() {
   var prioritas = document.getElementById('f_pengumuman_prioritas').value;
   if (!judul) { alert('Judul harus diisi!'); return; }
   if (!isi) { alert('Isi pengumuman harus diisi!'); return; }
-  var lampiran = pengumumanFiles.length > 0 ? pengumumanFiles : [];
-  if (editPengumumanId) {
-    updateRecord('pengumuman', editPengumumanId, { judul: judul, isi: isi, prioritas: prioritas, lampiran: lampiran });
+
+  // Disable save button and show uploading status
+  var saveBtn = document.querySelector('#pengumumanModal .btn-accent');
+  var origBtnText = saveBtn ? saveBtn.innerHTML : '';
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = '<i class="bi bi-cloud-arrow-up me-1"></i>Mengunggah...'; }
+
+  // Upload images to Firebase Storage first
+  if (pengumumanFiles.length > 0) {
+    uploadLampiranToStorage(pengumumanFiles).then(function(storedFiles) {
+      doSavePengumuman(judul, isi, prioritas, storedFiles, origBtnText);
+    }).catch(function(err) {
+      console.error('[SIAP] Upload lampiran error:', err);
+      // Fallback: save with original base64 files
+      doSavePengumuman(judul, isi, prioritas, pengumumanFiles, origBtnText);
+    });
   } else {
-    addRecord('pengumuman', { judul: judul, isi: isi, prioritas: prioritas, lampiran: lampiran });
+    doSavePengumuman(judul, isi, prioritas, [], origBtnText);
+  }
+}
+
+function doSavePengumuman(judul, isi, prioritas, lampiran, origBtnText) {
+  var lampiranData = lampiran.length > 0 ? lampiran : [];
+  if (editPengumumanId) {
+    updateRecord('pengumuman', editPengumumanId, { judul: judul, isi: isi, prioritas: prioritas, lampiran: lampiranData });
+  } else {
+    addRecord('pengumuman', { judul: judul, isi: isi, prioritas: prioritas, lampiran: lampiranData });
   }
   editPengumumanId = null;
   pengumumanFiles = [];
+  var saveBtn = document.querySelector('#pengumumanModal .btn-accent');
+  if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = origBtnText || 'Simpan'; }
   bootstrap.Modal.getInstance(document.getElementById('pengumumanModal')).hide();
   loadPengumuman('pengumumanContainer');
   loadPengumuman('pengumumanContainerSekolah');

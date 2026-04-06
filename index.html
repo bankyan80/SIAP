@@ -276,6 +276,27 @@
     .pengumuman-meta { font-size: 11px; color: #999; margin-top: 10px; }
     .pengumuman-badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
     .pengumuman-actions { float: right; }
+    .pengumuman-upload-area { border: 2px dashed var(--border-color); border-radius: 10px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s; background: #fafbfc; }
+    .pengumuman-upload-area:hover { border-color: var(--primary); background: #f0f4ff; }
+    .pengumuman-upload-area.dragover { border-color: var(--primary); background: #e8eeff; }
+    .pengumuman-preview-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    .pengumuman-preview-item { position: relative; width: 100px; height: 100px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); background: #fff; }
+    .pengumuman-preview-item img { width: 100%; height: 100%; object-fit: cover; }
+    .pengumuman-preview-item .file-icon-preview { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8f9fa; }
+    .pengumuman-preview-item .file-icon-preview i { font-size: 28px; color: #666; }
+    .pengumuman-preview-item .file-icon-preview span { font-size: 9px; color: #999; margin-top: 4px; padding: 0 4px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 90px; }
+    .pengumuman-preview-item .remove-file-btn { position: absolute; top: 2px; right: 2px; width: 22px; height: 22px; border-radius: 50%; background: rgba(220,53,69,0.9); color: #fff; border: none; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; z-index: 2; line-height: 1; }
+    .pengumuman-images { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .pengumuman-images img { max-width: 200px; max-height: 150px; border-radius: 8px; cursor: pointer; border: 1px solid var(--border-color); object-fit: cover; transition: transform 0.2s; }
+    .pengumuman-images img:hover { transform: scale(1.03); box-shadow: 0 2px 12px rgba(0,0,0,0.12); }
+    .pengumuman-files-list { margin-top: 8px; }
+    .pengumuman-files-list a { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #f0f4ff; border-radius: 6px; color: var(--primary); font-size: 13px; text-decoration: none; margin-right: 8px; margin-bottom: 6px; transition: background 0.2s; }
+    .pengumuman-files-list a:hover { background: #dce5ff; }
+    .pengumuman-inline-img-wrap { margin: 10px 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); }
+    .pengumuman-inline-img { max-width: 100%; max-height: 400px; display: block; cursor: pointer; object-fit: contain; background: #f8f9fa; }
+    .pengumuman-inline-img-link { padding: 6px 10px; background: #f8f9fa; font-size: 11px; border-top: 1px solid var(--border-color); }
+    .pengumuman-inline-img-link a { color: var(--primary); text-decoration: none; word-break: break-all; }
+    .pengumuman-inline-img-link a:hover { text-decoration: underline; }
 
     /* SCROLLBAR */
     .sidebar::-webkit-scrollbar { width: 4px; }
@@ -1298,7 +1319,7 @@
                   </table>
                 </div>
               </div>
-              <div class="alert alert-info" style="font-size:12px;"><i class="bi bi-info-circle me-1"></i>Pilih siswa yang akan dicetak tanda terimanya. Sistem akan menampilkan data sekolah, data siswa, dan tanda tangan Kepala Sekolah secara otomatis.</div>
+              <div class="alert alert-info" style="font-size:12px;"><i class="bi bi-info-circle me-1"></i>Pilih peserta didik yang akan dicetak tanda terimanya. Sistem akan menampilkan data sekolah, data peserta didik, dan tanda tangan Kepala Sekolah secara otomatis.</div>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -1340,6 +1361,16 @@
           <div class="col-12"><div class="form-floating"><input class="form-control" id="f_pengumuman_judul" placeholder="Judul"><label>Judul Pengumuman</label></div></div>
           <div class="col-12"><div class="form-floating"><textarea class="form-control" id="f_pengumuman_isi" style="height:250px;" placeholder="Isi pengumuman..."></textarea><label>Isi Pengumuman</label></div></div>
           <div class="col-md-6"><div class="form-floating"><select class="form-select" id="f_pengumuman_prioritas"><option value="Biasa">Biasa</option><option value="Penting">Penting</option><option value="Sangat Penting">Sangat Penting</option></select><label>Prioritas</label></div></div>
+          <div class="col-12">
+            <label class="form-label" style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px;"><i class="bi bi-paperclip me-1"></i>Foto / Dokumen (Maks. 5 file, masing-masing maks. 2MB)</label>
+            <div class="pengumuman-upload-area" id="pengumumanUploadArea" onclick="document.getElementById('f_pengumuman_files').click()">
+              <i class="bi bi-cloud-arrow-up" style="font-size:28px;color:var(--primary);"></i>
+              <p style="margin:8px 0 0;font-size:13px;color:#666;">Klik untuk pilih file atau seret file ke sini</p>
+              <p style="margin:4px 0 0;font-size:11px;color:#999;">Format: JPG, PNG, GIF, PDF, DOC, DOCX</p>
+            </div>
+            <input type="file" id="f_pengumuman_files" multiple accept="image/*,.pdf,.doc,.docx" style="display:none;" onchange="handlePengumumanFileSelect(event)">
+            <div id="pengumumanPreviewContainer" class="pengumuman-preview-container"></div>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -1662,6 +1693,7 @@ function syncPengumumanToFirebase() {
         judul: r.judul || '',
         isi: r.isi || '',
         prioritas: r.prioritas || 'Biasa',
+        lampiran: r.lampiran || [],
         created_at: r.created_at || '',
         updated_at: r.updated_at || ''
       };
@@ -2596,8 +2628,8 @@ function cetakSurat(id) {
 function getTemplateConfig(type) {
   const configs = {
     siswa: {
-      filename: 'Template_Data_Siswa.xlsx',
-      sheet: 'Data Siswa',
+      filename: 'Template_Data_Peserta_Didik.xlsx',
+      sheet: 'Data Peserta Didik',
       headers: ['NIS/NISN', 'Nama Peserta Didik', 'Jenis Kelamin', 'Tempat Lahir', 'Tanggal Lahir', 'Kelas', 'Alamat'],
       fields: ['nis_nisn', 'nama', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir', 'kelas', 'alamat'],
       sample: ['0012345678', 'Ahmad Fauzi', 'Laki-laki', 'Karawang', '2015-01-15', '6A', 'Jl. Merdeka No.1']
@@ -2635,7 +2667,7 @@ function getTemplateConfig(type) {
       sheet: 'Arsip Surat Keluar',
       headers: ['No. Agenda', 'No. Surat', 'Tanggal Surat', 'Tujuan', 'Perihal', 'Kategori'],
       fields: ['no_agenda', 'no_surat', 'tanggal_surat', 'tujuan', 'perihal', 'kategori'],
-      sample: ['001', '421/KORWIL/LM/2025', '2025-01-10', 'Semua Kepala SD Kec. Lemahabang', 'Pengumpulan Data Siswa', 'Pemberitahuan']
+      sample: ['001', '421/KORWIL/LM/2025', '2025-01-10', 'Semua Kepala SD Kec. Lemahabang', 'Pengumpulan Data Peserta Didik', 'Pemberitahuan']
     }
   };
   return configs[type];
@@ -3002,7 +3034,7 @@ function saveCrudData() {
         status_verval: document.getElementById('f_status_verval').value,
         tahun: document.getElementById('f_tahun_pip').value.trim()
       };
-      if (!data.nama_siswa) { alert('Nama siswa harus diisi!'); return; }
+      if (!data.nama_siswa) { alert('Nama peserta didik harus diisi!'); return; }
       if (currentUser.role === 'admin' && !data.school_id) { alert('Pilih sekolah!'); return; }
       break;
 
@@ -3018,7 +3050,7 @@ function saveCrudData() {
         nominal: document.getElementById('f_nominal').value.trim(),
         status_aktivasi: document.getElementById('f_status_aktivasi').value
       };
-      if (!data.nama_siswa) { alert('Nama siswa harus diisi!'); return; }
+      if (!data.nama_siswa) { alert('Nama peserta didik harus diisi!'); return; }
       if (currentUser.role === 'admin' && !data.school_id) { alert('Pilih sekolah!'); return; }
       break;
 
@@ -3623,7 +3655,7 @@ function resetDataSekolah(schoolId, namaSekolah) {
   if (!confirm('Konfirmasi sekali lagi:\nHapus semua data "' + namaSekolah + '"?')) return;
 
   var deleted = {};
-  var allTypes = ['siswa', 'siswa_lulusan', 'pegawai', 'sarpras', 'pip_aktivasi', 'arsip_masuk', 'arsip_keluar', 'surat'];
+  var allTypes = ['siswa', 'siswa_lulusan', 'pegawai', 'sarpras', 'pip_verval', 'pip_aktivasi', 'arsip_masuk', 'arsip_keluar', 'surat'];
   allTypes.forEach(function(type) {
     var records = getRecords(type);
     var before = records.length;
@@ -3645,6 +3677,7 @@ function resetDataSekolah(schoolId, namaSekolah) {
   syncSekolahToFirebase();
   if (window._fbConnected) {
     syncRecordsToFirebase('siswa');
+    syncRecordsToFirebase('siswa_lulusan');
     syncRecordsToFirebase('pegawai');
     syncRecordsToFirebase('sarpras');
     syncPortalStats();
@@ -4444,7 +4477,7 @@ function generateSekolahLaporan() {
     });
     html += '</tbody></table>';
   } else {
-    html += '<p style="color:#666;">Tidak ada data siswa.</p>';
+    html += '<p style="color:#666;">Tidak ada data peserta didik.</p>';
   }
 
   // B. Data Pegawai
@@ -4520,6 +4553,104 @@ function generateSekolahLaporan() {
 
 // ============ PENGUMUMAN ============
 var editPengumumanId = null;
+var pengumumanFiles = [];
+
+// Convert URLs to clickable links and image URLs to <img> tags
+function linkifyText(text) {
+  if (!text) return '';
+  var escaped = escapeHtml(text);
+  // Regex to detect URLs
+  var urlRegex = /(https?:\/\/[^\s<]+)/gi;
+  var imageExts = ['jpg','jpeg','png','gif','webp','bmp','svg','avif'];
+  return escaped.replace(urlRegex, function(url) {
+    // Clean trailing punctuation
+    var cleanUrl = url.replace(/[.,;:!?)\]]+$/, '');
+    var punct = url.length > cleanUrl.length ? url.substring(cleanUrl.length) : '';
+    var isImage = false;
+    try {
+      var path = cleanUrl.toLowerCase();
+      var ext = path.split(/[?#]/)[0].split('.').pop();
+      if (imageExts.indexOf(ext) > -1) isImage = true;
+    } catch(e) {}
+    if (isImage) {
+      return '<div class="pengumuman-inline-img-wrap"><img src="' + cleanUrl + '" alt="Gambar" class="pengumuman-inline-img" onclick="window.open(this.src,\'_blank\')" onerror="this.parentElement.style.display=\'none\'"><div class="pengumuman-inline-img-link"><i class="bi bi-box-arrow-up-right me-1"></i><a href="' + cleanUrl + '" target="_blank" rel="noopener">' + cleanUrl + '</a></div></div>' + punct;
+    }
+    return '<a href="' + cleanUrl + '" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:underline;word-break:break-all;">' + cleanUrl + '</a>' + punct;
+  });
+}
+
+// File upload handlers for pengumuman
+function handlePengumumanFileSelect(e) {
+  var files = e.target.files;
+  if (!files || files.length === 0) return;
+  var remaining = 5 - pengumumanFiles.length;
+  if (remaining <= 0) { alert('Maksimal 5 file lampiran!'); e.target.value = ''; return; }
+  var toProcess = Math.min(files.length, remaining);
+  for (var i = 0; i < toProcess; i++) {
+    (function(file) {
+      if (file.size > 2 * 1024 * 1024) { alert('File "' + file.name + '" melebihi batas 2MB!'); return; }
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        var isImage = file.type.startsWith('image/');
+        pengumumanFiles.push({
+          nama: file.name,
+          tipe: isImage ? 'image' : 'document',
+          mime: file.type,
+          data: ev.target.result,
+          ukuran: file.size
+        });
+        renderPengumumanPreview();
+      };
+      reader.readAsDataURL(file);
+    })(files[i]);
+  }
+  e.target.value = '';
+}
+
+function removePengumumanFile(index) {
+  pengumumanFiles.splice(index, 1);
+  renderPengumumanPreview();
+}
+
+function renderPengumumanPreview() {
+  var container = document.getElementById('pengumumanPreviewContainer');
+  if (!container) return;
+  if (pengumumanFiles.length === 0) { container.innerHTML = ''; return; }
+  var html = '';
+  pengumumanFiles.forEach(function(f, idx) {
+    if (f.tipe === 'image') {
+      html += '<div class="pengumuman-preview-item"><img src="' + f.data + '" alt="' + escapeHtml(f.nama) + '"><button class="remove-file-btn" onclick="removePengumumanFile(' + idx + ')" title="Hapus">&times;</button></div>';
+    } else {
+      var ext = f.nama.split('.').pop().toUpperCase();
+      var icon = ext === 'PDF' ? 'bi-file-earmark-pdf' : 'bi-file-earmark-word';
+      html += '<div class="pengumuman-preview-item"><div class="file-icon-preview"><i class="bi ' + icon + '"></i><span>' + escapeHtml(f.nama) + '</span></div><button class="remove-file-btn" onclick="removePengumumanFile(' + idx + ')" title="Hapus">&times;</button></div>';
+    }
+  });
+  container.innerHTML = html;
+}
+
+// Drag & drop support
+(function() {
+  document.addEventListener('DOMContentLoaded', function() {
+    var area = document.getElementById('pengumumanUploadArea');
+    if (!area) return;
+    ['dragenter','dragover'].forEach(function(ev) {
+      area.addEventListener(ev, function(e) { e.preventDefault(); area.classList.add('dragover'); });
+    });
+    ['dragleave','drop'].forEach(function(ev) {
+      area.addEventListener(ev, function(e) { e.preventDefault(); area.classList.remove('dragover'); });
+    });
+    area.addEventListener('drop', function(e) {
+      e.preventDefault();
+      var dt = e.dataTransfer;
+      if (dt && dt.files && dt.files.length > 0) {
+        handlePengumumanFileSelect({ target: { files: dt.files, value: '' } });
+        // Fix: manually reset
+        try { e.dataTransfer.files = null; } catch(ex) {}
+      }
+    });
+  });
+})();
 
 function loadPengumuman(containerId) {
   var container = document.getElementById(containerId);
@@ -4536,10 +4667,32 @@ function loadPengumuman(containerId) {
     var badgeColor = r.prioritas === 'Sangat Penting' ? 'bg-danger text-white' : r.prioritas === 'Penting' ? 'bg-warning text-dark' : 'bg-secondary';
     var tanggal = r.created_at ? new Date(r.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
     var actions = isAdminKorwil ? '<div class="pengumuman-actions"><button class="btn btn-warning btn-sm me-1" onclick="editPengumuman(\'' + r.id + '\')" title="Edit"><i class="bi bi-pencil"></i></button><button class="btn btn-danger btn-sm" onclick="deletePengumuman(\'' + r.id + '\')" title="Hapus"><i class="bi bi-trash"></i></button></div>' : '';
+    var mediaHtml = '';
+    if (r.lampiran && r.lampiran.length > 0) {
+      var images = r.lampiran.filter(function(f) { return f.tipe === 'image'; });
+      var docs = r.lampiran.filter(function(f) { return f.tipe !== 'image'; });
+      if (images.length > 0) {
+        mediaHtml += '<div class="pengumuman-images">';
+        images.forEach(function(img) {
+          mediaHtml += '<img src="' + img.data + '" alt="' + escapeHtml(img.nama || '') + '" onclick="window.open(this.src,\'_blank\')" title="Klik untuk perbesar">';
+        });
+        mediaHtml += '</div>';
+      }
+      if (docs.length > 0) {
+        mediaHtml += '<div class="pengumuman-files-list">';
+        docs.forEach(function(doc) {
+          var ext = (doc.nama || '').split('.').pop().toUpperCase();
+          var icon = ext === 'PDF' ? 'bi-file-earmark-pdf' : 'bi-file-earmark-word';
+          mediaHtml += '<a href="' + doc.data + '" download="' + escapeHtml(doc.nama || 'dokumen') + '"><i class="bi ' + icon + '"></i>' + escapeHtml(doc.nama || 'Dokumen') + '</a>';
+        });
+        mediaHtml += '</div>';
+      }
+    }
     html += '<div class="pengumuman-item ' + prioritasClass + '">' +
       actions +
       '<div class="d-flex align-items-center gap-2 mb-1"><span class="pengumuman-badge ' + badgeColor + '">' + escapeHtml(r.prioritas || 'Biasa') + '</span><span class="pengumuman-judul mb-0">' + escapeHtml(r.judul) + '</span></div>' +
-      '<div class="pengumuman-isi">' + escapeHtml(r.isi) + '</div>' +
+      '<div class="pengumuman-isi">' + linkifyText(r.isi) + '</div>' +
+      mediaHtml +
       '<div class="pengumuman-meta"><i class="bi bi-clock me-1"></i>' + tanggal + '</div>' +
       '</div>';
   });
@@ -4548,6 +4701,7 @@ function loadPengumuman(containerId) {
 
 function openPengumumanModal(id) {
   editPengumumanId = id || null;
+  pengumumanFiles = [];
   var titleEl = document.getElementById('pengumumanModalTitle');
   if (id) {
     titleEl.innerHTML = '<i class="bi bi-pencil me-2"></i>Edit Pengumuman';
@@ -4555,12 +4709,18 @@ function openPengumumanModal(id) {
     document.getElementById('f_pengumuman_judul').value = rec.judul || '';
     document.getElementById('f_pengumuman_isi').value = rec.isi || '';
     document.getElementById('f_pengumuman_prioritas').value = rec.prioritas || 'Biasa';
+    // Load existing lampiran
+    if (rec.lampiran && rec.lampiran.length > 0) {
+      pengumumanFiles = JSON.parse(JSON.stringify(rec.lampiran));
+    }
   } else {
     titleEl.innerHTML = '<i class="bi bi-megaphone me-2"></i>Buat Pengumuman';
     document.getElementById('f_pengumuman_judul').value = '';
     document.getElementById('f_pengumuman_isi').value = '';
     document.getElementById('f_pengumuman_prioritas').value = 'Biasa';
   }
+  document.getElementById('f_pengumuman_files').value = '';
+  renderPengumumanPreview();
   new bootstrap.Modal(document.getElementById('pengumumanModal')).show();
 }
 
@@ -4572,12 +4732,14 @@ function savePengumuman() {
   var prioritas = document.getElementById('f_pengumuman_prioritas').value;
   if (!judul) { alert('Judul harus diisi!'); return; }
   if (!isi) { alert('Isi pengumuman harus diisi!'); return; }
+  var lampiran = pengumumanFiles.length > 0 ? pengumumanFiles : [];
   if (editPengumumanId) {
-    updateRecord('pengumuman', editPengumumanId, { judul: judul, isi: isi, prioritas: prioritas });
+    updateRecord('pengumuman', editPengumumanId, { judul: judul, isi: isi, prioritas: prioritas, lampiran: lampiran });
   } else {
-    addRecord('pengumuman', { judul: judul, isi: isi, prioritas: prioritas });
+    addRecord('pengumuman', { judul: judul, isi: isi, prioritas: prioritas, lampiran: lampiran });
   }
   editPengumumanId = null;
+  pengumumanFiles = [];
   bootstrap.Modal.getInstance(document.getElementById('pengumumanModal')).hide();
   loadPengumuman('pengumumanContainer');
   loadPengumuman('pengumumanContainerSekolah');
@@ -4857,7 +5019,7 @@ function unduhRekapLulusan() {
 
   var semuaLulusan = getRecords('siswa_lulusan');
   if (semuaLulusan.length === 0) {
-    alert('Belum ada data siswa lulusan.');
+    alert('Belum ada data peserta didik lulusan.');
     return;
   }
 
@@ -4878,7 +5040,7 @@ function unduhRekapLulusan() {
   var sekolahMap = {};
   getRecords('sekolah').forEach(function(s) { sekolahMap[s.id] = s; });
 
-  // Sort by sekolah name then nama siswa
+  // Sort by sekolah name then nama peserta didik
   var sorted1 = semuaLulusan.slice().sort(function(a, b) {
     var sa = sekolahMap[a.school_id] ? sekolahMap[a.school_id].nama_sekolah : '';
     var sb = sekolahMap[b.school_id] ? sekolahMap[b.school_id].nama_sekolah : '';
@@ -4966,8 +5128,8 @@ function unduhRekapLulusan() {
 
   // Also save to server upload directory (simulate via creating a copy reference)
   alert('✅ File "' + fileName + '" berhasil diunduh!\n\n' +
-    '• Sheet 1 (Admin Korwil): ' + sorted1.length + ' data siswa lulusan dari semua sekolah\n' +
-    '• Sheet 2 (Admin Sekolah): ' + lulusanSekolah.length + ' data siswa lulusan dari ' + (currentSchool ? currentSchool.nama_sekolah : '-'));
+    '• Sheet 1 (Admin Korwil): ' + sorted1.length + ' data peserta didik lulusan dari semua sekolah\n' +
+    '• Sheet 2 (Admin Sekolah): ' + lulusanSekolah.length + ' data peserta didik lulusan dari ' + (currentSchool ? currentSchool.nama_sekolah : '-'));
 }
 
 // ============ EDIT SISWA LULUSAN ============
@@ -4977,7 +5139,7 @@ function toggleAllLulusan(el) {
 
 function editLulusanBulk() {
   var checkedBoxes = document.querySelectorAll('.lulusan-cb:checked');
-  if (checkedBoxes.length === 0) { alert('Pilih siswa yang ingin diedit sekaligus dengan mencentang checkbox.'); return; }
+  if (checkedBoxes.length === 0) { alert('Pilih peserta didik yang ingin diedit sekaligus dengan mencentang checkbox.'); return; }
 
   var ids = [];
   checkedBoxes.forEach(function(cb) { ids.push(cb.value); });
@@ -4994,9 +5156,9 @@ function editLulusanBulk() {
   }).join('');
 
   var modal = document.getElementById('crudModal');
-  document.getElementById('crudModalTitle').textContent = 'Edit Sekaligus (' + records.length + ' siswa)';
+  document.getElementById('crudModalTitle').textContent = 'Edit Sekaligus (' + records.length + ' peserta didik)';
   document.getElementById('crudModalBody').innerHTML =
-    '<div class="alert alert-warning" style="font-size:13px;"><i class="bi bi-pencil-square me-1"></i>Edit <strong>' + records.length + ' siswa</strong> sekaligus. Isi sekolah tujuan dan alamat untuk masing-masing siswa.</div>' +
+    '<div class="alert alert-warning" style="font-size:13px;"><i class="bi bi-pencil-square me-1"></i>Edit <strong>' + records.length + ' peserta didik</strong> sekaligus. Isi sekolah tujuan dan alamat untuk masing-masing peserta didik.</div>' +
     '<hr style="margin:8px 0;border-color:var(--border-color);">' +
     rows;
 
@@ -5010,10 +5172,11 @@ function editLulusanBulk() {
     });
     bootstrap.Modal.getInstance(modal).hide();
     renderTable('siswa_lulusan');
+    if (window._fbConnected) syncRecordsToFirebase('siswa_lulusan');
     // Reset checkboxes
     document.getElementById('lulusan_select_all').checked = false;
     document.querySelectorAll('.lulusan-cb').forEach(function(cb) { cb.checked = false; });
-    alert('✅ ' + records.length + ' data siswa lulusan berhasil diperbarui!');
+    alert('✅ ' + records.length + ' data peserta didik lulusan berhasil diperbarui!');
   };
   new bootstrap.Modal(modal).show();
 }
@@ -5038,6 +5201,7 @@ function editLulusan(id) {
     updateRecord('siswa_lulusan', id, { melanjutkan_ke: document.getElementById('editMelanjutkanKe').value.trim() });
     bootstrap.Modal.getInstance(modal).hide();
     renderTable('siswa_lulusan');
+    if (window._fbConnected) syncRecordsToFirebase('siswa_lulusan');
     alert('✅ Data berhasil diperbarui!');
   };
   new bootstrap.Modal(modal).show();
@@ -5061,6 +5225,7 @@ function editAlamatLulusan(id) {
     updateRecord('siswa_lulusan', id, { alamat: document.getElementById('editAlamatLulusan').value.trim() });
     bootstrap.Modal.getInstance(modal).hide();
     renderTable('siswa_lulusan');
+    if (window._fbConnected) syncRecordsToFirebase('siswa_lulusan');
   };
   new bootstrap.Modal(modal).show();
 }
@@ -5069,7 +5234,7 @@ function cetakLulusan() {
   var schoolId = currentUser.schoolId;
   var school = getRecord('sekolah', schoolId) || {};
   var records = getRecords('siswa_lulusan').filter(function(r) { return r.school_id === schoolId; });
-  if (records.length === 0) { alert('Belum ada data siswa lulusan.'); return; }
+  if (records.length === 0) { alert('Belum ada data peserta didik lulusan.'); return; }
   records.sort(function(a, b) { return (a.nama || '').localeCompare(b.nama || ''); });
   var namaSekolah = school.nama_sekolah || '-';
   var npsn = school.npsn || '-';
@@ -5173,7 +5338,7 @@ function unduhDocsLulusan() {
   var school = getRecord('sekolah', schoolId) || {};
   var records = getRecords('siswa_lulusan').filter(function(r) { return r.school_id === schoolId; });
 
-  if (records.length === 0) { alert('Belum ada data siswa lulusan.'); return; }
+  if (records.length === 0) { alert('Belum ada data peserta didik lulusan.'); return; }
 
   records.sort(function(a, b) { return (a.nama || '').localeCompare(b.nama || ''); });
 
@@ -8158,7 +8323,7 @@ function renderPPDBRekapDiterima() {
     '<td class="text-center">' + grandP + '</td>' +
     '</tr>';
   if (keys.length === 0) {
-    body.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Belum ada data siswa diterima.</td></tr>';
+    body.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Belum ada data peserta didik diterima.</td></tr>';
   } else {
     body.innerHTML = html;
   }

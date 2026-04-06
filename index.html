@@ -1648,6 +1648,32 @@ function syncPortalStats() {
   } catch(e) { console.warn('[SIAP] syncPortalStats error:', e); }
 }
 
+// ============ SYNC PENGUMUMAN → FIREBASE FOR PORTAL ============
+function syncPengumumanToFirebase() {
+  if (!firebase || !firebase.database) return;
+  try {
+    var records = getRecords('pengumuman').sort(function(a, b) { return (b.created_at || '').localeCompare(a.created_at || ''); });
+    var dataObj = {};
+    records.forEach(function(r) {
+      var key = r.id || r._key;
+      if (!key) return;
+      dataObj[key] = {
+        id: key,
+        judul: r.judul || '',
+        isi: r.isi || '',
+        prioritas: r.prioritas || 'Biasa',
+        created_at: r.created_at || '',
+        updated_at: r.updated_at || ''
+      };
+    });
+    firebase.database().ref('siap_portal_pengumuman').set(dataObj).then(function() {
+      console.log('[SIAP] Synced ' + records.length + ' pengumuman to portal Firebase');
+    }).catch(function(err) {
+      console.error('[SIAP] Sync pengumuman failed:', err.message);
+    });
+  } catch(e) { console.warn('[SIAP] syncPengumumanToFirebase error:', e); }
+}
+
 // ============ FIREBASE STATUS INDICATOR ============
 function updateFirebaseStatus() {
   var el = document.getElementById('fbStatusIndicator');
@@ -2174,6 +2200,7 @@ function loadAdminDashboard() {
     `).join('');
   }
   syncPortalStats();
+  if (window._fbConnected) syncPengumumanToFirebase();
 }
 
 function loadSekolahDashboard() {
@@ -2662,6 +2689,14 @@ function uploadTemplate(type, inputEl) {
       }
       alert('Berhasil mengimpor ' + imported + ' data ' + type + '.' + (skipped > 0 ? ' (' + skipped + ' baris kosong dilewati)' : ''));
       renderTable(type);
+      // Sync imported data to Firebase
+      if (window._fbConnected) {
+        var syncTypesUpload = ['siswa', 'pegawai', 'sarpras'];
+        if (syncTypesUpload.indexOf(type) !== -1) {
+          syncRecordsToFirebase(type);
+          syncPortalStats();
+        }
+      }
     } catch(err) {
       alert('Gagal membaca file: ' + err.message);
     }
@@ -3608,6 +3643,12 @@ function resetDataSekolah(schoolId, namaSekolah) {
 
   // Sync to Firebase after delete
   syncSekolahToFirebase();
+  if (window._fbConnected) {
+    syncRecordsToFirebase('siswa');
+    syncRecordsToFirebase('pegawai');
+    syncRecordsToFirebase('sarpras');
+    syncPortalStats();
+  }
 
   // Hapus pengaturan cetak sekolah
   var settingKey = 'siap_pengaturan_' + schoolId;
@@ -3831,6 +3872,17 @@ function importDatabase(file) {
         metaInfo = '<br><small style="color:#64748b;">File backup: ' + (data._meta.exported_at ? new Date(data._meta.exported_at).toLocaleString('id-ID') : '-') + '</small>';
       }
       showImportStatus('Import berhasil!<br><b>' + siapKeys.length + '</b> kategori data diproses &bull; <b>' + mergeCount + '</b> data baru ditambahkan &bull; <b>' + replaceCount + '</b> data diperbarui' + metaInfo, 'success');
+
+      // Sync all imported data to Firebase
+      if (window._fbConnected) {
+        syncSekolahToFirebase();
+        syncRecordsToFirebase('pegawai');
+        syncRecordsToFirebase('pegawai_korwil');
+        syncRecordsToFirebase('siswa');
+        syncRecordsToFirebase('sarpras');
+        syncPengumumanToFirebase();
+        syncPortalStats();
+      }
     } catch(err) {
       showImportStatus('Gagal membaca file: ' + err.message, 'danger');
     }
@@ -4529,6 +4581,7 @@ function savePengumuman() {
   bootstrap.Modal.getInstance(document.getElementById('pengumumanModal')).hide();
   loadPengumuman('pengumumanContainer');
   loadPengumuman('pengumumanContainerSekolah');
+  if (window._fbConnected) syncPengumumanToFirebase();
 }
 
 function deletePengumuman(id) {
@@ -4536,6 +4589,7 @@ function deletePengumuman(id) {
   deleteRecord('pengumuman', id);
   loadPengumuman('pengumumanContainer');
   loadPengumuman('pengumumanContainerSekolah');
+  if (window._fbConnected) syncPengumumanToFirebase();
 }
 
 // ============ VERVAL PIP PAGE RENDERER ============
@@ -5362,6 +5416,13 @@ function naikanKelas() {
   });
 
   alert('✅ Berhasil!\n\n• ' + daftarKenaikan.length + ' peserta didik berhasil dinaikkan kelas.\n• ' + kelas6.length + ' peserta didik kelas 6 dipindahkan ke Peserta Didik Lulusan.');
+
+  // Sync data ke Firebase setelah naik kelas
+  if (window._fbConnected) {
+    syncRecordsToFirebase('siswa');
+    syncRecordsToFirebase('siswa_lulusan');
+    syncPortalStats();
+  }
 
   activeKelasFilter = 'semua';
   renderTable('siswa');
@@ -7760,6 +7821,50 @@ function tkaHapusPanitia(key) {
         if (hasNew) saveRecords('pegawai_korwil', local);
       }
     } catch(e) { console.warn('Sync pegawai_korwil error:', e); }
+  });
+  // Sync siswa_lulusan from Firebase
+  firebase.database().ref('siap_records_siswa_lulusan').on('value', function(snap) {
+    try {
+      var fbData = PV(snap);
+      if (fbData && fbData.length > 0) {
+        var local = getRecords('siswa_lulusan');
+        var localIds = local.map(function(r) { return r.id; });
+        var hasNew = false;
+        fbData.forEach(function(fb) {
+          var key = fb.id || fb._key;
+          if (!key) return;
+          if (localIds.indexOf(key) === -1) {
+            var rec = Object.assign({}, fb);
+            if (!rec.id && rec._key) rec.id = rec._key;
+            local.push(rec);
+            hasNew = true;
+          }
+        });
+        if (hasNew) saveRecords('siswa_lulusan', local);
+      }
+    } catch(e) { console.warn('Sync siswa_lulusan error:', e); }
+  });
+  // Sync pengumuman from Firebase
+  firebase.database().ref('siap_records_pengumuman').on('value', function(snap) {
+    try {
+      var fbData = PV(snap);
+      if (fbData && fbData.length > 0) {
+        var local = getRecords('pengumuman');
+        var localIds = local.map(function(r) { return r.id; });
+        var hasNew = false;
+        fbData.forEach(function(fb) {
+          var key = fb.id || fb._key;
+          if (!key) return;
+          if (localIds.indexOf(key) === -1) {
+            var rec = Object.assign({}, fb);
+            if (!rec.id && rec._key) rec.id = rec._key;
+            local.push(rec);
+            hasNew = true;
+          }
+        });
+        if (hasNew) saveRecords('pengumuman', local);
+      }
+    } catch(e) { console.warn('Sync pengumuman error:', e); }
   });
   window._ppdbPengaturan = [];
   firebase.database().ref('siap_ppdb_pengaturan').on('value', function(snap) {

@@ -6383,6 +6383,180 @@ function unduhDocsSTNK() {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+  
+// ============ SURAT REKOMENDASI ============
+function showFormRekomendasi() {
+  const html = `
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-success bg-opacity-10 text-success d-flex justify-content-between align-items-center">
+        <h6 class="mb-0"><i class="bi bi-envelope-check me-2"></i>Surat Rekomendasi</h6>
+        <button class="btn btn-sm btn-outline-secondary" onclick="resetFormRekomendasi()"><i class="bi bi-arrow-counterclockwise me-1"></i>Reset</button>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Nomor Surat</label>
+            <input type="text" class="form-control" id="rekNoSurat" placeholder="Contoh: 421.1/REK/2025">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Tanggal Surat</label>
+            <input type="date" class="form-control" id="rekTanggal">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Lampiran</label>
+            <input type="text" class="form-control" id="rekLampiran" value="-" placeholder="Jumlah lampiran">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Perihal</label>
+            <input type="text" class="form-control" id="rekPerihal" placeholder="Contoh: Rekomendasi Pindah Sekolah">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Kepada</label>
+            <input type="text" class="form-control" id="rekKepada" placeholder="Kepada Yth. ...">
+          </div>
+          <div class="col-12"><hr><h6 class="text-primary"><i class="bi bi-person me-1"></i>Data Siswa</h6></div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Nama Siswa</label>
+            <input type="text" class="form-control" id="rekNama" placeholder="Nama lengkap siswa">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">NIS / NISN</label>
+            <input type="text" class="form-control" id="rekNIS" placeholder="NIS / NISN">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label fw-semibold">Kelas</label>
+            <input type="text" class="form-control" id="rekKelas" placeholder="Contoh: IX-A">
+          </div>
+          <div class="col-12"><hr><h6 class="text-primary"><i class="bi bi-card-text me-1"></i>Isi Rekomendasi</h6></div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Tujuan Rekomendasi</label>
+            <select class="form-select" id="rekTujuan">
+              <option value="">-- Pilih Tujuan --</option>
+              <option value="Pindah Sekolah">Pindah Sekolah</option>
+              <option value="Melanjutkan Studi">Melanjutkan Studi</option>
+              <option value="Beasiswa">Beasiswa</option>
+              <option value="Lomba / Kompetisi">Lomba / Kompetisi</option>
+              <option value="Magang">Magang</option>
+              <option value="Lainnya">Lainnya</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Tujuan Lainnya (jika ada)</label>
+            <input type="text" class="form-control" id="rekTujuanLain" placeholder="Isi jika memilih Lainnya">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Isi Rekomendasi / Keterangan</label>
+            <textarea class="form-control" id="rekIsi" rows="5" placeholder="Tuliskan isi surat rekomendasi di sini..."></textarea>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Catatan Tambahan</label>
+            <textarea class="form-control" id="rekCatatan" rows="3" placeholder="Catatan tambahan (opsional)"></textarea>
+          </div>
+          <div class="col-12 text-end mt-3">
+            <button class="btn btn-success me-2" onclick="cetakSuratRekomendasi()"><i class="bi bi-printer me-1"></i>Cetak Surat</button>
+            <button class="btn btn-primary" onclick="cetakSemuaRekomendasi()"><i class="bi bi-file-earmark-text me-1"></i>Cetak Surat + Lampiran</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('suratFormArea').innerHTML = html;
+}
+
+function resetFormRekomendasi() {
+  ['rekNoSurat','rekTanggal','rekLampiran','rekPerihal','rekKepada','rekNama','rekNIS','rekKelas','rekTujuanLain','rekIsi','rekCatatan'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  const s = document.getElementById('rekLampiran'); if(s) s.value = '-';
+  const t = document.getElementById('rekTujuan'); if(t) t.value = '';
+}
+
+function getRekomendasiData() {
+  return {
+    noSurat: document.getElementById('rekNoSurat')?.value || '',
+    tanggal: document.getElementById('rekTanggal')?.value || '',
+    lampiran: document.getElementById('rekLampiran')?.value || '-',
+    perihal: document.getElementById('rekPerihal')?.value || '',
+    kepada: document.getElementById('rekKepada')?.value || '',
+    nama: document.getElementById('rekNama')?.value || '',
+    nis: document.getElementById('rekNIS')?.value || '',
+    kelas: document.getElementById('rekKelas')?.value || '',
+    tujuan: document.getElementById('rekTujuan')?.value || '',
+    tujuanLain: document.getElementById('rekTujuanLain')?.value || '',
+    isi: document.getElementById('rekIsi')?.value || '',
+    catatan: document.getElementById('rekCatatan')?.value || ''
+  };
+}
+
+function escapeHtml(t) {
+  if (!t) return '';
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatTanggalRek(d) {
+  if (!d) return '.........................';
+  const bln = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const p = d.split('-');
+  return parseInt(p[2]) + ' ' + bln[parseInt(p[1])-1] + ' ' + p[0];
+}
+
+function formatHariRek(d) {
+  if (!d) return '';
+  const hr = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  return hr[new Date(d).getDay()];
+}
+
+function cetakSuratRekomendasi() {
+  const d = getRekomendasiData();
+  if (!d.nama || !d.perihal) { alert('Nama siswa dan perihal wajib diisi!'); return; }
+  const tujuanAkhir = d.tujuan === 'Lainnya' ? d.tujuanLain : d.tujuan;
+  const kop = getKopHtmlKorwil();
+  const w = window.open('','','width=800,height=1000');
+  w.document.write(`<!DOCTYPE html><html><head><title>Surat Rekomendasi - ${escapeHtml(d.nama)}</title>
+<style>
+  body{font-family:'Times New Roman',serif;margin:40px;font-size:14px;line-height:1.6;color:#000}
+  .kop{text-align:center;border-bottom:3px double #000;padding-bottom:15px;margin-bottom:20px}
+  .kop h3{margin:0;font-size:18px;letter-spacing:2px}
+  .kop p{margin:2px 0;font-size:13px}
+  .center{text-align:center}
+  .right{text-align:right}
+  .mb{margin-bottom:10px}
+  table{border-collapse:collapse;width:100%}
+  td,th{border:1px solid #000;padding:6px 10px;vertical-align:top}
+  th{background:#f0f0f0;text-align:left}
+  .sign{margin-top:40px;text-align:right}
+  .sign-line{border-bottom:1px solid #000;width:250px;display:inline-block;margin-bottom:5px}
+  .ttd-space{height:70px}
+  @media print{body{margin:20px}}
+</style></head><body>
+ ${kop}
+<h3 class="center mb">SURAT REKOMENDASI</h3>
+<p class="center mb">Nomor: ${escapeHtml(d.noSurat)}</p>
+<div style="margin:20px 0">
+  <p>Yang bertanda tangan di bawah ini, Kepala ${escapeHtml(document.getElementById('namaSekolah')?.textContent || 'Sekolah')}, dengan ini merekomendasikan:</p>
+  <table style="margin:15px 0">
+    <tr><th style="width:150px">Nama Siswa</th><td>: ${escapeHtml(d.nama)}</td></tr>
+    <tr><th>NIS / NISN</th><td>: ${escapeHtml(d.nis)}</td></tr>
+    <tr><th>Kelas</th><td>: ${escapeHtml(d.kelas)}</td></tr>
+    <tr><th>Tujuan</th><td>: ${escapeHtml(tujuanAkhir)}</td></tr>
+  </table>
+  <p>${escapeHtml(d.isi).replace(/\n/g,'<br>')}</p>
+  ${d.catatan ? '<p><em>Catatan: ' + escapeHtml(d.catatan).replace(/\n/g,'<br>') + '</em></p>' : ''}
+  <p>Demikian surat rekomendasi ini dibuat untuk dapat dipergunakan sebagaimana mestinya.</p>
+</div>
+<div class="sign">
+  <p>${escapeHtml(d.kepada)}, ${escapeHtml(formatTanggalRek(d.tanggal))}</p>
+  <div class="ttd-space"></div>
+  <p class="mb">Kepala Sekolah</p>
+  <div class="sign-line"></div>
+  <p><strong>${escapeHtml(document.getElementById('namaKepalaSekolah')?.textContent || '.........................')}</strong></p>
+  ${escapeHtml(document.getElementById('nipKepalaSekolah')?.textContent ? 'NIP. ' + document.getElementById('nipKepalaSekolah').textContent : '')}
+</div>
+<script>window.onload=function(){window.print()}</script>
+</body></html>`);
+  w.document.close();
+}
+
+function cetakSemuaRekomendasi() {
+  cetakSuratRekomendasi();
+}
 
 // ============ SKUMPTK ============
 var skumptkAnakCount = 1;

@@ -1682,6 +1682,20 @@ function getKepalaSekolah(schoolId) {
   return { nama: '................................', nip: '................................' };
 }
 
+// ============ GET KEPALA KORWIL FROM PEGAWAI_KORWIL ============
+function getKepalaKorwil() {
+  var pegawaiKorwil = getRecords('pegawai_korwil');
+  // Cari jabatan yang mengandung 'koordinator' atau 'korwil' atau 'kepala'
+  var kepKorwil = pegawaiKorwil.find(function(p) {
+    var jabatan = (p.jabatan || '').toLowerCase();
+    return jabatan.indexOf('koordinator') >= 0 || jabatan.indexOf('korwil') >= 0 || jabatan.indexOf('kepala') >= 0;
+  });
+  if (kepKorwil) return { nama: kepKorwil.nama || '................................', nip: kepKorwil.nip || '................................' };
+  // Jika tidak ketemu, kembalikan pegawai korwil pertama
+  if (pegawaiKorwil.length > 0) return { nama: pegawaiKorwil[0].nama || '................................', nip: pegawaiKorwil[0].nip || '................................' };
+  return { nama: '................................', nip: '................................' };
+}
+
 function getAdminProfile() {
   try { return JSON.parse(localStorage.getItem('siap_admin_profile') || '{}'); }
   catch { return {}; }
@@ -4297,6 +4311,7 @@ function generateSekolahLaporan() {
   if (!currentUser || !currentUser.schoolId) return;
   const bulan = document.getElementById('laporanSekolahBulan').value;
   const bulanName = MONTHS[parseInt(bulan) - 1];
+  const tahun = new Date().getFullYear();
   const school = getRecord('sekolah', currentUser.schoolId);
   if (!school) return;
 
@@ -4307,78 +4322,187 @@ function generateSekolahLaporan() {
 
   let html = '<div class="report-container">' +
     getKopHtml() +
-    buildJudul('DAFTAR DATA SEKOLAH', escapeHtml(school.nama_sekolah).toUpperCase(), 'NPSN: ' + escapeHtml(school.npsn || '-') + ' | Jenjang: ' + escapeHtml(school.jenjang) + ' &mdash; Tahun Pelajaran 2025/2026 &mdash; Bulan: ' + bulanName);
+    buildJudul('REKAP DATA SEKOLAH', escapeHtml(school.nama_sekolah).toUpperCase(), 'NPSN: ' + escapeHtml(school.npsn || '-') + ' | Jenjang: ' + escapeHtml(school.jenjang) + ' &mdash; Tahun Pelajaran 2025/2026 &mdash; Bulan: ' + bulanName + ' ' + tahun);
 
-  // A. Data Siswa
-  html += '<div class="report-subtitle">A. Data Siswa</div>';
+  // ========== A. REKAP SISWA ==========
+  html += '<div class="report-subtitle">A. Rekap Siswa</div>';
+
   if (siswas.length > 0) {
+    // Kelas list (1-6 untuk SD)
+    var romawiKeAngka = { 'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7, 'VIII': 8, 'IX': 9 };
+    var kelasLabel = ['Kelas I (1)', 'Kelas II (2)', 'Kelas III (3)', 'Kelas IV (4)', 'Kelas V (5)', 'Kelas VI (6)'];
+    // Auto-detect max kelas from data
+    var maxKelas = 6;
+    siswas.forEach(function(s) {
+      var sk = String(s.kelas || '').trim().toUpperCase();
+      var sNum = 0;
+      var m = sk.match(/(\d+)/);
+      if (m) { sNum = parseInt(m[1]); }
+      else { for (var rom in romawiKeAngka) { if (sk.indexOf(rom) !== -1) { sNum = romawiKeAngka[rom]; break; } } }
+      if (sNum > maxKelas) maxKelas = sNum;
+    });
+    kelasLabel = [];
+    var romawiList = ['I','II','III','IV','V','VI','VII','VIII','IX'];
+    for (var ki = 1; ki <= maxKelas; ki++) {
+      kelasLabel.push('Kelas ' + (romawiList[ki-1] || ki) + ' (' + ki + ')');
+    }
+
+    // Hitung per kelas
+    var rekapSiswa = [];
+    var totalL = 0, totalP = 0;
+    kelasLabel.forEach(function(kl, ki) {
+      var angkaKelas = ki + 1;
+      var cL = 0, cP = 0;
+      siswas.forEach(function(s) {
+        var sk = String(s.kelas || '').trim().toUpperCase();
+        var sNum = 0;
+        var m = sk.match(/(\d+)/);
+        if (m) { sNum = parseInt(m[1]); }
+        else { for (var rom in romawiKeAngka) { if (sk.indexOf(rom) !== -1) { sNum = romawiKeAngka[rom]; break; } } }
+        if (sNum === angkaKelas) {
+          var jk = String(s.jenis_kelamin || '').toUpperCase();
+          if (jk === 'L' || jk === 'LAKI-LAKI') cL++;
+          else if (jk === 'P' || jk === 'PEREMPUAN') cP++;
+        }
+      });
+      rekapSiswa.push({ label: kl, l: cL, p: cP, total: cL + cP });
+      totalL += cL;
+      totalP += cP;
+    });
+
     html += '<table class="report-table"><thead><tr>' +
-      '<th>No</th><th>NIS/NISN</th><th>Nama Siswa</th><th>L/P</th><th>Tempat</th><th>Tgl Lahir</th><th>Kelas</th>' +
+      '<th>No</th><th>Kelas</th><th>Laki-laki</th><th>Perempuan</th><th>Jumlah</th>' +
       '</tr></thead><tbody>';
-    siswas.forEach((s, i) => {
-      const tglLahir = s.tanggal_lahir ? new Date(s.tanggal_lahir).toLocaleDateString('id-ID', { day: 'numeric', month: 'numeric', year: 'numeric' }) : '-';
+    rekapSiswa.forEach(function(r, i) {
       html += '<tr>' +
         '<td class="center">' + (i + 1) + '</td>' +
-        '<td>' + escapeHtml(s.nis_nisn) + '</td>' +
-        '<td>' + escapeHtml(s.nama) + '</td>' +
-        '<td class="center">' + escapeHtml(s.jenis_kelamin) + '</td>' +
-        '<td>' + escapeHtml(s.tempat_lahir || '-') + '</td>' +
-        '<td class="center">' + tglLahir + '</td>' +
-        '<td class="center">' + escapeHtml(s.kelas) + '</td>' +
+        '<td class="center">' + escapeHtml(r.label) + '</td>' +
+        '<td class="center">' + r.l + '</td>' +
+        '<td class="center">' + r.p + '</td>' +
+        '<td class="center" style="font-weight:700;">' + r.total + '</td>' +
         '</tr>';
     });
+    html += '<tr style="font-weight:700;background:#f0f4f8;">' +
+      '<td colspan="2" class="center">TOTAL SISWA</td>' +
+      '<td class="center">' + totalL + '</td>' +
+      '<td class="center">' + totalP + '</td>' +
+      '<td class="center">' + (totalL + totalP) + '</td>' +
+      '</tr>';
     html += '</tbody></table>';
+    html += '<p style="font-size:9pt;color:#555;margin-top:4px;">Jumlah seluruh siswa terdaftar: <b>' + siswas.length + '</b> siswa</p>';
   } else {
     html += '<p style="color:#666;">Tidak ada data siswa.</p>';
   }
 
-  // B. Data Pegawai
-  html += '<div class="report-subtitle">B. Data Pegawai</div>';
+  // ========== B. REKAP PEGAWAI ==========
+  html += '<div class="report-subtitle">B. Rekap Pegawai</div>';
+
   if (pegawais.length > 0) {
+    // Kelompokkan per jabatan
+    var jabatanMap = {};
+    var totalPegL = 0, totalPegP = 0;
+    pegawais.forEach(function(p) {
+      var j = (p.jabatan || 'Lainnya').trim();
+      if (!jabatanMap[j]) jabatanMap[j] = { l: 0, p: 0, list: [] };
+      var jk = String(p.jenis_kelamin || '').toUpperCase();
+      if (jk === 'L' || jk === 'LAKI-LAKI') { jabatanMap[j].l++; totalPegL++; }
+      else if (jk === 'P' || jk === 'PEREMPUAN') { jabatanMap[j].p++; totalPegP++; }
+      else { jabatanMap[j].list.length; } // count as existing
+      jabatanMap[j].list.push(p);
+    });
+
     html += '<table class="report-table"><thead><tr>' +
-      '<th>No</th><th>Nama</th><th>NIP</th><th>Jabatan</th><th>Pangkat/Gol</th><th>Pendidikan</th><th>Masa Kerja</th><th>BUP</th>' +
+      '<th>No</th><th>Jabatan</th><th>Laki-laki</th><th>Perempuan</th><th>Jumlah</th><th>Keterangan</th>' +
       '</tr></thead><tbody>';
-    pegawais.forEach((p, i) => {
+    var no = 1;
+    // Urutkan: Kepala Sekolah duluan
+    var jabatanKeys = Object.keys(jabatanMap).sort(function(a, b) {
+      if (a.toUpperCase().indexOf('KEPALA SEKOLAH') >= 0) return -1;
+      if (b.toUpperCase().indexOf('KEPALA SEKOLAH') >= 0) return 1;
+      return a.localeCompare(b);
+    });
+    jabatanKeys.forEach(function(jab) {
+      var d = jabatanMap[jab];
+      var ket = '';
+      if (d.list.length > 0) {
+        var names = d.list.slice(0, 3).map(function(x) { return escapeHtml(x.nama || ''); }).join(', ');
+        if (d.list.length > 3) names += ' ... (+' + (d.list.length - 3) + ')';
+        ket = names;
+      }
       html += '<tr>' +
-        '<td class="center">' + (i + 1) + '</td>' +
-        '<td>' + escapeHtml(p.nama) + '</td>' +
-        '<td>' + escapeHtml(p.nip || '-') + '</td>' +
-        '<td>' + escapeHtml(p.jabatan) + '</td>' +
-        '<td class="center">' + escapeHtml(p.pangkat_golongan || '-') + '</td>' +
-        '<td>' + escapeHtml(p.pendidikan || '-') + '</td>' +
-        '<td class="center">' + hitungMasaKerja(p.tanggal_mulai_kerja) + '</td>' +
-        '<td class="center">' + hitungBUP(p.nip) + '</td>' +
+        '<td class="center">' + (no++) + '</td>' +
+        '<td>' + escapeHtml(jab) + '</td>' +
+        '<td class="center">' + d.l + '</td>' +
+        '<td class="center">' + d.p + '</td>' +
+        '<td class="center" style="font-weight:700;">' + d.list.length + '</td>' +
+        '<td style="font-size:9pt;">' + ket + '</td>' +
         '</tr>';
     });
+    html += '<tr style="font-weight:700;background:#f0f4f8;">' +
+      '<td colspan="2" class="center">TOTAL PEGAWAI</td>' +
+      '<td class="center">' + totalPegL + '</td>' +
+      '<td class="center">' + totalPegP + '</td>' +
+      '<td class="center">' + pegawais.length + '</td>' +
+      '<td></td>' +
+      '</tr>';
     html += '</tbody></table>';
+    html += '<p style="font-size:9pt;color:#555;margin-top:4px;">Jumlah seluruh pegawai: <b>' + pegawais.length + '</b> orang</p>';
   } else {
     html += '<p style="color:#666;">Tidak ada data pegawai.</p>';
   }
 
-  // C. Data Sarana & Prasarana
-  html += '<div class="report-subtitle">C. Data Sarana &amp; Prasarana</div>';
+  // ========== C. REKAP SARPRAS ==========
+  html += '<div class="report-subtitle">C. Rekap Sarana &amp; Prasarana</div>';
+
   if (sarpras.length > 0) {
+    // Kelompokkan per kategori
+    var katMap = {};
+    var kondisiList = [];
+    sarpras.forEach(function(s) {
+      var k = (s.kategori || 'Lainnya').trim();
+      if (!katMap[k]) katMap[k] = { jumlah: 0, items: [], kondisiMap: {} };
+      katMap[k].jumlah += (parseInt(s.jumlah) || 1);
+      var kond = (s.kondisi || '-').trim();
+      if (!katMap[k].kondisiMap[kond]) katMap[k].kondisiMap[kond] = 0;
+      katMap[k].kondisiMap[kond] += (parseInt(s.jumlah) || 1);
+      katMap[k].items.push(s);
+      if (kondisiList.indexOf(kond) === -1) kondisiList.push(kond);
+    });
+
+    // Tabel rekap per kategori
     html += '<table class="report-table"><thead><tr>' +
-      '<th>No</th><th>Nama Barang</th><th>Kategori</th><th>Jumlah</th><th>Kondisi</th><th>Tahun</th><th>Keterangan</th>' +
+      '<th>No</th><th>Kategori</th><th>Jumlah</th><th>Rincian Kondisi</th>' +
       '</tr></thead><tbody>';
-    sarpras.forEach((s, i) => {
+    var noC = 1;
+    var grandTotal = 0;
+    var katKeys = Object.keys(katMap).sort(function(a, b) { return a.localeCompare(b); });
+    katKeys.forEach(function(kat) {
+      var d = katMap[kat];
+      grandTotal += d.jumlah;
+      var kondStr = Object.keys(d.kondisiMap).map(function(kon) {
+        return kon + ': ' + d.kondisiMap[kon];
+      }).join(' | ');
       html += '<tr>' +
-        '<td class="center">' + (i + 1) + '</td>' +
-        '<td>' + escapeHtml(s.nama_barang) + '</td>' +
-        '<td>' + escapeHtml(s.kategori) + '</td>' +
-        '<td class="center">' + escapeHtml(s.jumlah) + '</td>' +
-        '<td class="center">' + escapeHtml(s.kondisi) + '</td>' +
-        '<td class="center">' + escapeHtml(s.tahun_perolehan || '-') + '</td>' +
-        '<td>' + escapeHtml(s.keterangan || '-') + '</td>' +
+        '<td class="center">' + (noC++) + '</td>' +
+        '<td>' + escapeHtml(kat) + '</td>' +
+        '<td class="center" style="font-weight:700;">' + d.jumlah + '</td>' +
+        '<td style="font-size:9pt;">' + escapeHtml(kondStr) + '</td>' +
         '</tr>';
     });
+    html += '<tr style="font-weight:700;background:#f0f4f8;">' +
+      '<td colspan="2" class="center">TOTAL SARPRAS</td>' +
+      '<td class="center">' + grandTotal + '</td>' +
+      '<td></td>' +
+      '</tr>';
     html += '</tbody></table>';
+    html += '<p style="font-size:9pt;color:#555;margin-top:4px;">Jumlah seluruh item sarpras: <b>' + sarpras.length + '</b> item, total unit: <b>' + grandTotal + '</b></p>';
   } else {
     html += '<p style="color:#666;">Tidak ada data sarana &amp; prasarana.</p>';
   }
 
   // Signature
   var kepsek = getKepalaSekolah(currentUser.schoolId);
+  var korwilHead = getKepalaKorwil();
   const now = new Date();
   html += '<div class="signature-section">' +
       '<div class="signature-box sig-left">' +
@@ -4386,8 +4510,8 @@ function generateSekolahLaporan() {
         '<div>Korwil Bidang Pendidikan</div>' +
         '<div>Kecamatan Lemahabang,</div>' +
         '<div class="sig-spacer"></div>' +
-        '<div class="sig-name">ETI BUDIWATI, S.Pd</div>' +
-        '<div class="sig-nip">NIP. 19691002 200604 2 005</div>' +
+        '<div class="sig-name">' + escapeHtml(korwilHead.nama) + '</div>' +
+        '<div class="sig-nip">NIP. ' + escapeHtml(korwilHead.nip) + '</div>' +
       '</div>' +
       '<div class="signature-box sig-left">' +
         '<div>Lemahabang, ' + now.getDate() + ' ' + MONTHS[now.getMonth()] + ' ' + now.getFullYear() + '</div>' +
@@ -5202,11 +5326,21 @@ function renderTableFiltered(type, searchTerm) {
     records = records.filter(function(r) { return r.school_id === schoolId; });
   }
 
-  // Filter by kelas (membaca rombel, misal filter '6' akan menampilkan 6, 6A, 6B, dll)
+  // Filter by kelas (fokus pada angka, misal filter '6' akan menampilkan 6, 6A, 6B, KELAS 6 A, Kelas VI, dll)
   if (type === 'siswa' && activeKelasFilter !== 'semua') {
+    var filterAngka = parseInt(activeKelasFilter) || 0;
+    // Map angka romawi ke angka: I=1, II=2, III=3, IV=4, V=5, VI=6
+    var romawiKeAngka = { 'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7, 'VIII': 8, 'IX': 9 };
     records = records.filter(function(r) {
-      var k = String(r.kelas || '').trim();
-      return k === activeKelasFilter || k.startsWith(activeKelasFilter);
+      var k = String(r.kelas || '').trim().toUpperCase();
+      // Cek angka di dalam string (misal 'KELAS 1 A' → angka 1)
+      var match = k.match(/(\d+)/);
+      if (match && parseInt(match[1]) === filterAngka) return true;
+      // Cek romawi di dalam string (misal 'KELAS VI A' → 6)
+      for (var rom in romawiKeAngka) {
+        if (k.indexOf(rom) !== -1 && romawiKeAngka[rom] === filterAngka) return true;
+      }
+      return false;
     });
   }
 
@@ -5382,7 +5516,10 @@ var suratKategoriList = [
   { id: 'stnk', icon: 'bi-bicycle', title: 'Surat Pengantar Perpanjang STNK', desc: 'Surat pengantar untuk perpanjangan STNK kendaraan dinas', color: '#1a365d', roles: ['sekolah', 'admin'] },
   { id: 'pindah', icon: 'bi-mortarboard', title: 'Surat Permohonan Pindah Sekolah', desc: 'Surat permohonan rekomendasi pindah sekolah siswa', color: '#742a2a', roles: ['sekolah', 'admin'] },
   { id: 'gaji', icon: 'bi-cash-stack', title: 'Surat Rincian Gaji Pegawai', desc: 'Surat keterangan perincian pembayaran gaji pegawai', color: '#276749', roles: ['sekolah', 'admin'] },
-  { id: 'skumptk', icon: 'bi-file-earmark-text', title: 'Pembuatan SKUMPTK', desc: 'Surat Keterangan Untuk Mendapatkan Pembayaran Tunjangan Keluarga Tahun 2026', color: '#44337a', roles: ['sekolah', 'admin'] }
+  { id: 'skumptk', icon: 'bi-file-earmark-text', title: 'Pembuatan SKUMPTK', desc: 'Surat Keterangan Untuk Mendapatkan Pembayaran Tunjangan Keluarga Tahun 2026', color: '#44337a', roles: ['sekolah', 'admin'] },
+  { id: 'rekomendasi', icon: 'bi-file-earmark-check', title: 'Surat Rekomendasi', desc: 'Surat Rekomendasi Mengikuti Kegiatan dari Korwil Bidang Pendidikan Kec. Lemahabang', color: '#065f46', roles: ['sekolah', 'admin'] },
+  { id: 'laporan-daftar1', icon: 'bi-clipboard2-data', title: 'Laporan Daftar 1', desc: 'Laporan Daftar 1 - Mutasi & Pengembangan Siswa Per Bulan', color: '#9b2c2c', roles: ['sekolah', 'admin'] },
+  { id: 'dispensasi-pegawai', icon: 'bi-person-check', title: 'Surat Dispensasi Pegawai', desc: 'Surat Dispensasi Pegawai - Izin Tidak Masuk Kerja / Tugas Dinas / Keperluan Pribadi', color: '#c53030', roles: ['sekolah', 'admin'] }
 ];
 
 var suratPrevView = null;
@@ -5452,6 +5589,9 @@ function pilihKategoriSurat(kategoriId) {
   else if (kategoriId === 'pindah') showFormPindahSekolah();
   else if (kategoriId === 'gaji') showFormRincianGaji();
   else if (kategoriId === 'skumptk') showFormSKUMPTK();
+  else if (kategoriId === 'rekomendasi') showFormSuratRekomendasi();
+  else if (kategoriId === 'laporan-daftar1') showFormLaporanDaftar1();
+  else if (kategoriId === 'dispensasi-pegawai') showFormDispensasiPegawai();
 }
 
 function showFormPindahSekolah() {
@@ -6187,6 +6327,260 @@ function unduhDocsRincianGaji() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+// ============ SURAT DISPENSASI PEGAWAI ============
+function terbilang(n) {
+  var satuan = ['', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Delapan', 'Sembilan', 'Sepuluh', 'Sebelas'];
+  if (n < 12) return satuan[n];
+  if (n < 20) return satuan[n - 10] + ' Belas';
+  if (n < 100) return terbilang(Math.floor(n / 10)) + ' Puluh' + (n % 10 ? ' ' + satuan[n % 10] : '');
+  if (n < 200) return 'Seratus' + (n - 100 ? ' ' + terbilang(n - 100) : '');
+  if (n < 1000) return terbilang(Math.floor(n / 100)) + ' Ratus' + (n % 100 ? ' ' + terbilang(n % 100) : '');
+  if (n < 2000) return 'Seribu' + (n - 1000 ? ' ' + terbilang(n - 1000) : '');
+  if (n < 1000000) return terbilang(Math.floor(n / 1000)) + ' Ribu' + (n % 1000 ? ' ' + terbilang(n % 1000) : '');
+  if (n < 1000000000) return terbilang(Math.floor(n / 1000000)) + ' Juta' + (n % 1000000 ? ' ' + terbilang(n % 1000000) : '');
+  return String(n);
+}
+
+function showFormDispensasiPegawai() {
+  document.getElementById('suratFormTitle').innerHTML = '<i class="bi bi-person-check me-2"></i>Surat Dispensasi Pegawai';
+  var isAdmin = currentUser && currentUser.role === 'admin';
+
+  // Build sekolah filter for admin
+  var sekolahFilterHtml = '';
+  if (isAdmin) {
+    sekolahFilterHtml = '<div class="row g-3 mb-3"><div class="col-md-6"><div class="form-floating"><select class="form-select" id="disp_filter_sekolah" onchange="dispFilterPegawai()">' +
+      '<option value="">-- Pilih Sekolah --</option>';
+    getRecords('sekolah').forEach(function(s) {
+      sekolahFilterHtml += '<option value="' + s.id + '">' + escapeHtml(s.nama_sekolah) + '</option>';
+    });
+    sekolahFilterHtml += '</select><label>Pilih Sekolah</label></div></div></div>';
+  }
+
+  // Ambil data pegawai
+  var daftarPegawai;
+  if (isAdmin) {
+    daftarPegawai = [];
+  } else {
+    daftarPegawai = getRecords('pegawai').filter(function(p) { return p.school_id === currentUser.schoolId; });
+  }
+
+  var pegawaiOptions = '<option value="">-- Pilih Pegawai --</option>' + daftarPegawai.map(function(p) {
+    return '<option value="' + p.id + '">' + escapeHtml(p.nama) + ' - ' + escapeHtml(p.nip || '-') + '</option>';
+  }).join('');
+
+  var today = new Date();
+  var dd = String(today.getDate()).padStart(2, '0');
+  var mm = String(today.getMonth() + 1).padStart(2, '0');
+  var yyyy = today.getFullYear();
+
+  document.getElementById('suratFormBody').innerHTML =
+    '<div class="alert alert-info" style="font-size:13px;"><i class="bi bi-info-circle me-1"></i>Surat Dispensasi Pegawai digunakan untuk memberikan izin ketidakhadiran kerja. Kop surat menyesuaikan dengan kepala/pejabat yang menandatangani.</div>' +
+    sekolahFilterHtml +
+    '<div class="row g-3">' +
+    '<h6 style="color:var(--primary);font-weight:700;margin-bottom:4px;"><i class="bi bi-file-text me-1"></i>Identitas Surat</h6>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="disp_nomor" placeholder="Nomor Surat"></div><label>Nomor Surat</label></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="disp_tanggal" type="date" value="' + yyyy + '-' + mm + '-' + dd + '"></div><label>Tanggal Surat</label></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="disp_lampiran" placeholder="1 (satu) berkas" value="1 (satu) berkas"></div><label>Lampiran</label></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="disp_sifat" placeholder="Biasa" value="Biasa"></div><label>Sifat</label></div>' +
+    '<hr style="margin:8px 0;border-color:var(--border-color);">' +
+    '<h6 style="color:var(--primary);font-weight:700;margin-bottom:4px;"><i class="bi bi-person me-1"></i>Data Pegawai</h6>' +
+    '<div class="col-12"><div class="form-floating"><select class="form-select" id="disp_pegawai" onchange="dispAutoFill()">' + pegawaiOptions + '</select><label>Pilih Pegawai</label></div></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="disp_nama" placeholder="Nama Pegawai"></div><label>Nama Lengkap</label></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="disp_nip" placeholder="NIP"></div><label>NIP</label></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="disp_pangkat" placeholder="Pangkat/Golongan"></div><label>Pangkat / Golongan</label></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="disp_jabatan" placeholder="Jabatan"></div><label>Jabatan</label></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="disp_pendidikan" placeholder="Pendidikan"></div><label>Pendidikan Terakhir</label></div>' +
+    '<hr style="margin:8px 0;border-color:var(--border-color);">' +
+    '<h6 style="color:var(--primary);font-weight:700;margin-bottom:4px;"><i class="bi bi-calendar-x me-1"></i>Data Dispensasi</h6>' +
+    '<div class="col-md-6"><div class="form-floating"><select class="form-select" id="disp_jenis"><option value="Sakit">Sakit</option><option value="Izin">Izin</option><option value="Cuti">Cuti</option><option value="Tugas Dinas">Tugas Dinas</option><option value="Diklat">Diklat / Pelatihan</option><option value="Keperluan Pribadi">Keperluan Pribadi</option><option value="Lainnya">Lainnya</option></select><label>Jenis Dispensasi</label></div></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="disp_jenis_lainnya" placeholder="Sebutkan jenisnya" style="display:none;"></div><label>Jenis Lainnya</label></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="disp_tgl_mulai" type="date" value="' + yyyy + '-' + mm + '-' + dd + '"></div><label>Tanggal Mulai</label></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="disp_tgl_selesai" type="date" value="' + yyyy + '-' + mm + '-' + dd + '"></div><label>Tanggal Selesai</label></div>' +
+    '<div class="col-12"><div class="form-floating"><textarea class="form-control" id="disp_alasan" style="height:60px;" placeholder="Alasan dispensasi"></textarea><label>Alasan / Keterangan</label></div></div>' +
+    '<div class="col-12"><div class="form-floating"><textarea class="form-control" id="disp_perintah" style="height:60px;" placeholder="Perintah / tindakan selama dispensasi"></textarea><label>Perintah / Tindakan (Opsional)</label></div></div>' +
+    '<hr style="margin:8px 0;border-color:var(--border-color);">' +
+    '<h6 style="color:var(--primary);font-weight:700;margin-bottom:4px;"><i class="bi bi-building me-1"></i>Kop &amp; Tanda Tangan</h6>' +
+    '<div class="col-md-6"><div class="form-floating"><select class="form-select" id="disp_kop_type" onchange="dispOnKopChange()"><option value="sekolah">Kop Sekolah (Kepala Sekolah)</option><option value="korwil">Kop Korwil (Koordinator Wilayah)</option></select><label>Kop Surat</label></div></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="disp_kecamatan" value="Lemahabang" placeholder="Kecamatan"></div><label>Kecamatan</label></div>' +
+    '</div>' +
+    '<div class="mt-3 text-end"><button class="btn btn-accent" onclick="cetakDispensasiPegawai()"><i class="bi bi-printer me-1"></i>Cetak Surat</button></div>';
+
+  // Show/hide jenis lainnya
+  document.getElementById('disp_jenis').addEventListener('change', function() {
+    document.getElementById('disp_jenis_lainnya').closest('.form-floating').style.display = this.value === 'Lainnya' ? 'block' : 'none';
+  });
+}
+
+function dispAutoFill() {
+  var pid = document.getElementById('disp_pegawai').value;
+  if (!pid) return;
+  var pegawai = getRecord('pegawai', pid);
+  if (!pegawai) return;
+  document.getElementById('disp_nama').value = pegawai.nama || '';
+  document.getElementById('disp_nip').value = pegawai.nip || '';
+  document.getElementById('disp_pangkat').value = pegawai.pangkat_golongan || '';
+  document.getElementById('disp_jabatan').value = pegawai.jabatan || '';
+  document.getElementById('disp_pendidikan').value = pegawai.pendidikan || '';
+}
+
+function dispFilterPegawai() {
+  var schoolId = document.getElementById('disp_filter_sekolah').value;
+  var sel = document.getElementById('disp_pegawai');
+  var currentVal = sel.value;
+  sel.innerHTML = '<option value="">-- Pilih Pegawai --</option>';
+  if (!schoolId) return;
+  var daftarPegawai = getRecords('pegawai').filter(function(p) { return p.school_id === schoolId; });
+  daftarPegawai.forEach(function(p) {
+    sel.innerHTML += '<option value="' + p.id + '">' + escapeHtml(p.nama) + ' - ' + escapeHtml(p.nip || '-') + '</option>';
+  });
+  sel.value = currentVal;
+}
+
+function dispOnKopChange() {}
+
+function cetakDispensasiPegawai() {
+  var nama = document.getElementById('disp_nama').value.trim();
+  var nip = document.getElementById('disp_nip').value.trim();
+  var pangkat = document.getElementById('disp_pangkat').value.trim();
+  var jabatan = document.getElementById('disp_jabatan').value.trim();
+  var pendidikan = document.getElementById('disp_pendidikan').value.trim();
+  var nomor = document.getElementById('disp_nomor').value.trim();
+  var tanggal = document.getElementById('disp_tanggal').value;
+  var lampiran = document.getElementById('disp_lampiran').value.trim() || '-';
+  var sifat = document.getElementById('disp_sifat').value.trim() || 'Biasa';
+  var jenis = document.getElementById('disp_jenis').value;
+  var jenisLainnya = document.getElementById('disp_jenis_lainnya').value.trim();
+  var tglMulai = document.getElementById('disp_tgl_mulai').value;
+  var tglSelesai = document.getElementById('disp_tgl_selesai').value;
+  var alasan = document.getElementById('disp_alasan').value.trim();
+  var perintah = document.getElementById('disp_perintah').value.trim();
+  var kopType = document.getElementById('disp_kop_type').value;
+  var kecamatan = document.getElementById('disp_kecamatan').value.trim() || 'Lemahabang';
+
+  if (!nama) { alert('Nama pegawai harus diisi!'); return; }
+  if (!tanggal) { alert('Tanggal surat harus diisi!'); return; }
+
+  var bulanNama = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  var tglParts = tanggal.split('-');
+  var tglDisplay = tglParts[2] + ' ' + bulanNama[parseInt(tglParts[1]) - 1] + ' ' + tglParts[0];
+
+  // Format tanggal mulai - selesai
+  var mulaiParts = tglMulai.split('-');
+  var selesaiParts = tglSelesai.split('-');
+  var periodeDisplay = mulaiParts[2] + ' ' + bulanNama[parseInt(mulaiParts[1]) - 1] + ' ' + mulaiParts[0] + ' s/d ' + selesaiParts[2] + ' ' + bulanNama[parseInt(selesaiParts[1]) - 1] + ' ' + selesaiParts[0];
+
+  // Hitung lama hari
+  var d1 = new Date(tglMulai), d2 = new Date(tglSelesai);
+  var lamaHari = Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+  if (lamaHari < 1) lamaHari = 1;
+
+  var jenisDisplay = jenis === 'Lainnya' ? (jenisLainnya || 'Lainnya') : jenis;
+
+  // Determine signatory based on kop type
+  // Kop Korwil: hanya pejabat korwil yang bertanda tangan (kanan, rata kiri)
+  // Kop Sekolah: hanya kepala sekolah yang bertanda tangan (kanan, rata kiri)
+  var kopHtml, tandaTanganHtml, isiPembuka;
+  if (kopType === 'korwil') {
+    kopHtml = getKopHtmlKorwil();
+    var korwilHead = getKepalaKorwil();
+    isiPembuka = 'Yang bertanda tangan di bawah ini, Koordinator Wilayah Bidang Pendidikan Kec. ' + escapeHtml(kecamatan) + ', menjelaskan bahwa:';
+    tandaTanganHtml = '<div class="ttd-section" style="width:50%;margin-left:auto;">' +
+      '<div style="margin-bottom:4px;">' + escapeHtml(kecamatan) + ', ' + tglDisplay + '</div>' +
+      '<div>Koordinator Wilayah Bidang Pendidikan<br>Kec. ' + escapeHtml(kecamatan) + '</div>' +
+      '<div class="sig-space"></div>' +
+      '<div style="font-weight:bold;text-decoration:underline;">' + escapeHtml(korwilHead.nama) + '</div>' +
+      '<div>NIP. ' + escapeHtml(korwilHead.nip) + '</div>' +
+      '</div>';
+  } else {
+    loadPengaturanValues();
+    var _s = settingKopType;
+    settingKopType = 'sekolah';
+    kopHtml = buildFullKopHtml();
+    settingKopType = _s;
+
+    var schoolId = '';
+    if (currentUser && currentUser.role === 'admin') {
+      var filterEl = document.getElementById('disp_filter_sekolah');
+      if (filterEl) schoolId = filterEl.value;
+    } else {
+      schoolId = currentUser.schoolId;
+    }
+    var school = schoolId ? getRecord('sekolah', schoolId) : null;
+    var namaSekolah = school ? (school.nama_sekolah || '') : '';
+    var kepsek = getKepalaSekolah(schoolId || null);
+
+    isiPembuka = 'Yang bertanda tangan di bawah ini, Kepala ' + escapeHtml(namaSekolah) + ', menjelaskan bahwa:';
+    tandaTanganHtml = '<div class="ttd-section" style="width:50%;margin-left:auto;">' +
+      '<div style="margin-bottom:4px;">' + escapeHtml(kecamatan) + ', ' + tglDisplay + '</div>' +
+      '<div>Kepala ' + escapeHtml(namaSekolah) + '</div>' +
+      '<div class="sig-space"></div>' +
+      '<div style="font-weight:bold;text-decoration:underline;">' + escapeHtml(kepsek.nama) + '</div>' +
+      '<div>NIP. ' + escapeHtml(kepsek.nip) + '</div>' +
+      '</div>';
+  }
+
+  showCetakDialog(function(cs) {
+    var printWin = window.open('', '_blank');
+    printWin.document.write('<!DOCTYPE html>\n\
+<html lang="id">\n\
+<head>\n\
+<meta charset="UTF-8">\n\
+<title>Surat Dispensasi Pegawai - ' + escapeHtml(nama) + '</title>\n\
+<style>\n' + getCetakPageCSS(cs) + '\n\
+* { margin: 0; padding: 0; box-sizing: border-box; }\n\
+body { font-family: "Times New Roman", serif; font-size: 12pt; line-height: 1.5; color: #000; width: 100%; }\n\
+.nomor-surat { width: 100%; margin-bottom: 8px; }\n\
+.nomor-surat td { padding: 1px 0; vertical-align: top; font-size: 11pt; }\n\
+.isi td { padding: 2px 0; vertical-align: top; }\n\
+.isi-no { width: 5%; }\n\
+.isi-label { width: 28%; }\n\
+.isi-val { width: 67%; }\n\
+.ttd-section { margin-top: 25px; }\n\
+.sig-space { height: 65px; }\n\
+.hal { text-align: right; font-size: 10pt; margin-bottom: 4px; }\n\
+.perihal { text-align: center; font-size: 13pt; font-weight: bold; margin-bottom: 10px; text-decoration: underline; }\n\
+@media screen { .no-print { display: block; padding: 8px 16px; background: #c53030; color: #fff; text-align: center; } .no-print button { padding: 6px 20px; background: #e53e3e; color: #fff; border: none; border-radius: 4px; font-size: 13px; cursor: pointer; margin: 0 4px; } .no-print button:hover { background: #fc8181; } }\n\
+@media print { .no-print { display: none; } }\n' + getCetakMarginCSS(cs) + '\n\
+</style>\n\
+</head>\n\
+<body>\n\
+<div class="no-print">\n\
+<button onclick="window.print()">&#128424; Cetak</button>\n\
+<button onclick="window.close()">&#10005; Tutup</button>\n\
+</div>\n\
+' + kopHtml + '\n\
+<table class="nomor-surat">\n\
+<tr><td style="width:15%;">Nomor</td><td style="width:2%;">:</td><td>' + escapeHtml(nomor || '..........................................') + '</td><td style="width:13%;">Lampiran</td><td style="width:2%;">:</td><td>' + escapeHtml(lampiran) + '</td></tr>\n\
+<tr><td>Perihal</td><td>:</td><td colspan="4"><b>SURAT DISPENSASI PEGAWAI</b></td></tr>\n\
+<tr><td>Sifat</td><td>:</td><td colspan="4">' + escapeHtml(sifat) + '</td></tr>\n\
+</table>\n\
+<br>\n\
+<div class="perihal">SURAT DISPENSASI PEGAWAI</div>\n\
+<br>\n\
+<p>' + isiPembuka + '</p>\n\
+<table class="isi">\n\
+<tr><td class="isi-no">1.</td><td class="isi-label">Nama</td><td class="isi-val">: <b>' + escapeHtml(nama) + '</b></td></tr>\n\
+<tr><td class="isi-no">2.</td><td class="isi-label">NIP</td><td class="isi-val">: ' + escapeHtml(nip) + '</td></tr>\n\
+<tr><td class="isi-no">3.</td><td class="isi-label">Pangkat / Golongan</td><td class="isi-val">: ' + escapeHtml(pangkat) + '</td></tr>\n\
+<tr><td class="isi-no">4.</td><td class="isi-label">Jabatan</td><td class="isi-val">: ' + escapeHtml(jabatan) + '</td></tr>\n\
+<tr><td class="isi-no">5.</td><td class="isi-label">Pendidikan Terakhir</td><td class="isi-val">: ' + escapeHtml(pendidikan) + '</td></tr>\n\
+</table>\n\
+<p>Memberikan <b>DISPENSASI</b> kepada yang bersangkutan untuk tidak melaksanakan tugas kedinasan dengan ketentuan sebagai berikut:</p>\n\
+<table class="isi">\n\
+<tr><td class="isi-no">1.</td><td class="isi-label">Jenis Dispensasi</td><td class="isi-val">: <b>' + escapeHtml(jenisDisplay) + '</b></td></tr>\n\
+<tr><td class="isi-no">2.</td><td class="isi-label">Periode</td><td class="isi-val">: ' + escapeHtml(periodeDisplay) + '</td></tr>\n\
+<tr><td class="isi-no">3.</td><td class="isi-label">Lama Waktu</td><td class="isi-val">: <b>' + lamaHari + ' (' + terbilang(lamaHari) + ') Hari</b></td></tr>\n\
+<tr><td class="isi-no">4.</td><td class="isi-label">Alasan</td><td class="isi-val">: ' + escapeHtml(alasan) + '</td></tr>\n\
+' + (perintah ? '<tr><td class="isi-no">5.</td><td class="isi-label">Perintah / Tindakan</td><td class="isi-val">: ' + escapeHtml(perintah) + '</td></tr>\n' : '') + '\n\
+</table>\n\
+<p>Demikian surat dispensasi ini dibuat untuk dapat dipergunakan sebagaimana mestinya.</p>\n\
+' + tandaTanganHtml + '\n\
+</body>\n\
+</html>');
+    printWin.document.close();
+  }, { paper: 'F4', orientasi: 'portrait', mt: 1.5, mb: 1.5, ml: 2, mr: 1.5 });
 }
 
 function showFormSTNK() {
@@ -7949,6 +8343,1221 @@ function renderPPDBPengaturan() {
   } else {
     statusEl.innerHTML = '<div class="alert alert-warning" style="font-size:12px;margin:0"><i class="bi bi-exclamation-triangle me-1"></i>Belum ada pengaturan PPDB untuk sekolah Anda.</div>';
   }
+}
+
+// ============ SURAT REKOMENDASI (Korwil) ============
+function formatTanggalIndo(dateStr) {
+  if (!dateStr) return '___________________';
+  var months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  var d = new Date(dateStr);
+  return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+}
+
+function formatHariIndo(dateStr) {
+  if (!dateStr) return '___________________';
+  var days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  var d = new Date(dateStr);
+  return days[d.getDay()];
+}
+
+function showFormSuratRekomendasi() {
+  document.getElementById('suratFormTitle').innerHTML = '<i class="bi bi-file-earmark-check me-2"></i>Surat Rekomendasi';
+  var today = new Date();
+  var dd = String(today.getDate()).padStart(2, '0');
+  var mm = String(today.getMonth() + 1).padStart(2, '0');
+  var yyyy = today.getFullYear();
+
+  document.getElementById('suratFormBody').innerHTML =
+    '<div class="alert alert-info" style="font-size:13px;"><i class="bi bi-info-circle me-1"></i>Isi data surat rekomendasi di bawah ini. Data akan otomatis dicantumkan dalam surat yang akan dicetak.</div>' +
+
+    /* Bagian 1: Nomor & Tanggal */
+    '<h6 style="font-weight:700;color:var(--primary);margin-bottom:12px;margin-top:16px;"><i class="bi bi-hash me-1"></i>Nomor & Tanggal Surat</h6>' +
+    '<div class="row g-3">' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="rek_nomorSurat" placeholder="Nomor Surat"><label>Nomor Surat</label></div></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="rek_tanggalSurat" type="date" value="' + yyyy + '-' + mm + '-' + dd + '"><label>Tanggal Surat</label></div></div>' +
+    '<div class="col-md-6"><div class="form-floating"><select class="form-select" id="rek_sifat"><option value="Penting">Penting</option><option value="Segera">Segera</option><option value="Biasa">Biasa</option><option value="Rahasia">Rahasia</option></select><label>Sifat</label></div></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="rek_lampiran" placeholder="Lampiran"><label>Lampiran</label></div></div>' +
+    '<div class="col-12"><div class="form-floating"><input class="form-control" id="rek_perihal" placeholder="Perihal"><label>Perihal</label></div></div>' +
+    '</div>' +
+
+    /* Bagian 2: Tujuan Surat */
+    '<hr style="margin:16px 0;border-color:var(--border-color);">' +
+    '<h6 style="font-weight:700;color:var(--primary);margin-bottom:12px;"><i class="bi bi-send me-1"></i>Tujuan Surat</h6>' +
+    '<div class="row g-3">' +
+    '<div class="col-12"><div class="form-floating"><input class="form-control" id="rek_tujuan" placeholder="Kepada Yth."><label>Kepada Yth.</label></div></div>' +
+    '<div class="col-12"><div class="form-floating"><input class="form-control" id="rek_alamatTujuan" placeholder="Alamat" value="Kecamatan Lemahabang"><label>Alamat</label></div></div>' +
+    '</div>' +
+
+    /* Bagian 3: Surat Permintaan Rekomendasi */
+    '<hr style="margin:16px 0;border-color:var(--border-color);">' +
+    '<h6 style="font-weight:700;color:var(--primary);margin-bottom:12px;"><i class="bi bi-envelope me-1"></i>Surat Permintaan Rekomendasi</h6>' +
+    '<div class="row g-3">' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="rek_dariPihak" placeholder="Dari Pihak"><label>Dari Pihak</label></div></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="rek_nomorPermintaan" placeholder="Nomor Surat Permintaan"><label>Nomor Surat Permintaan</label></div></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="rek_tanggalPermintaan" type="date"><label>Tanggal Permintaan</label></div></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="rek_namaPeserta" placeholder="Nama Peserta / Guru"><label>Nama Peserta / Guru</label></div></div>' +
+    '</div>' +
+
+    /* Bagian 4: Detail Kegiatan */
+    '<hr style="margin:16px 0;border-color:var(--border-color);">' +
+    '<h6 style="font-weight:700;color:var(--primary);margin-bottom:12px;"><i class="bi bi-calendar-event me-1"></i>Detail Kegiatan</h6>' +
+    '<div class="row g-3">' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="rek_hariKegiatan" placeholder="Hari"><label>Hari</label></div></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="rek_tanggalKegiatan" type="date"><label>Tanggal Kegiatan</label></div></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="rek_waktuMulai" type="time"><label>Waktu Mulai</label></div></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="rek_tempatKegiatan" placeholder="Tempat Kegiatan"><label>Tempat</label></div></div>' +
+    '</div>' +
+
+    /* Bagian 5: Tembusan */
+    '<hr style="margin:16px 0;border-color:var(--border-color);">' +
+    '<h6 style="font-weight:700;color:var(--primary);margin-bottom:12px;"><i class="bi bi-share me-1"></i>Tembusan</h6>' +
+    '<div class="row g-3">' +
+    '<div class="col-12"><div class="form-floating"><input class="form-control" id="rek_tembusan3" placeholder="Tembusan Tambahan (3)"><label>Tembusan Tambahan (3) - Opsional</label></div></div>' +
+    '</div>' +
+
+    /* Bagian 6: Lampiran Peserta */
+    '<hr style="margin:16px 0;border-color:var(--border-color);">' +
+    '<h6 style="font-weight:700;color:var(--primary);margin-bottom:12px;"><i class="bi bi-table me-1"></i>Lampiran Peserta</h6>' +
+    '<div class="alert alert-light" style="font-size:12px;"><i class="bi bi-info-circle me-1"></i>Isi data lampiran peserta yang akan dicetak sebagai halaman terpisah.</div>' +
+    '<div class="table-container" style="max-height:300px;overflow-y:auto;">' +
+    '<table class="table table-bordered table-hover" style="font-size:13px;">' +
+    '<thead><tr style="background:#f0fdf4;color:#065f46;"><th style="width:40px;text-align:center;">No</th><th>Nama Peserta / Guru</th><th>NIP</th><th>Jabatan / Pangkat</th><th>Sekolah / Instansi</th><th>Keterangan</th><th style="width:50px;text-align:center;">Aksi</th></tr></thead>' +
+    '<tbody id="rekLampiranBody">' +
+    '<tr class="rek-lampiran-row"><td style="text-align:center;">1</td>' +
+    '<td><input type="text" class="form-control form-control-sm rek-lp-nama" placeholder="Nama lengkap" style="font-size:12px;"></td>' +
+    '<td><input type="text" class="form-control form-control-sm rek-lp-nip" placeholder="NIP" style="font-size:12px;"></td>' +
+    '<td><input type="text" class="form-control form-control-sm rek-lp-jabatan" placeholder="Jabatan" style="font-size:12px;"></td>' +
+    '<td><input type="text" class="form-control form-control-sm rek-lp-sekolah" placeholder="Nama sekolah" style="font-size:12px;"></td>' +
+    '<td><input type="text" class="form-control form-control-sm rek-lp-keterangan" placeholder="Keterangan" style="font-size:12px;"></td>' +
+    '<td style="text-align:center;"><button class="btn btn-danger btn-sm" style="font-size:11px;padding:2px 8px;" onclick="rekRemoveRow(this)"><i class="bi bi-trash"></i></button></td>' +
+    '</tr>' +
+    '</tbody>' +
+    '</table>' +
+    '</div>' +
+    '<button class="btn btn-outline-success btn-sm mt-2" onclick="rekAddRow()"><i class="bi bi-plus-circle me-1"></i>Tambah Baris</button>' +
+
+    /* Buttons */
+    '<hr style="margin:20px 0;border-color:var(--border-color);">' +
+    '<div class="d-flex gap-2 flex-wrap">' +
+    '<button class="btn btn-accent" onclick="cetakSuratRekomendasi()"><i class="bi bi-printer me-1"></i>Cetak Surat</button>' +
+    '<button class="btn btn-outline-success" style="color:#065f46;border-color:#065f46;" onclick="cetakLampiranRekomendasi()"><i class="bi bi-file-earmark-text me-1"></i>Cetak Lampiran</button>' +
+    '<button class="btn btn-outline-primary" onclick="cetakSuratRekomendasiFull()"><i class="bi bi-file-earmark-plus me-1"></i>Cetak Surat + Lampiran</button>' +
+    '<button class="btn btn-outline-secondary" onclick="resetFormRekomendasi()"><i class="bi bi-arrow-counterclockwise me-1"></i>Reset</button>' +
+    '</div>';
+
+  // Auto-fill hari when tanggalKegiatan changes
+  setTimeout(function() {
+    var tglKeg = document.getElementById('rek_tanggalKegiatan');
+    if (tglKeg) {
+      tglKeg.addEventListener('change', function() {
+        var hariField = document.getElementById('rek_hariKegiatan');
+        if (this.value && hariField && !hariField.value) {
+          hariField.value = formatHariIndo(this.value);
+        }
+      });
+    }
+  }, 100);
+}
+
+function rekAddRow() {
+  var tbody = document.getElementById('rekLampiranBody');
+  var rows = tbody.querySelectorAll('.rek-lampiran-row');
+  var no = rows.length + 1;
+  var tr = document.createElement('tr');
+  tr.className = 'rek-lampiran-row';
+  tr.innerHTML = '<td style="text-align:center;">' + no + '</td>' +
+    '<td><input type="text" class="form-control form-control-sm rek-lp-nama" placeholder="Nama lengkap" style="font-size:12px;"></td>' +
+    '<td><input type="text" class="form-control form-control-sm rek-lp-nip" placeholder="NIP" style="font-size:12px;"></td>' +
+    '<td><input type="text" class="form-control form-control-sm rek-lp-jabatan" placeholder="Jabatan" style="font-size:12px;"></td>' +
+    '<td><input type="text" class="form-control form-control-sm rek-lp-sekolah" placeholder="Nama sekolah" style="font-size:12px;"></td>' +
+    '<td><input type="text" class="form-control form-control-sm rek-lp-keterangan" placeholder="Keterangan" style="font-size:12px;"></td>' +
+    '<td style="text-align:center;"><button class="btn btn-danger btn-sm" style="font-size:11px;padding:2px 8px;" onclick="rekRemoveRow(this)"><i class="bi bi-trash"></i></button></td>';
+  tbody.appendChild(tr);
+}
+
+function rekRemoveRow(btn) {
+  var row = btn.closest('.rek-lampiran-row');
+  var tbody = document.getElementById('rekLampiranBody');
+  if (tbody.querySelectorAll('.rek-lampiran-row').length <= 1) {
+    alert('Minimal harus ada 1 baris data.');
+    return;
+  }
+  row.remove();
+  var rows = tbody.querySelectorAll('.rek-lampiran-row');
+  rows.forEach(function(r, i) { r.querySelector('td').textContent = i + 1; });
+}
+
+function resetFormRekomendasi() {
+  if (!confirm('Apakah Anda yakin ingin mereset semua data?')) return;
+  var ids = ['rek_nomorSurat','rek_lampiran','rek_perihal','rek_tujuan','rek_dariPihak','rek_nomorPermintaan','rek_namaPeserta','rek_hariKegiatan','rek_tempatKegiatan','rek_tembusan3','rek_tanggalPermintaan','rek_tanggalKegiatan','rek_waktuMulai'];
+  ids.forEach(function(id) { var el = document.getElementById(id); if (el) el.value = ''; });
+  var alamatEl = document.getElementById('rek_alamatTujuan');
+  if (alamatEl) alamatEl.value = 'Kecamatan Lemahabang';
+  var sifatEl = document.getElementById('rek_sifat');
+  if (sifatEl) sifatEl.value = 'Penting';
+  var tglEl = document.getElementById('rek_tanggalSurat');
+  if (tglEl) tglEl.value = new Date().toISOString().split('T')[0];
+  // Reset lampiran rows
+  var tbody = document.getElementById('rekLampiranBody');
+  if (tbody) {
+    tbody.innerHTML = '<tr class="rek-lampiran-row"><td style="text-align:center;">1</td>' +
+      '<td><input type="text" class="form-control form-control-sm rek-lp-nama" placeholder="Nama lengkap" style="font-size:12px;"></td>' +
+      '<td><input type="text" class="form-control form-control-sm rek-lp-nip" placeholder="NIP" style="font-size:12px;"></td>' +
+      '<td><input type="text" class="form-control form-control-sm rek-lp-jabatan" placeholder="Jabatan" style="font-size:12px;"></td>' +
+      '<td><input type="text" class="form-control form-control-sm rek-lp-sekolah" placeholder="Nama sekolah" style="font-size:12px;"></td>' +
+      '<td><input type="text" class="form-control form-control-sm rek-lp-keterangan" placeholder="Keterangan" style="font-size:12px;"></td>' +
+      '<td style="text-align:center;"><button class="btn btn-danger btn-sm" style="font-size:11px;padding:2px 8px;" onclick="rekRemoveRow(this)"><i class="bi bi-trash"></i></button></td>' +
+      '</tr>';
+  }
+}
+
+function getRekVal(id, fallback) {
+  var el = document.getElementById(id);
+  return (el && el.value.trim()) ? el.value.trim() : (fallback || '___________________');
+}
+
+function getRekLampiranHtml() {
+  var rows = document.querySelectorAll('#rekLampiranBody .rek-lampiran-row');
+  var html = '';
+  var no = 1;
+  rows.forEach(function(row) {
+    var nama = (row.querySelector('.rek-lp-nama').value || '-').trim();
+    var nip = (row.querySelector('.rek-lp-nip').value || '-').trim();
+    var jabatan = (row.querySelector('.rek-lp-jabatan').value || '-').trim();
+    var sekolah = (row.querySelector('.rek-lp-sekolah').value || '-').trim();
+    var keterangan = (row.querySelector('.rek-lp-keterangan').value || '-').trim();
+    html += '<tr>' +
+      '<td style="text-align:center;width:40px;">' + no + '</td>' +
+      '<td>' + escapeHtml(nama) + '</td>' +
+      '<td>' + escapeHtml(nip) + '</td>' +
+      '<td>' + escapeHtml(jabatan) + '</td>' +
+      '<td>' + escapeHtml(sekolah) + '</td>' +
+      '<td>' + escapeHtml(keterangan) + '</td>' +
+      '</tr>';
+    no++;
+  });
+  if (!html) {
+    html = '<tr><td colspan="6" style="text-align:center;padding:20px;">Tidak ada data lampiran</td></tr>';
+  }
+  return html;
+}
+
+function buildRekomendasiPrintHtml(includeLampiran) {
+  var nomor = getRekVal('rek_nomorSurat');
+  var tanggal = getRekVal('rek_tanggalSurat');
+  var sifat = getRekVal('rek_sifat', 'Penting');
+  var lampiran = getRekVal('rek_lampiran');
+  var perihal = getRekVal('rek_perihal');
+  var tujuan = getRekVal('rek_tujuan');
+  var alamat = getRekVal('rek_alamatTujuan');
+  var dariPihak = getRekVal('rek_dariPihak');
+  var nomorPermintaan = getRekVal('rek_nomorPermintaan');
+  var tanggalPermintaan = getRekVal('rek_tanggalPermintaan');
+  var namaPeserta = getRekVal('rek_namaPeserta');
+  var hariKegiatan = getRekVal('rek_hariKegiatan');
+  var tanggalKegiatan = getRekVal('rek_tanggalKegiatan');
+  var waktuMulai = getRekVal('rek_waktuMulai', '____');
+  var tempat = getRekVal('rek_tempatKegiatan');
+  var tembusan3 = getRekVal('rek_tembusan3');
+
+  var tglDisplay = formatTanggalIndo(tanggal);
+  var tglPermintaanDisplay = formatTanggalIndo(tanggalPermintaan);
+  var tglKegiatanDisplay = formatTanggalIndo(tanggalKegiatan);
+  var waktuDisplay = waktuMulai ? waktuMulai.substring(0, 5) : '____';
+  var kopHtml = getKopHtmlKorwil();
+
+  var suratHtml = kopHtml +
+    '<div style="margin-top:16px;font-family:Times New Roman,serif;font-size:12pt;line-height:1.5;color:#000;text-align:justify;">' +
+    /* Meta: Nomor + Tanggal */
+    '<table style="width:100%;font-family:Times New Roman,serif;font-size:12pt;line-height:1.5;border:none;" cellpadding="0" cellspacing="0">' +
+    '<tr><td style="width:80px;border:none;">Nomor</td><td style="width:10px;border:none;">:</td><td style="border:none;">' + escapeHtml(nomor) + '</td><td style="width:80px;border:none;text-align:right;" colspan="3">Lemahabang, ' + tglDisplay + '</td></tr>' +
+    '<tr><td style="border:none;">Sifat</td><td style="border:none;">:</td><td style="border:none;">' + escapeHtml(sifat) + '</td><td></td><td></td><td></td></tr>' +
+    '<tr><td style="border:none;">Lampiran</td><td style="border:none;">:</td><td style="border:none;">' + escapeHtml(lampiran) + '</td><td></td><td></td><td></td></tr>' +
+    '<tr><td style="border:none;">Perihal</td><td style="border:none;">:</td><td style="border:none;">' + escapeHtml(perihal) + '</td><td style="border:none;text-align:right;" colspan="3">Kepada :</td></tr>' +
+    '</table>' +
+    /* Kepada */
+    '<table style="width:100%;font-family:Times New Roman,serif;font-size:12pt;line-height:1.5;border:none;" cellpadding="0" cellspacing="0">' +
+    '<tr><td style="border:none;padding-left:80px;">' + escapeHtml(tujuan) + '</td><td style="border:none;width:230px;padding-left:4px;">Yth. Kepala SD Negeri/Swasta</td></tr>' +
+    '<tr><td style="border:none;padding-left:80px;">' + escapeHtml(alamat) + '</td><td style="border:none;">Kecamatan Lemahabang</td></tr>' +
+    '<tr><td style="border:none;padding-left:80px;">di</td><td style="border:none;"></td></tr>' +
+    '<tr><td style="border:none;padding-left:80px;">Lemahabang</td><td style="border:none;"></td></tr>' +
+    '</table>' +
+    /* Spacer */
+    '<div style="height:20px;"></div>' +
+    /* Isi Surat */
+    '<div style="text-indent:40px;margin-left:8px;text-align:justify;">Menindaklanjuti surat Permintaan Rekomendasi dari <span style="border-bottom:1px dotted #000;padding:0 2px;">' + escapeHtml(dariPihak) + '</span> nomor <span style="border-bottom:1px dotted #000;padding:0 2px;">' + escapeHtml(nomorPermintaan) + '</span> tanggal <span style="border-bottom:1px dotted #000;padding:0 2px;">' + tglPermintaanDisplay + '</span>, perihal tersebut diatas, maka dengan ini kami memberikan <b><i>Rekomendasi</i></b> agar Kepala SD untuk memberikan tugas kepada <span style="border-bottom:1px dotted #000;padding:0 2px;">' + escapeHtml(namaPeserta) + '</span>, untuk mengikuti kegiatan tersebut di atas pada :</div>' +
+    '<div style="margin-left:8px;line-height:1.8;margin-top:8px;font-family:Times New Roman,serif;font-size:12pt;">' +
+    'Hari &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: <span style="border-bottom:1px dotted #000;padding:0 2px;min-width:120px;display:inline-block;">' + escapeHtml(hariKegiatan) + '</span><br>' +
+    'Tanggal &nbsp;&nbsp;: <span style="border-bottom:1px dotted #000;padding:0 2px;min-width:120px;display:inline-block;">' + tglKegiatanDisplay + '</span><br>' +
+    'Waktu &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: Pkl. ' + escapeHtml(waktuDisplay) + ' WIB s.d selesai<br>' +
+    'Tempat &nbsp;&nbsp;&nbsp;: <span style="border-bottom:1px dotted #000;padding:0 2px;min-width:120px;display:inline-block;">' + escapeHtml(tempat) + '</span>' +
+    '</div>' +
+    '<div style="text-indent:40px;margin-left:8px;text-align:justify;margin-top:16px;">Demikian surat ini kami sampaikan, agar dapat dipergunakan sebagaimana mestinya. Atas perhatiannya kami ucapkan terima kasih.</div>' +
+    /* Tanda Tangan */
+    '<div style="margin-top:20px;line-height:1.5;font-family:Times New Roman,serif;font-size:12pt;">' +
+    '<div style="padding-left:260px;">Korwil Bidang Pendidikan</div>' +
+    '<div style="padding-left:260px;">Kecamatan Lemahabang,</div>' +
+    '<div style="height:60px;"></div>' +
+    '<div style="padding-left:260px;font-weight:bold;text-decoration:underline;">ETI BUDIWATI, S.Pd.</div>' +
+    '<div style="padding-left:260px;font-size:11pt;">NIP. 19691002 200604 2 005</div>' +
+    '</div>' +
+    /* Spacer before tembusan */
+    '<div style="height:70px;"></div>' +
+    /* Tembusan */
+    '<div style="font-family:Times New Roman,serif;font-size:12pt;line-height:1.5;text-align:justify;">' +
+    '<div style="font-weight:bold;">Tembusan :</div>' +
+    '<ol style="margin-left:20px;padding-left:0;">' +
+    '<li style="margin-bottom:2px;">Yth. Kepala Dinas Pendidikan Kab. Cirebon</li>' +
+    '<li style="margin-bottom:2px;">Yth. Ketua K3S Kecamatan Lemahabang</li>' +
+    '<li style="margin-bottom:2px;">Yth. ' + escapeHtml(tembusan3) + '</li>' +
+    '</ol>' +
+    '<div style="margin-left:20px;font-size:11pt;">( mohon ijin tempat )</div>' +
+    '</div>' +
+    '</div>';
+
+  var lampiranHtml = '';
+  if (includeLampiran) {
+    lampiranHtml = '<div style="page-break-before:always;">' +
+      '<div style="text-align:center;font-family:Times New Roman,serif;font-size:12pt;font-weight:bold;line-height:1.8;">' +
+      '<div>LAMPIRAN SURAT REKOMENDASI</div>' +
+      '<div style="font-weight:normal;">Koordinator Wilayah Bidang Pendidikan Kecamatan Lemahabang</div>' +
+      '<div style="font-weight:normal;">Perihal: ' + escapeHtml(perihal) + '</div>' +
+      '<br>' +
+      '</div>' +
+      '<table style="width:100%;border-collapse:collapse;font-family:Times New Roman,serif;font-size:11pt;">' +
+      '<thead><tr style="background:#f0f0f0;font-weight:bold;text-align:center;">' +
+      '<th style="border:1px solid #000;padding:6px 10px;width:40px;">No</th>' +
+      '<th style="border:1px solid #000;padding:6px 10px;text-align:left;">Nama Peserta / Guru</th>' +
+      '<th style="border:1px solid #000;padding:6px 10px;text-align:left;">NIP</th>' +
+      '<th style="border:1px solid #000;padding:6px 10px;text-align:left;">Jabatan / Pangkat</th>' +
+      '<th style="border:1px solid #000;padding:6px 10px;text-align:left;">Sekolah / Instansi</th>' +
+      '<th style="border:1px solid #000;padding:6px 10px;text-align:left;">Keterangan</th>' +
+      '</tr></thead>' +
+      '<tbody>' + getRekLampiranHtml() + '</tbody>' +
+      '</table>' +
+      '</div>';
+  }
+
+  return suratHtml + lampiranHtml;
+}
+
+function cetakSuratRekomendasi() {
+  var nomor = getRekVal('rek_nomorSurat');
+  var tujuan = getRekVal('rek_tujuan');
+  var dariPihak = getRekVal('rek_dariPihak');
+  var namaPeserta = getRekVal('rek_namaPeserta');
+  var perihal = getRekVal('rek_perihal');
+  if (!nomor || nomor === '___________________') { alert('Nomor Surat harus diisi!'); return; }
+  if (!tujuan || tujuan === '___________________') { alert('Tujuan surat harus diisi!'); return; }
+  if (!dariPihak || dariPihak === '___________________') { alert('Dari Pihak harus diisi!'); return; }
+  if (!namaPeserta || namaPeserta === '___________________') { alert('Nama Peserta harus diisi!'); return; }
+  if (!perihal || perihal === '___________________') { alert('Perihal harus diisi!'); return; }
+
+  showCetakDialog(function(cs) {
+    var html = buildRekomendasiPrintHtml(false);
+    var printWin = window.open('', '_blank');
+    printWin.document.write('<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Surat Rekomendasi</title><style>' +
+      getCetakPageCSS(cs) +
+      '* { margin: 0; padding: 0; box-sizing: border-box; }' +
+      'body { font-family: "Times New Roman", serif; width: 100%; margin: auto; font-size: 12pt; line-height: 1.5; color: #000; }' +
+      '@media screen { .page { box-shadow: 0 0 20px rgba(0,0,0,0.1); margin: 20px auto; padding: 20px; } .no-print { display: block; padding: 10px 20px; background: #065f46; color: #fff; text-align: center; } .no-print button { padding: 8px 24px; background: #047857; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; margin: 0 4px; } .no-print button:hover { background: #059669; } }' +
+      '@media print { .no-print { display: none; } }' +
+      getCetakMarginCSS(cs) +
+      '</style></head><body>' +
+      '<div class="no-print"><button onclick="window.print()">&#128424; Cetak / Simpan sebagai PDF</button><button onclick="window.close()">&#10005; Tutup</button></div>' +
+      '<div class="page">' + html + '</div>' +
+      '</body></html>');
+    printWin.document.close();
+  }, { paper: 'F4', orientasi: 'portrait', mt: 1.1, mb: 2.5, ml: 2.5, mr: 2 });
+}
+
+function cetakLampiranRekomendasi() {
+  showCetakDialog(function(cs) {
+    var perihal = getRekVal('rek_perihal');
+    var lampiranHtml =
+      '<div style="text-align:center;font-family:Times New Roman,serif;font-size:12pt;font-weight:bold;line-height:1.8;">' +
+      '<div>LAMPIRAN SURAT REKOMENDASI</div>' +
+      '<div style="font-weight:normal;">Koordinator Wilayah Bidang Pendidikan Kecamatan Lemahabang</div>' +
+      '<div style="font-weight:normal;">Perihal: ' + escapeHtml(perihal) + '</div>' +
+      '<br>' +
+      '</div>' +
+      '<table style="width:100%;border-collapse:collapse;font-family:Times New Roman,serif;font-size:11pt;">' +
+      '<thead><tr style="background:#f0f0f0;font-weight:bold;text-align:center;">' +
+      '<th style="border:1px solid #000;padding:6px 10px;width:40px;">No</th>' +
+      '<th style="border:1px solid #000;padding:6px 10px;text-align:left;">Nama Peserta / Guru</th>' +
+      '<th style="border:1px solid #000;padding:6px 10px;text-align:left;">NIP</th>' +
+      '<th style="border:1px solid #000;padding:6px 10px;text-align:left;">Jabatan / Pangkat</th>' +
+      '<th style="border:1px solid #000;padding:6px 10px;text-align:left;">Sekolah / Instansi</th>' +
+      '<th style="border:1px solid #000;padding:6px 10px;text-align:left;">Keterangan</th>' +
+      '</tr></thead>' +
+      '<tbody>' + getRekLampiranHtml() + '</tbody>' +
+      '</table>';
+
+    var printWin = window.open('', '_blank');
+    printWin.document.write('<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Lampiran Surat Rekomendasi</title><style>' +
+      getCetakPageCSS(cs) +
+      '* { margin: 0; padding: 0; box-sizing: border-box; }' +
+      'body { font-family: "Times New Roman", serif; width: 100%; margin: auto; font-size: 12pt; line-height: 1.5; color: #000; }' +
+      '@media screen { .page { box-shadow: 0 0 20px rgba(0,0,0,0.1); margin: 20px auto; padding: 20px; } .no-print { display: block; padding: 10px 20px; background: #065f46; color: #fff; text-align: center; } .no-print button { padding: 8px 24px; background: #047857; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; margin: 0 4px; } .no-print button:hover { background: #059669; } }' +
+      '@media print { .no-print { display: none; } }' +
+      getCetakMarginCSS(cs) +
+      '</style></head><body>' +
+      '<div class="no-print"><button onclick="window.print()">&#128424; Cetak / Simpan sebagai PDF</button><button onclick="window.close()">&#10005; Tutup</button></div>' +
+      '<div class="page">' + lampiranHtml + '</div>' +
+      '</body></html>');
+    printWin.document.close();
+  }, { paper: 'F4', orientasi: 'portrait', mt: 2, mb: 2, ml: 2.5, mr: 2 });
+}
+
+function cetakSuratRekomendasiFull() {
+  var nomor = getRekVal('rek_nomorSurat');
+  var tujuan = getRekVal('rek_tujuan');
+  var dariPihak = getRekVal('rek_dariPihak');
+  var namaPeserta = getRekVal('rek_namaPeserta');
+  var perihal = getRekVal('rek_perihal');
+  if (!nomor || nomor === '___________________') { alert('Nomor Surat harus diisi!'); return; }
+  if (!tujuan || tujuan === '___________________') { alert('Tujuan surat harus diisi!'); return; }
+  if (!dariPihak || dariPihak === '___________________') { alert('Dari Pihak harus diisi!'); return; }
+  if (!namaPeserta || namaPeserta === '___________________') { alert('Nama Peserta harus diisi!'); return; }
+  if (!perihal || perihal === '___________________') { alert('Perihal harus diisi!'); return; }
+
+  showCetakDialog(function(cs) {
+    var html = buildRekomendasiPrintHtml(true);
+    var printWin = window.open('', '_blank');
+    printWin.document.write('<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Surat Rekomendasi</title><style>' +
+      getCetakPageCSS(cs) +
+      '* { margin: 0; padding: 0; box-sizing: border-box; }' +
+      'body { font-family: "Times New Roman", serif; width: 100%; margin: auto; font-size: 12pt; line-height: 1.5; color: #000; }' +
+      '@media screen { .page { box-shadow: 0 0 20px rgba(0,0,0,0.1); margin: 20px auto; padding: 20px; } .no-print { display: block; padding: 10px 20px; background: #065f46; color: #fff; text-align: center; } .no-print button { padding: 8px 24px; background: #047857; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; margin: 0 4px; } .no-print button:hover { background: #059669; } }' +
+      '@media print { .no-print { display: none; } }' +
+      getCetakMarginCSS(cs) +
+      '</style></head><body>' +
+      '<div class="no-print"><button onclick="window.print()">&#128424; Cetak / Simpan sebagai PDF</button><button onclick="window.close()">&#10005; Tutup</button></div>' +
+      '<div class="page">' + html + '</div>' +
+      '</body></html>');
+    printWin.document.close();
+  }, { paper: 'F4', orientasi: 'portrait', mt: 1.1, mb: 2.5, ml: 2.5, mr: 2 });
+}
+
+// ============ LAPORAN DAFTAR 1 - MUTASI SISWA (Korwil) ============
+var LD1_KELAS = ['Kelas I','Kelas II','Kelas III','Kelas IV','Kelas V','Kelas VI'];
+var LD1_BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+function ld1Num(id) { var el = document.getElementById(id); return el ? (parseInt(el.value) || 0) : 0; }
+function ld1Str(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
+function ld1CalcTotal(col) {
+  var t = 0;
+  LD1_KELAS.forEach(function(k, i) { t += ld1Num('ld1_' + col + '_' + i); });
+  return t;
+}
+function ld1CalcTotalFixed(col, val) { return val; }
+function ld1UpdateTotals() {
+  // Hitung saldo_akhir per kelas: saldo_akhir = saldo_awal + masuk - keluar (per L/P)
+  LD1_KELAS.forEach(function(k, i) {
+    var awalL = ld1Num('ld1_saldo_awal_l_' + i);
+    var awalP = ld1Num('ld1_saldo_awal_p_' + i);
+    var masukL = ld1Num('ld1_masuk_l_' + i);
+    var masukP = ld1Num('ld1_masuk_p_' + i);
+    var keluarL = ld1Num('ld1_keluar_l_' + i);
+    var keluarP = ld1Num('ld1_keluar_p_' + i);
+    // Jumlah Siswa Akhir = Awal + Masuk - Keluar (per L/P)
+    var elL = document.getElementById('ld1_saldo_akhir_l_' + i);
+    var elP = document.getElementById('ld1_saldo_akhir_p_' + i);
+    if (elL) elL.value = Math.max(0, awalL + masukL - keluarL);
+    if (elP) elP.value = Math.max(0, awalP + masukP - keluarP);
+  });
+  // Update total row
+  ['saldo_awal_l','saldo_awal_p','masuk_l','masuk_p','keluar_l','keluar_p','saldo_akhir_l','saldo_akhir_p'].forEach(function(col) {
+    var el = document.getElementById('ld1_tot_' + col);
+    if (el) el.value = ld1CalcTotal(col);
+  });
+  // Keterangan mutasi
+  var totalMasukL = ld1CalcTotal('masuk_l');
+  var totalMasukP = ld1CalcTotal('masuk_p');
+  var totalKeluarL = ld1CalcTotal('keluar_l');
+  var totalKeluarP = ld1CalcTotal('keluar_p');
+  var ketEl = document.getElementById('ld1_ket_mutasi_preview');
+  if (ketEl) {
+    ketEl.innerHTML = '<span style="color:green;">Siswa Masuk (L: ' + totalMasukL + ', P: ' + totalMasukP + ')</span> | ' +
+      '<span style="color:red;">Siswa Keluar (L: ' + totalKeluarL + ', P: ' + totalKeluarP + ')</span>';
+  }
+}
+
+function showFormLaporanDaftar1() {
+  document.getElementById('suratFormTitle').innerHTML = '<i class="bi bi-clipboard2-data me-2"></i>Laporan Daftar 1 - Mutasi & Pengembangan Siswa';
+
+  var bulanOpts = '<option value="">-- Pilih Bulan --</option>';
+  LD1_BULAN.forEach(function(b, i) { bulanOpts += '<option value="' + b + '">' + b + '</option>'; });
+
+  // Build sekolah filter
+  var sekolahOpts = '<option value="">-- Pilih Sekolah --</option>';
+  getRecords('sekolah').forEach(function(s) {
+    sekolahOpts += '<option value="' + s.id + '" data-nama="' + escapeHtml(s.nama_sekolah) + '" data-npsn="' + escapeHtml(s.npsn || '') + '" data-alamat="' + escapeHtml(s.alamat || '') + '" data-jenjang="' + escapeHtml(s.jenjang || 'SD') + '">' + escapeHtml(s.nama_sekolah) + '</option>';
+  });
+
+  // Build kelas rows
+  var kelasRows = '';
+  LD1_KELAS.forEach(function(k, i) {
+    kelasRows += '<tr style="background:' + (i % 2 === 0 ? '#f9f9f9' : '#fff') + ';">' +
+      '<td class="bold" style="padding-left:12px;font-size:12px;">' + k + '</td>' +
+      '<td><input type="number" class="form-control form-control-sm text-center ld1-auto-calc" id="ld1_saldo_awal_l_' + i + '" min="0" value="0" style="font-size:12px;" oninput="ld1UpdateTotals()"></td>' +
+      '<td><input type="number" class="form-control form-control-sm text-center ld1-auto-calc" id="ld1_saldo_awal_p_' + i + '" min="0" value="0" style="font-size:12px;" oninput="ld1UpdateTotals()"></td>' +
+      '<td style="background:#e6fffa;"><input type="number" class="form-control form-control-sm text-center ld1-auto-calc" id="ld1_masuk_l_' + i + '" min="0" value="0" style="font-size:12px;" oninput="ld1UpdateTotals()"></td>' +
+      '<td style="background:#e6fffa;"><input type="number" class="form-control form-control-sm text-center ld1-auto-calc" id="ld1_masuk_p_' + i + '" min="0" value="0" style="font-size:12px;" oninput="ld1UpdateTotals()"></td>' +
+      '<td style="background:#fff5f5;"><input type="number" class="form-control form-control-sm text-center ld1-auto-calc" id="ld1_keluar_l_' + i + '" min="0" value="0" style="font-size:12px;" oninput="ld1UpdateTotals()"></td>' +
+      '<td style="background:#fff5f5;"><input type="number" class="form-control form-control-sm text-center ld1-auto-calc" id="ld1_keluar_p_' + i + '" min="0" value="0" style="font-size:12px;" oninput="ld1UpdateTotals()"></td>' +
+      '<td style="background:#dbeafe;"><input type="number" class="form-control form-control-sm text-center" id="ld1_saldo_akhir_l_' + i + '" min="0" value="0" readonly style="font-size:12px;font-weight:700;background:#dbeafe;"></td>' +
+      '<td style="background:#dbeafe;"><input type="number" class="form-control form-control-sm text-center" id="ld1_saldo_akhir_p_' + i + '" min="0" value="0" readonly style="font-size:12px;font-weight:700;background:#dbeafe;"></td>' +
+      '</tr>';
+  });
+
+  document.getElementById('suratFormBody').innerHTML =
+    '<div class="alert alert-info" style="font-size:13px;"><i class="bi bi-info-circle me-1"></i>Laporan Daftar 1 - Mutasi & Pengembangan Siswa Per Bulan. Pilih sekolah, isi data mutasi per kelas, lalu cetak laporan.</div>' +
+
+    /* Section 1: Identitas Sekolah */
+    '<h6 style="font-weight:700;color:var(--primary);margin-bottom:12px;margin-top:8px;"><i class="bi bi-building me-1"></i>Identitas Sekolah</h6>' +
+    '<div class="row g-3">' +
+    '<div class="col-md-6"><div class="form-floating"><select class="form-select" id="ld1_sekolah" onchange="ld1OnSelectSekolah()">' + sekolahOpts + '</select><label>Pilih Sekolah</label></div></div>' +
+    '<div class="col-md-3"><div class="form-floating"><select class="form-select" id="ld1_bulan">' + bulanOpts + '</select><label>Bulan Laporan</label></div></div>' +
+    '<div class="col-md-3"><div class="form-floating"><input class="form-control" id="ld1_tahun" type="number" value="2026"><label>Tahun</label></div></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="ld1_nama_sekolah" placeholder="Nama Sekolah"><label>Nama Sekolah</label></div></div>' +
+    '<div class="col-md-3"><div class="form-floating"><input class="form-control" id="ld1_nss" placeholder="NSS"><label>NSS</label></div></div>' +
+    '<div class="col-md-3"><div class="form-floating"><input class="form-control" id="ld1_npsn" placeholder="NPSN"><label>NPSN</label></div></div>' +
+    '<div class="col-12"><div class="form-floating"><input class="form-control" id="ld1_alamat" placeholder="Alamat Sekolah"><label>Alamat</label></div></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="ld1_kabupaten" value="CIREBON" placeholder="Kabupaten"><label>Kabupaten</label></div></div>' +
+    '<div class="col-md-6"><div class="form-floating"><input class="form-control" id="ld1_kecamatan" value="Lemahabang" placeholder="Kecamatan"><label>Kecamatan</label></div></div>' +
+    '</div>' +
+
+    /* Section 2: Data Mutasi Siswa Per Kelas */
+    '<hr style="margin:16px 0;border-color:var(--border-color);">' +
+    '<h6 style="font-weight:700;color:var(--primary);margin-bottom:12px;"><i class="bi bi-table me-1"></i>E. Pengembangan & Mutasi Siswa Per Bulan</h6>' +
+    '<div class="alert alert-light" style="font-size:12px;"><i class="bi bi-info-circle me-1"></i>Isi Jumlah Siswa Awal, data siswa Masuk dan Keluar per kelas. <strong>Jumlah Siswa Akhir dihitung otomatis</strong> (Awal + Masuk − Keluar).</div>' +
+    '<div style="overflow-x:auto;">' +
+    '<table class="table table-bordered" style="font-size:12px;min-width:900px;">' +
+    '<thead>' +
+    '<tr style="background:#000;color:#fff;font-weight:bold;text-align:center;">' +
+    '<th rowspan="2" style="width:12%;vertical-align:middle;">URAIAN</th>' +
+    '<th colspan="2" style="width:18%;">JUMLAH SISWA AWAL</th>' +
+    '<th colspan="2" style="width:18%;background:#c6f6d5;">MASUK (+)</th>' +
+    '<th colspan="2" style="width:18%;background:#fed7d7;">KELUAR (−)</th>' +
+    '<th colspan="2" style="width:16%;background:#dbeafe;">JUMLAH SISWA AKHIR</th>' +
+    '</tr>' +
+    '<tr style="background:#333;color:#fff;font-size:10px;">' +
+    '<th>Laki-laki</th><th>Perempuan</th>' +
+    '<th style="background:#c6f6d5;">Laki-laki</th><th style="background:#c6f6d5;">Perempuan</th>' +
+    '<th style="background:#fed7d7;">Laki-laki</th><th style="background:#fed7d7;">Perempuan</th>' +
+    '<th style="background:#dbeafe;">Laki-laki</th><th style="background:#dbeafe;">Perempuan</th>' +
+    '</tr>' +
+    '</thead>' +
+    '<tbody>' +
+    /* Total row */
+    '<tr style="background:#e2e8f0;font-weight:bold;">' +
+    '<td>JUMLAH SELURUH SISWA</td>' +
+    '<td class="text-center"><input type="number" class="form-control form-control-sm text-center" id="ld1_tot_saldo_awal_l" min="0" value="0" readonly style="font-weight:700;background:#e2e8f0;font-size:13px;"></td>' +
+    '<td class="text-center"><input type="number" class="form-control form-control-sm text-center" id="ld1_tot_saldo_awal_p" min="0" value="0" readonly style="font-weight:700;background:#e2e8f0;font-size:13px;"></td>' +
+    '<td class="text-center" style="background:#c6f6d5;"><input type="number" class="form-control form-control-sm text-center" id="ld1_tot_masuk_l" min="0" value="0" readonly style="font-weight:700;background:#c6f6d5;font-size:13px;"></td>' +
+    '<td class="text-center" style="background:#c6f6d5;"><input type="number" class="form-control form-control-sm text-center" id="ld1_tot_masuk_p" min="0" value="0" readonly style="font-weight:700;background:#c6f6d5;font-size:13px;"></td>' +
+    '<td class="text-center" style="background:#fed7d7;"><input type="number" class="form-control form-control-sm text-center" id="ld1_tot_keluar_l" min="0" value="0" readonly style="font-weight:700;background:#fed7d7;font-size:13px;"></td>' +
+    '<td class="text-center" style="background:#fed7d7;"><input type="number" class="form-control form-control-sm text-center" id="ld1_tot_keluar_p" min="0" value="0" readonly style="font-weight:700;background:#fed7d7;font-size:13px;"></td>' +
+    '<td class="text-center" style="background:#dbeafe;"><input type="number" class="form-control form-control-sm text-center" id="ld1_tot_saldo_akhir_l" min="0" value="0" readonly style="font-weight:700;background:#dbeafe;font-size:13px;"></td>' +
+    '<td class="text-center" style="background:#dbeafe;"><input type="number" class="form-control form-control-sm text-center" id="ld1_tot_saldo_akhir_p" min="0" value="0" readonly style="font-weight:700;background:#dbeafe;font-size:13px;"></td>' +
+    '</tr>' +
+    kelasRows +
+    '</tbody>' +
+    '</table>' +
+    '</div>' +
+
+    /* Section 3: Data Pendukung */
+    '<hr style="margin:16px 0;border-color:var(--border-color);">' +
+    '<h6 style="font-weight:700;color:var(--primary);margin-bottom:12px;"><i class="bi bi-info-square me-1"></i>F. Data Pendukung (Ringkasan)</h6>' +
+    '<div class="row g-3">' +
+    '<div class="col-md-6"><div class="form-floating"><textarea class="form-control" id="ld1_bangunan" style="height:60px;font-size:13px;" placeholder="Info bangunan"></textarea><label>Bangunan</label></div></div>' +
+    '<div class="col-md-6"><div class="form-floating"><textarea class="form-control" id="ld1_tanah" style="height:60px;font-size:13px;" placeholder="Info tanah"></textarea><label>Tanah</label></div></div>' +
+    '<div class="col-12">' +
+    '<div style="border:1px solid var(--border-color);border-radius:8px;padding:12px;background:#f8f9fa;font-size:12px;">' +
+    '<strong>Keterangan Mutasi:</strong> <span id="ld1_ket_mutasi_preview">Belum ada data</span>' +
+    '</div>' +
+    '</div>' +
+    '</div>' +
+
+    /* Section 4: Data Guru & Tenaga Kependidikan (Halaman Belakang) */
+    '<hr style="margin:16px 0;border-color:var(--border-color);">' +
+    '<h6 style="font-weight:700;color:var(--primary);margin-bottom:12px;"><i class="bi bi-people me-1"></i>Data Guru & Tenaga Kependidikan (Halaman Belakang)</h6>' +
+    '<div class="alert alert-info" style="font-size:12px;"><i class="bi bi-database me-1"></i>Data guru/tendik <strong>otomatis diambil dari database pegawai</strong> saat sekolah dipilih. Kolom <strong>Status</strong>, <strong>Kelas</strong>, <strong>Aktif</strong>, dan <strong>Absen</strong> bisa diedit manual.</div>' +
+    '<div class="d-flex gap-2 mb-2 flex-wrap align-items-center">' +
+    '<button class="btn btn-sm btn-primary" onclick="ld1LoadGuruFromDB()"><i class="bi bi-arrow-repeat me-1"></i>Muat Ulang dari Database</button>' +
+    '<button class="btn btn-sm btn-outline-success" onclick="ld1AddGuruRow()"><i class="bi bi-plus-circle me-1"></i>Tambah Manual</button>' +
+    '<button class="btn btn-sm btn-outline-warning" onclick="ld1ClearGuruRows()"><i class="bi bi-eraser me-1"></i>Kosongkan</button>' +
+    '<span id="ld1_guru_count" style="font-size:11px;color:#6b7280;margin-left:8px;"></span>' +
+    '</div>' +
+    '<div style="overflow-x:auto;">' +
+    '<table class="table table-bordered table-sm" style="font-size:10px;min-width:1500px;">' +
+    '<thead>' +
+    '<tr style="background:#000;color:#fff;font-weight:bold;text-align:center;font-size:9px;">' +
+    '<th rowspan="2" style="width:3%;vertical-align:middle;">NO</th>' +
+    '<th rowspan="2" style="width:14%;vertical-align:middle;">NAMA / NIP</th>' +
+    '<th rowspan="2" style="width:10%;vertical-align:middle;">TEMPAT & TGL LAHIR</th>' +
+    '<th colspan="2" style="width:6%;">BIO</th>' +
+    '<th rowspan="2" style="width:4%;">IJZ</th>' +
+    '<th rowspan="2" style="width:4%;">MULAI</th>' +
+    '<th rowspan="2" style="width:8%;">JABATAN</th>' +
+    '<th rowspan="2" style="width:4%;">KLS</th>' +
+    '<th rowspan="2" style="width:6%;">GOL/GAJI</th>' +
+    '<th colspan="2" style="width:7%;">STATUS</th>' +
+    '<th colspan="4" style="width:8%;" title="Jumlah Absensi Bulan Ini">ABSEN</th>' +
+    '<th rowspan="2" style="width:3%;"></th>' +
+    '</tr>' +
+    '<tr style="background:#333;color:#fff;font-size:8px;">' +
+    '<th>L/P</th><th>AGM</th>' +
+    '<th>AKTIF</th><th>PENSIUN</th>' +
+    '<th title="Sakit">S</th><th title="Izin">I</th><th title="Absen">A</th><th title="Cuti">C</th>' +
+    '</tr>' +
+    '</thead>' +
+    '<tbody id="ld1_guru_tbody"></tbody>' +
+    '</table>' +
+    '</div>' +
+
+    /* Buttons */
+    '<hr style="margin:20px 0;border-color:var(--border-color);">' +
+    '<div class="d-flex gap-2 flex-wrap">' +
+    '<button class="btn btn-accent" onclick="cetakLaporanDaftar1()"><i class="bi bi-printer me-1"></i>Cetak Halaman Depan</button>' +
+    '<button class="btn btn-primary" onclick="cetakLaporanDaftar1Belakang()"><i class="bi bi-printer me-1"></i>Cetak Halaman Belakang (Data Guru)</button>' +
+    '<button class="btn btn-success" onclick="cetakLaporanDaftar1Full()"><i class="bi bi-printer me-1"></i>Cetak Semua (Depan + Belakang)</button>' +
+    '<button class="btn btn-outline-secondary" onclick="resetFormLaporanDaftar1()"><i class="bi bi-arrow-counterclockwise me-1"></i>Reset</button>' +
+    '</div>';
+}
+
+function ld1OnSelectSekolah() {
+  var sel = document.getElementById('ld1_sekolah');
+  var opt = sel.options[sel.selectedIndex];
+  if (opt && opt.value) {
+    document.getElementById('ld1_nama_sekolah').value = opt.getAttribute('data-nama') || '';
+    document.getElementById('ld1_npsn').value = opt.getAttribute('data-npsn') || '';
+    document.getElementById('ld1_alamat').value = opt.getAttribute('data-alamat') || '';
+    var jenjang = opt.getAttribute('data-jenjang') || 'SD';
+    document.getElementById('ld1_nama_sekolah').value = jenjang.toUpperCase() + ' ' + document.getElementById('ld1_nama_sekolah').value.replace(/^(SD|SMP|SMA|SMK)\s*/i, '');
+    /* Auto-load guru dari database pegawai */
+    ld1LoadGuruFromDB();
+    /* Auto-fill Jumlah Siswa Awal dari database siswa */
+    ld1AutoFillSiswaAwal();
+  }
+}
+
+/* ===== AUTO-FILL JUMLAH SISWA AWAL FROM DATABASE SISWA ===== */
+function ld1AutoFillSiswaAwal() {
+  var sel = document.getElementById('ld1_sekolah');
+  var schoolId = sel ? sel.value : '';
+  if (!schoolId) return;
+
+  var siswaList = getRecords('siswa').filter(function(s) { return s.school_id === schoolId; });
+
+  if (siswaList.length === 0) {
+    LD1_KELAS.forEach(function(k, i) {
+      var elL = document.getElementById('ld1_saldo_awal_l_' + i);
+      var elP = document.getElementById('ld1_saldo_awal_p_' + i);
+      if (elL) elL.value = 0;
+      if (elP) elP.value = 0;
+    });
+    ld1UpdateTotals();
+    return;
+  }
+
+  /* Map LD1_KELAS index ke angka: Kelas I→1, Kelas II→2, ... Kelas VI→6 */
+  var romawiKeAngka = { 'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7, 'VIII': 8, 'IX': 9 };
+
+  LD1_KELAS.forEach(function(k, i) {
+    /* Ekstrak angka dari "Kelas I" → 1, "Kelas II" → 2, dll */
+    var kelasStr = k.toUpperCase();
+    var angkaKelas = 0;
+    var matchNum = kelasStr.match(/(\d+)/);
+    if (matchNum) {
+      angkaKelas = parseInt(matchNum[1]);
+    } else {
+      for (var rom in romawiKeAngka) {
+        if (kelasStr.indexOf(rom) !== -1) { angkaKelas = romawiKeAngka[rom]; break; }
+      }
+    }
+
+    /* Hitung L dan P dari siswa yang kelas-nya mengandung angka/romawi tersebut */
+    var countL = 0, countP = 0;
+    siswaList.forEach(function(s) {
+      var sk = String(s.kelas || '').trim().toUpperCase();
+      var sNum = 0;
+      var m = sk.match(/(\d+)/);
+      if (m) {
+        sNum = parseInt(m[1]);
+      } else {
+        for (var rom in romawiKeAngka) {
+          if (sk.indexOf(rom) !== -1) { sNum = romawiKeAngka[rom]; break; }
+        }
+      }
+      if (sNum === angkaKelas) {
+        var jk = String(s.jenis_kelamin || '').toUpperCase();
+        if (jk === 'L' || jk === 'LAKI-LAKI') countL++;
+        else if (jk === 'P' || jk === 'PEREMPUAN') countP++;
+      }
+    });
+
+    var elL = document.getElementById('ld1_saldo_awal_l_' + i);
+    var elP = document.getElementById('ld1_saldo_awal_p_' + i);
+    if (elL) elL.value = countL;
+    if (elP) elP.value = countP;
+  });
+
+  ld1UpdateTotals();
+}
+
+/* ===== LOAD GURU FROM DATABASE PEGAWAI ===== */
+function ld1LoadGuruFromDB() {
+  var sel = document.getElementById('ld1_sekolah');
+  var schoolId = sel ? sel.value : '';
+
+  var pegawaiList = [];
+  if (schoolId) {
+    pegawaiList = getRecords('pegawai').filter(function(p) { return p.school_id === schoolId; });
+  }
+
+  if (pegawaiList.length === 0) {
+    var countEl = document.getElementById('ld1_guru_count');
+    if (countEl) countEl.innerHTML = '<span style="color:#dc2626;"><i class="bi bi-exclamation-triangle me-1"></i>Tidak ada data pegawai di database untuk sekolah ini.</span>';
+    return;
+  }
+
+  /* Clear existing rows silently */
+  ld1ClearGuruRows(true);
+
+  /* Helper: extract short pendidikan (e.g., "S1 Pendidikan" → "S-1") */
+  function shortPendidikan(p) {
+    var val = (p || '').toUpperCase();
+    if (val.indexOf('S-1') >= 0 || val.indexOf('S1') >= 0 || val.indexOf('SARJANA') >= 0) return 'S-1';
+    if (val.indexOf('S-2') >= 0 || val.indexOf('S2') >= 0 || val.indexOf('MAGISTER') >= 0) return 'S-2';
+    if (val.indexOf('S-3') >= 0 || val.indexOf('S3') >= 0 || val.indexOf('DOKTOR') >= 0) return 'S-3';
+    if (val.indexOf('D-IV') >= 0 || val.indexOf('D4') >= 0 || val.indexOf('DIV') >= 0) return 'D-IV';
+    if (val.indexOf('D-III') >= 0 || val.indexOf('D3') >= 0) return 'D-III';
+    if (val.indexOf('D-II') >= 0 || val.indexOf('D2') >= 0) return 'D-II';
+    if (val.indexOf('D-I') >= 0 || val.indexOf('D1') >= 0) return 'D-I';
+    if (val.indexOf('SMA') >= 0 || val.indexOf('SMK') >= 0) return 'SMA';
+    return val || '-';
+  }
+
+  /* Helper: extract year from tanggal_mulai_kerja */
+  function getMulaiYear(dateStr) {
+    if (!dateStr) return '';
+    var d = new Date(dateStr);
+    return isNaN(d.getFullYear()) ? '' : String(d.getFullYear());
+  }
+
+  /* Helper: map jenis_kelamin to L/P */
+  function jkShort(jk) {
+    if (!jk) return '';
+    var v = jk.toUpperCase();
+    if (v === 'LAKI-LAKI' || v === 'L') return 'L';
+    if (v === 'PEREMPUAN' || v === 'P') return 'P';
+    return jk.substring(0, 1).toUpperCase();
+  }
+
+  /* Sort: Kepala Sekolah first, then by nama */
+  pegawaiList.sort(function(a, b) {
+    var ja = (a.jabatan || '').toLowerCase();
+    var jb = (b.jabatan || '').toLowerCase();
+    var isKepA = ja.indexOf('kepala sekolah') >= 0 ? 0 : 1;
+    var isKepB = jb.indexOf('kepala sekolah') >= 0 ? 0 : 1;
+    if (isKepA !== isKepB) return isKepA - isKepB;
+    return (a.nama || '').localeCompare(b.nama || '');
+  });
+
+  /* Add each pegawai as a guru row */
+  pegawaiList.forEach(function(p) {
+    ld1AddGuruRow({
+      nama: p.nama || '',
+      nip: p.nip || '',
+      tempat: p.tempat_lahir || '',
+      tgl: p.tanggal_lahir || '',
+      jk: jkShort(p.jenis_kelamin),
+      agama: p.agama || '',
+      ijazah: shortPendidikan(p.pendidikan),
+      mulai: getMulaiYear(p.tanggal_mulai_kerja),
+      jabatan: p.jabatan || '',
+      kelas: '',
+      golongan: p.pangkat_golongan || '',
+      status: '',
+      aktif: false,
+      absen_s: 0, absen_i: 0, absen_a: 0, absen_c: 0
+    });
+  });
+
+  var countEl = document.getElementById('ld1_guru_count');
+  if (countEl) countEl.innerHTML = '<i class="bi bi-check-circle me-1" style="color:#16a34a;"></i><strong>' + pegawaiList.length + '</strong> guru/tendik dimuat dari database pegawai.';
+}
+
+function resetFormLaporanDaftar1() {
+  if (!confirm('Apakah Anda yakin ingin mereset semua data?')) return;
+  ['ld1_nama_sekolah','ld1_nss','ld1_npsn','ld1_alamat','ld1_bangunan','ld1_tanah'].forEach(function(id) { var el = document.getElementById(id); if (el) el.value = ''; });
+  document.getElementById('ld1_bulan').value = '';
+  document.getElementById('ld1_tahun').value = '2026';
+  document.getElementById('ld1_kabupaten').value = 'CIREBON';
+  document.getElementById('ld1_kecamatan').value = 'Lemahabang';
+  document.getElementById('ld1_sekolah').value = '';
+  LD1_KELAS.forEach(function(k, i) {
+    ['saldo_awal_l','saldo_awal_p','masuk_l','masuk_p','keluar_l','keluar_p','saldo_akhir_l','saldo_akhir_p'].forEach(function(col) {
+      var el = document.getElementById('ld1_' + col + '_' + i); if (el) el.value = 0;
+    });
+  });
+  ld1UpdateTotals();
+  ld1ClearGuruRows(true);
+  var countEl = document.getElementById('ld1_guru_count');
+  if (countEl) countEl.innerHTML = '';
+}
+
+/* ===== HELPER: Guru Data Management (Halaman Belakang) ===== */
+function ld1AddGuruRow(data) {
+  var tbody = document.getElementById('ld1_guru_tbody');
+  if (!tbody) return;
+  var rowCount = tbody.rows.length;
+  var no = rowCount + 1;
+  var d = data || {};
+
+  var agamaOpts = '<option value="">-</option>';
+  ['Islam','Kristen','Katolik','Hindu','Buddha','Konghucu'].forEach(function(a) {
+    agamaOpts += '<option value="' + a + '"' + (d.agama === a ? ' selected' : '') + '>' + a + '</option>';
+  });
+  var statusOpts = '<option value="">-</option>';
+  ['PNS','PPPK','Honor'].forEach(function(s) {
+    statusOpts += '<option value="' + s + '"' + (d.status === s ? ' selected' : '') + '>' + s + '</option>';
+  });
+  var jpOpts = '<option value="">-</option>';
+  ['L','P'].forEach(function(j) {
+    jpOpts += '<option value="' + j + '"' + (d.jk === j ? ' selected' : '') + '>' + j + '</option>';
+  });
+
+  var tr = document.createElement('tr');
+  tr.style.background = rowCount % 2 === 0 ? '#f9f9f9' : '#fff';
+  tr.innerHTML =
+    '<td class="text-center" style="font-weight:600;font-size:11px;vertical-align:middle;">' + no + '</td>' +
+    '<td>' +
+      '<input type="text" class="form-control form-control-sm ld1-guru-nama" value="' + escapeHtml(d.nama || '') + '" placeholder="Nama Guru" style="font-size:10px;">' +
+      '<input type="text" class="form-control form-control-sm ld1-guru-nip mt-1" value="' + escapeHtml(d.nip || '') + '" placeholder="NIP / NUPTK" style="font-size:9px;font-family:monospace;">' +
+    '</td>' +
+    '<td>' +
+      '<input type="text" class="form-control form-control-sm ld1-guru-tmp" value="' + escapeHtml(d.tempat || '') + '" placeholder="Tempat" style="font-size:10px;">' +
+      '<input type="date" class="form-control form-control-sm ld1-guru-tgl mt-1" value="' + (d.tgl || '') + '" style="font-size:9px;">' +
+    '</td>' +
+    '<td class="text-center" style="vertical-align:middle;"><select class="form-select form-select-sm ld1-guru-jk" style="font-size:10px;width:45px;">' + jpOpts + '</select></td>' +
+    '<td class="text-center" style="vertical-align:middle;"><select class="form-select form-select-sm ld1-guru-agm" style="font-size:10px;width:65px;">' + agamaOpts + '</select></td>' +
+    '<td class="text-center" style="vertical-align:middle;"><input type="text" class="form-control form-control-sm ld1-guru-ijz text-center" value="' + escapeHtml(d.ijazah || '') + '" placeholder="S-1" style="font-size:10px;width:45px;"></td>' +
+    '<td class="text-center" style="vertical-align:middle;"><input type="number" class="form-control form-control-sm ld1-guru-mulai text-center" value="' + (d.mulai || '') + '" placeholder="2020" style="font-size:10px;width:50px;"></td>' +
+    '<td style="vertical-align:middle;"><input type="text" class="form-control form-control-sm ld1-guru-jabatan" value="' + escapeHtml(d.jabatan || '') + '" placeholder="Guru Kelas" style="font-size:10px;"></td>' +
+    '<td class="text-center" style="vertical-align:middle;"><input type="text" class="form-control form-control-sm ld1-guru-kls text-center" value="' + escapeHtml(d.kelas || '') + '" placeholder="-" style="font-size:10px;width:45px;"></td>' +
+    '<td style="vertical-align:middle;"><input type="text" class="form-control form-control-sm ld1-guru-gol" value="' + escapeHtml(d.golongan || '') + '" placeholder="III/d" style="font-size:10px;"></td>' +
+    '<td class="text-center" style="vertical-align:middle;"><select class="form-select form-select-sm ld1-guru-status" style="font-size:10px;width:65px;">' + statusOpts + '</select></td>' +
+    '<td class="text-center" style="vertical-align:middle;"><input type="checkbox" class="form-check-input ld1-guru-aktif"' + (d.aktif ? ' checked' : '') + ' style="width:14px;height:14px;cursor:pointer;" title="Centang jika aktif"></td>' +
+    '<td class="text-center" style="vertical-align:middle;"><input type="number" class="form-control form-control-sm ld1-guru-absen-s text-center" min="0" value="' + (d.absen_s || 0) + '" style="font-size:10px;width:35px;font-family:monospace;"></td>' +
+    '<td class="text-center" style="vertical-align:middle;"><input type="number" class="form-control form-control-sm ld1-guru-absen-i text-center" min="0" value="' + (d.absen_i || 0) + '" style="font-size:10px;width:35px;font-family:monospace;"></td>' +
+    '<td class="text-center" style="vertical-align:middle;"><input type="number" class="form-control form-control-sm ld1-guru-absen-a text-center" min="0" value="' + (d.absen_a || 0) + '" style="font-size:10px;width:35px;font-family:monospace;"></td>' +
+    '<td class="text-center" style="vertical-align:middle;"><input type="number" class="form-control form-control-sm ld1-guru-absen-c text-center" min="0" value="' + (d.absen_c || 0) + '" style="font-size:10px;width:35px;font-family:monospace;"></td>' +
+    '<td class="text-center" style="vertical-align:middle;"><button class="btn btn-sm btn-danger py-0 px-1" onclick="ld1RemoveGuruRow(this)" title="Hapus baris"><i class="bi bi-trash" style="font-size:11px;"></i></button></td>';
+
+  tbody.appendChild(tr);
+}
+
+function ld1RemoveGuruRow(btn) {
+  if (!confirm('Hapus data guru/tendik ini?')) return;
+  var tr = btn.closest('tr');
+  tr.remove();
+  ld1RenumberGuruRows();
+}
+
+function ld1RenumberGuruRows() {
+  var tbody = document.getElementById('ld1_guru_tbody');
+  if (!tbody) return;
+  var rows = tbody.querySelectorAll('tr');
+  rows.forEach(function(tr, i) {
+    tr.cells[0].textContent = i + 1;
+    tr.style.background = i % 2 === 0 ? '#f9f9f9' : '#fff';
+  });
+}
+
+function ld1ClearGuruRows(silent) {
+  var tbody = document.getElementById('ld1_guru_tbody');
+  if (!tbody) return;
+  if (!silent && tbody.rows.length > 0) {
+    if (!confirm('Kosongkan semua data guru/tendik?')) return;
+  }
+  tbody.innerHTML = '';
+}
+
+function ld1GetGuruData() {
+  var tbody = document.getElementById('ld1_guru_tbody');
+  if (!tbody) return [];
+  var data = [];
+  tbody.querySelectorAll('tr').forEach(function(tr) {
+    var gv = function(cls) {
+      var el = tr.querySelector('.' + cls);
+      if (!el) return '';
+      if (el.type === 'checkbox') return el.checked;
+      return el.value.trim();
+    };
+    data.push({
+      nama: gv('ld1-guru-nama'),
+      nip: gv('ld1-guru-nip'),
+      tempat: gv('ld1-guru-tmp'),
+      tgl: gv('ld1-guru-tgl'),
+      jk: gv('ld1-guru-jk'),
+      agama: gv('ld1-guru-agm'),
+      ijazah: gv('ld1-guru-ijz'),
+      mulai: gv('ld1-guru-mulai'),
+      jabatan: gv('ld1-guru-jabatan'),
+      kelas: gv('ld1-guru-kls'),
+      golongan: gv('ld1-guru-gol'),
+      status: gv('ld1-guru-status'),
+      aktif: gv('ld1-guru-aktif'),
+      absen_s: parseInt(gv('ld1-guru-absen-s')) || 0,
+      absen_i: parseInt(gv('ld1-guru-absen-i')) || 0,
+      absen_a: parseInt(gv('ld1-guru-absen-a')) || 0,
+      absen_c: parseInt(gv('ld1-guru-absen-c')) || 0
+    });
+  });
+  return data;
+}
+
+function cetakLaporanDaftar1() {
+  var namaSekolah = ld1Str('ld1_nama_sekolah');
+  var bulan = ld1Str('ld1_bulan');
+  var tahun = ld1Str('ld1_tahun');
+  var nss = ld1Str('ld1_nss');
+  var npsn = ld1Str('ld1_npsn');
+  var alamat = ld1Str('ld1_alamat');
+  var kabupaten = ld1Str('ld1_kabupaten');
+  var kecamatan = ld1Str('ld1_kecamatan');
+  var bangunan = ld1Str('ld1_bangunan');
+  var tanah = ld1Str('ld1_tanah');
+
+  if (!namaSekolah) { alert('Nama Sekolah harus diisi!'); return; }
+  if (!bulan) { alert('Bulan Laporan harus dipilih!'); return; }
+
+  ld1UpdateTotals();
+  var masukL = ld1CalcTotal('masuk_l');
+  var masukP = ld1CalcTotal('masuk_p');
+  var keluarL = ld1CalcTotal('keluar_l');
+  var keluarP = ld1CalcTotal('keluar_p');
+
+  // Build kelas rows for print
+  var printKelasRows = '';
+  LD1_KELAS.forEach(function(k, i) {
+    var bg = (i % 2 === 0) ? '#f9f9f9' : '#fff';
+    printKelasRows += '<tr style="background:' + bg + ';">' +
+      '<td class="bold" style="padding-left:12px;">' + k + '</td>' +
+      '<td class="text-center fd">' + ld1Num('ld1_saldo_awal_l_' + i) + '</td>' +
+      '<td class="text-center fd">' + ld1Num('ld1_saldo_awal_p_' + i) + '</td>' +
+      '<td class="text-center fd cm">' + (ld1Num('ld1_masuk_l_' + i) || '-') + '</td>' +
+      '<td class="text-center fd cm">' + (ld1Num('ld1_masuk_p_' + i) || '-') + '</td>' +
+      '<td class="text-center fd ck">' + (ld1Num('ld1_keluar_l_' + i) || '-') + '</td>' +
+      '<td class="text-center fd ck">' + (ld1Num('ld1_keluar_p_' + i) || '-') + '</td>' +
+      '<td class="text-center fd" style="background:#dbeafe;">' + ld1Num('ld1_saldo_akhir_l_' + i) + '</td>' +
+      '<td class="text-center fd" style="background:#dbeafe;">' + ld1Num('ld1_saldo_akhir_p_' + i) + '</td>' +
+      '</tr>';
+  });
+
+  // Today date in Indonesian
+  var today = new Date();
+  var tglCetak = today.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  // Kop Surat
+  var kopHtml = getKopHtmlKorwil();
+
+  var printHtml = kopHtml +
+    /* Header Laporan */
+    '<div style="text-align:center;border-bottom:2px solid #000;margin-bottom:8px;padding-bottom:5px;margin-top:12px;">' +
+    '<h2 style="margin:0;font-size:14pt;letter-spacing:1px;">DAFTAR ' + escapeHtml(namaSekolah.toUpperCase()) + '</h2>' +
+    '<div style="font-size:10pt;">Laporan Mutasi & Pengembangan Siswa Bulan : <strong>' + escapeHtml(bulan.toUpperCase()) + ' ' + escapeHtml(tahun) + '</strong></div>' +
+    '</div>' +
+
+    /* Identitas Ringkas */
+    '<table style="margin-bottom:5px;font-size:10pt;border:none;" cellpadding="0" cellspacing="0">' +
+    '<tr>' +
+    '<td width="18%" class="bold" style="border:none;">NSS / NPSN</td>' +
+    '<td width="32%" style="border:none;">: <span class="fd">' + escapeHtml(nss) + ' / ' + escapeHtml(npsn) + '</span></td>' +
+    '<td width="18%" class="bold" style="border:none;">Kabupaten</td>' +
+    '<td width="32%" style="border:none;">: ' + escapeHtml(kabupaten.toUpperCase()) + '</td>' +
+    '</tr>' +
+    '<tr>' +
+    '<td class="bold" style="border:none;">Alamat</td>' +
+    '<td style="border:none;">: ' + escapeHtml(alamat) + '</td>' +
+    '<td class="bold" style="border:none;">Kecamatan</td>' +
+    '<td style="border:none;">: ' + escapeHtml(kecamatan) + '</td>' +
+    '</tr>' +
+    '</table>' +
+
+    /* Tabel Mutasi Utama */
+    '<table style="margin:12px 0;">' +
+    '<tr><td colspan="9" class="focus-header">E. PENGEMBANGAN & MUTASI SISWA PER BULAN</td></tr>' +
+    '<tr>' +
+    '<th rowspan="2" style="width:12%;vertical-align:middle;">URAIAN</th>' +
+    '<th colspan="2" style="width:18%;">JUMLAH SISWA AWAL</th>' +
+    '<th colspan="2" style="width:18%;">MASUK (+)</th>' +
+    '<th colspan="2" style="width:18%;">KELUAR (−)</th>' +
+    '<th colspan="2" style="width:16%;">JUMLAH SISWA AKHIR</th>' +
+    '</tr>' +
+    '<tr>' +
+    '<th style="font-size:9pt;">Laki-laki</th><th style="font-size:9pt;">Perempuan</th>' +
+    '<th style="font-size:9pt;">Laki-laki</th><th style="font-size:9pt;">Perempuan</th>' +
+    '<th style="font-size:9pt;">Laki-laki</th><th style="font-size:9pt;">Perempuan</th>' +
+    '<th style="font-size:9pt;">Laki-laki</th><th style="font-size:9pt;">Perempuan</th>' +
+    '</tr>' +
+
+    /* Total row */
+    '<tr style="background:#f9f9f9;">' +
+    '<td class="bold">1. JUMLAH SELURUH SISWA</td>' +
+    '<td class="text-center fd">' + ld1CalcTotal('saldo_awal_l') + '</td>' +
+    '<td class="text-center fd">' + ld1CalcTotal('saldo_awal_p') + '</td>' +
+    '<td class="text-center fd cm">' + (masukL || '-') + '</td>' +
+    '<td class="text-center fd cm">' + (masukP || '-') + '</td>' +
+    '<td class="text-center fd ck">' + (keluarL || '-') + '</td>' +
+    '<td class="text-center fd ck">' + (keluarP || '-') + '</td>' +
+    '<td class="text-center fd" style="background:#dbeafe;">' + ld1CalcTotal('saldo_akhir_l') + '</td>' +
+    '<td class="text-center fd" style="background:#dbeafe;">' + ld1CalcTotal('saldo_akhir_p') + '</td>' +
+    '</tr>' +
+
+    printKelasRows +
+
+    /* Grand Total row */
+    '<tr style="background:#000;color:#fff;">' +
+    '<td class="bold" style="color:#fff;">T O T A L</td>' +
+    '<td class="text-center fd" style="color:#fff;">' + ld1CalcTotal('saldo_awal_l') + '</td>' +
+    '<td class="text-center fd" style="color:#fff;">' + ld1CalcTotal('saldo_awal_p') + '</td>' +
+    '<td class="text-center fd" style="color:#fff;">' + (masukL || '-') + '</td>' +
+    '<td class="text-center fd" style="color:#fff;">' + (masukP || '-') + '</td>' +
+    '<td class="text-center fd" style="color:#fff;">' + (keluarL || '-') + '</td>' +
+    '<td class="text-center fd" style="color:#fff;">' + (keluarP || '-') + '</td>' +
+    '<td class="text-center fd" style="background:#2563eb;color:#fff;">' + ld1CalcTotal('saldo_akhir_l') + '</td>' +
+    '<td class="text-center fd" style="background:#2563eb;color:#fff;">' + ld1CalcTotal('saldo_akhir_p') + '</td>' +
+    '</tr>' +
+    '</table>' +
+
+    /* Data Pendukung */
+    '<div style="border:1px solid #000;padding:8px;margin-top:15px;">' +
+    '<strong style="font-size:10pt;">F. DATA PENDUKUNG (Ringkasan)</strong>' +
+    '<table style="width:100%;margin-top:5px;font-size:9pt;border:none;" cellpadding="0" cellspacing="0">' +
+    '<tr>' +
+    '<td width="50%" style="border:none;"><strong>Bangunan:</strong> ' + escapeHtml(bangunan || '-') + '</td>' +
+    '<td width="50%" style="border:none;"><strong>Tanah:</strong> ' + escapeHtml(tanah || '-') + '</td>' +
+    '</tr>' +
+    '<tr>' +
+    '<td colspan="2" style="border:none;"><strong>Keterangan Mutasi:</strong> ' +
+    '<span style="color:green;">Siswa Masuk (L: ' + masukL + ', P: ' + masukP + ')</span> | ' +
+    '<span style="color:red;">Siswa Keluar (L: ' + keluarL + ', P: ' + keluarP + ')</span>' +
+    '</td></tr>' +
+    '</table>' +
+    '</div>';
+
+  showCetakDialog(function(cs) {
+    var printWin = window.open('', '_blank');
+    printWin.document.write('<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Laporan Daftar 1 - ' + escapeHtml(namaSekolah) + '</title>' +
+      '<style>' +
+      getCetakPageCSS(cs) +
+      '@import url("https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Courier+Prime:wght@400;700&display=swap");' +
+      '* { margin: 0; padding: 0; box-sizing: border-box; }' +
+      'body { font-family: "Roboto Condensed", sans-serif; font-size: 12px; color: #000; background: #555; padding: 20px; }' +
+      'table { border-collapse: collapse; width: 100%; margin-bottom: 10px; }' +
+      'td, th { border: 1px solid #000; padding: 4px 6px; vertical-align: middle; }' +
+      '.text-center { text-align: center; }' +
+      '.bold { font-weight: bold; text-transform: uppercase; }' +
+      '.fd { font-family: "Courier Prime", monospace; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; }' +
+      '.cm { background-color: #e6fffa !important; }' +
+      '.ck { background-color: #fff5f5 !important; }' +
+      '.focus-header { background-color: #000; color: #fff; text-align: center; font-weight: bold; font-size: 11pt; padding: 8px; letter-spacing: 1px; }' +
+      '.no-print { display: block; padding: 10px 20px; background: #9b2c2c; color: #fff; text-align: center; margin: 0 auto 10px; border-radius: 8px; }' +
+      '.no-print button { padding: 8px 24px; background: #c53030; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; margin: 0 4px; }' +
+      '.no-print button:hover { background: #e53e3e; }' +
+      '@media screen { .paper { background: white; padding: 10mm; box-shadow: 0 0 20px rgba(0,0,0,0.5); margin: 0 auto; } .no-print { display: block; } }' +
+      '@media print { body { background: none; padding: 0; } .paper { box-shadow: none; margin: 0; padding: 0; border: none; } .no-print { display: none; } }' +
+      getCetakMarginCSS(cs) +
+      '</style></head><body>' +
+      '<div class="no-print"><button onclick="window.print()">&#128424; Cetak / Simpan sebagai PDF</button><button onclick="window.close()">&#10005; Tutup</button></div>' +
+      '<div class="paper">' + printHtml + '</div>' +
+      '</body></html>');
+    printWin.document.close();
+  }, { paper: 'A4', orientasi: 'landscape', mt: 1, mb: 1, ml: 1, mr: 1 });
+}
+
+/* ===== CETAK HALAMAN BELAKANG: Data Guru & Tenaga Kependidikan ===== */
+function cetakLaporanDaftar1Belakang() {
+  var namaSekolah = ld1Str('ld1_nama_sekolah');
+  var tahun = ld1Str('ld1_tahun');
+  var kecamatan = ld1Str('ld1_kecamatan');
+  var schoolId = ld1Str('ld1_sekolah');
+
+  if (!namaSekolah) { alert('Nama Sekolah harus diisi!'); return; }
+
+  var guruData = ld1GetGuruData();
+  if (guruData.length === 0) { alert('Tambahkan minimal 1 data guru/tendik! Klik tombol "Tambah Guru/Tendik".'); return; }
+
+  /* Ambil Kepala Korwil dari database pegawai_korwil */
+  var korwilHead = getKepalaKorwil();
+
+  /* Ambil Kepala Sekolah dari database pegawai */
+  var kepsekData = getKepalaSekolah(schoolId);
+
+  /* Helper: format tanggal ISO → "Cirebon, 12 Jul 1966" */
+  function fmtTgl(iso) {
+    if (!iso) return '-';
+    var d = new Date(iso);
+    var bln = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agt','Sep','Okt','Nov','Des'];
+    return d.toLocaleDateString('id-ID', { day: 'numeric' }) + ' ' + bln[d.getMonth()] + ' ' + d.getFullYear();
+  }
+
+  /* Helper: status badge */
+  function statusBadge(s) {
+    if (s === 'PNS') return '<span style="display:inline-block;padding:1px 4px;border-radius:3px;font-size:8px;font-weight:600;text-transform:uppercase;white-space:nowrap;background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe;">PNS</span>';
+    if (s === 'PPPK') return '<span style="display:inline-block;padding:1px 4px;border-radius:3px;font-size:8px;font-weight:600;text-transform:uppercase;white-space:nowrap;background:#d1fae5;color:#065f46;border:1px solid #a7f3d0;">PPPK</span>';
+    if (s === 'Honor') return '<span style="display:inline-block;padding:1px 4px;border-radius:3px;font-size:8px;font-weight:600;text-transform:uppercase;white-space:nowrap;background:#fee2e2;color:#991b1b;border:1px solid #fecaca;">HONOR</span>';
+    return '<span style="font-size:9px;">' + escapeHtml(s || '-') + '</span>';
+  }
+
+  /* Helper: check circle */
+  function checkCircle(checked) {
+    if (checked) return '<span style="width:14px;height:14px;border:1px solid #9ca3af;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;background:#2563eb;border-color:#2563eb;color:white;">&#10003;</span>';
+    return '<span style="width:14px;height:14px;border:1px solid #9ca3af;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;color:transparent;">&#10003;</span>';
+  }
+
+  var today = new Date();
+  var tglCetak = today.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  /* Build guru rows HTML */
+  var guruRows = '';
+  guruData.forEach(function(g, i) {
+    var bg = i % 2 === 0 ? '#fff' : '#f9fafb';
+    var ttlText = (g.tempat || '-') + (g.tgl ? ', ' + fmtTgl(g.tgl) : '');
+    guruRows += '<tr style="background:' + bg + ';">' +
+      '<td style="text-align:center;width:25px;font-size:10px;">' + (i + 1) + '</td>' +
+      '<td style="min-width:120px;">' +
+        '<span style="font-weight:600;display:block;font-size:10px;">' + escapeHtml(g.nama || '-') + '</span>' +
+        '<span style="font-family:monospace;font-size:9px;color:#6b7280;display:block;">' + escapeHtml(g.nip || '-') + '</span>' +
+      '</td>' +
+      '<td style="min-width:100px;font-size:10px;">' + escapeHtml(ttlText) + '</td>' +
+      '<td style="text-align:center;width:30px;font-size:10px;">' + escapeHtml(g.jk || '-') + '</td>' +
+      '<td style="text-align:center;width:40px;font-size:10px;">' + escapeHtml(g.agama || '-') + '</td>' +
+      '<td style="text-align:center;width:30px;font-size:10px;">' + escapeHtml(g.ijazah || '-') + '</td>' +
+      '<td style="text-align:center;width:35px;font-size:10px;">' + escapeHtml(g.mulai || '-') + '</td>' +
+      '<td style="min-width:80px;font-size:10px;">' + escapeHtml(g.jabatan || '-') + '</td>' +
+      '<td style="text-align:center;width:35px;font-size:10px;">' + escapeHtml(g.kelas || '-') + '</td>' +
+      '<td style="min-width:60px;font-size:10px;">' + escapeHtml(g.golongan || '-') + '</td>' +
+      '<td style="text-align:center;width:45px;">' + statusBadge(g.status) + '</td>' +
+      '<td style="text-align:center;width:30px;">' + checkCircle(g.aktif) + '</td>' +
+      '<td style="text-align:center;width:25px;font-family:JetBrains Mono,monospace;font-weight:500;color:#374151;">' + g.absen_s + '</td>' +
+      '<td style="text-align:center;width:25px;font-family:JetBrains Mono,monospace;font-weight:500;color:#374151;">' + g.absen_i + '</td>' +
+      '<td style="text-align:center;width:25px;font-family:JetBrains Mono,monospace;font-weight:500;color:#374151;">' + g.absen_a + '</td>' +
+      '<td style="text-align:center;width:25px;font-family:JetBrains Mono,monospace;font-weight:500;color:#374151;">' + g.absen_c + '</td>' +
+      '</tr>';
+  });
+
+  var printHtml =
+    /* Header */
+    '<div style="padding:10px 15px;border-bottom:2px solid #2563eb;background:#f9fafb;display:flex;justify-content:space-between;align-items:center;">' +
+      '<div><h1 style="margin:0;font-size:14px;font-weight:700;color:#1f2937;text-transform:uppercase;">Data Guru &amp; Tenaga Kependidikan</h1></div>' +
+      '<div style="font-size:9px;color:#666;">' + escapeHtml(namaSekolah) + ' &bull; ' + escapeHtml(tahun) + '</div>' +
+    '</div>' +
+
+    /* Table */
+    '<div style="flex:1;overflow-x:auto;">' +
+    '<table>' +
+    '<thead>' +
+    '<tr>' +
+      '<th rowspan="3" style="width:25px;">NO</th>' +
+      '<th rowspan="3" style="min-width:120px;">IDENTITAS (NAMA / NIP)</th>' +
+      '<th rowspan="3" style="min-width:120px;">TEMPAT &amp; TGL LAHIR</th>' +
+      '<th colspan="2" style="width:70px;">BIO</th>' +
+      '<th rowspan="3" style="width:30px;">IJZ</th>' +
+      '<th rowspan="3" style="width:35px;">MULAI</th>' +
+      '<th rowspan="3" style="min-width:80px;">JABATAN</th>' +
+      '<th rowspan="3" style="width:35px;">KLS</th>' +
+      '<th rowspan="3" style="min-width:60px;">GOL / GAJI</th>' +
+      '<th colspan="2" style="width:70px;">STATUS</th>' +
+      '<th colspan="4" style="width:100px;" title="Jumlah Absensi Bulan Ini">ABSEN</th>' +
+    '</tr>' +
+    '<tr>' +
+      '<th style="width:30px;">L/P</th>' +
+      '<th style="width:40px;">AGM</th>' +
+      '<th style="width:30px;">AKTIF</th>' +
+      '<th style="width:30px;">PENSIUN</th>' +
+      '<th style="width:25px;font-size:8px;" title="Sakit">S</th>' +
+      '<th style="width:25px;font-size:8px;" title="Izin">I</th>' +
+      '<th style="width:25px;font-size:8px;" title="Absen">A</th>' +
+      '<th style="width:25px;font-size:8px;" title="Cuti">C</th>' +
+    '</tr>' +
+    '</thead>' +
+    '<tbody>' +
+    guruRows +
+    '</tbody>' +
+    '</table>' +
+    '</div>' +
+
+    /* Footer with signatures */
+    '<div style="border-top:1px solid #d1d5db;background:#fff;font-size:10px;padding-top:10px;">' +
+    '<div style="text-align:left;margin-bottom:10px;padding:0 15px;"><strong>Total:</strong> ' + guruData.length + ' Orang</div>' +
+    '<table style="width:100%;border:none;font-size:10px;">' +
+    '<tr style="vertical-align:top;">' +
+    '<td style="width:50%;text-align:center;border:none;padding:0 15px;">' +
+      'Mengetahui,<br>Korwil Bid. Pendidikan<br>Kec. ' + escapeHtml(kecamatan) +
+      '<div style="height:65px;"></div>' +
+      '<strong style="font-size:10px;">' + escapeHtml(korwilHead.nama) + '</strong><br>' +
+      '<span style="font-size:9px;">NIP. ' + escapeHtml(korwilHead.nip) + '</span>' +
+    '</td>' +
+    '<td style="width:50%;text-align:center;border:none;padding:0 15px;">' +
+      escapeHtml(kecamatan) + ', ' + tglCetak + '<br>' +
+      'Kepala ' + escapeHtml(namaSekolah) +
+      '<div style="height:65px;"></div>' +
+      '<strong style="font-size:10px;">' + escapeHtml(kepsekData.nama) + '</strong><br>' +
+      '<span style="font-size:9px;">NIP. ' + escapeHtml(kepsekData.nip) + '</span>' +
+    '</td>' +
+    '</tr>' +
+    '</table>' +
+    '</div>';
+
+  showCetakDialog(function(cs) {
+    var printWin = window.open('', '_blank');
+    printWin.document.write('<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Data Guru &amp; Tendik - ' + escapeHtml(namaSekolah) + '</title>' +
+      '<style>' +
+      getCetakPageCSS(cs) +
+      '@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");' +
+      '* { margin: 0; padding: 0; box-sizing: border-box; }' +
+      'body { margin: 0; padding: 15px; background-color: #f3f4f6; font-family: "Inter", sans-serif; font-size: 11px; color: #111827; }' +
+      '.paper { width: 297mm; min-height: 210mm; margin: 0 auto; background: #fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; }' +
+      'table { width: 100%; border-collapse: collapse; table-layout: auto; }' +
+      'th, td { padding: 4px 6px; text-align: left; border: 1px solid #d1d5db; vertical-align: middle; line-height: 1.3; }' +
+      'thead th { background-color: #1f2937; color: #f9fafb; font-weight: 600; font-size: 9px; text-transform: uppercase; padding: 6px 4px; white-space: nowrap; }' +
+      'tbody tr:nth-child(even) { background-color: #f9fafb; }' +
+      '.no-print { display: block; padding: 10px 20px; background: #1f2937; color: #fff; text-align: center; margin: 0 auto 10px; border-radius: 8px; }' +
+      '.no-print button { padding: 8px 24px; background: #2563eb; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; margin: 0 4px; }' +
+      '.no-print button:hover { background: #1d4ed8; }' +
+      '@media screen { .paper { background: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); } .no-print { display: block; } }' +
+      '@media print { body { background: none; padding: 0; } .paper { width: 100%; box-shadow: none; border-radius: 0; } .no-print { display: none; } thead th { background-color: #e5e7eb !important; color: #000 !important; -webkit-print-color-adjust: exact; } tbody tr:nth-child(even) { background-color: #fff !important; } @page { size: A4 landscape; margin: 5mm; } }' +
+      getCetakMarginCSS(cs) +
+      '</style></head><body>' +
+      '<div class="no-print"><button onclick="window.print()">&#128424; Cetak / Simpan sebagai PDF</button><button onclick="window.close()">&#10005; Tutup</button></div>' +
+      '<div class="paper">' + printHtml + '</div>' +
+      '</body></html>');
+    printWin.document.close();
+  }, { paper: 'A4', orientasi: 'landscape', mt: 0.5, mb: 0.5, ml: 0.5, mr: 0.5 });
+}
+
+/* ===== CETAK SEMUA: Depan + Belakang ===== */
+function cetakLaporanDaftar1Full() {
+  var namaSekolah = ld1Str('ld1_nama_sekolah');
+  var bulan = ld1Str('ld1_bulan');
+  var tahun = ld1Str('ld1_tahun');
+  var guruData = ld1GetGuruData();
+
+  if (!namaSekolah) { alert('Nama Sekolah harus diisi!'); return; }
+  if (!bulan) { alert('Bulan Laporan harus dipilih!'); return; }
+  if (guruData.length === 0) { alert('Tambahkan minimal 1 data guru/tendik untuk halaman belakang!'); return; }
+
+  alert('Halaman depan dan belakang akan dicetak secara terpisah. Klik OK untuk mencetak halaman depan terlebih dahulu.');
+  cetakLaporanDaftar1();
+  setTimeout(function() {
+    alert('Sekarang mencetak halaman belakang (Data Guru & Tenaga Kependidikan)...');
+    cetakLaporanDaftar1Belakang();
+  }, 1000);
 }
 
 function ppdbSimpanPengaturan() {
